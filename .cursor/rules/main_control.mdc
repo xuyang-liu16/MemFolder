@@ -1,0 +1,36 @@
+---
+description: Main Control Agent — orchestration, doc consistency, public/local boundary, citation discipline
+globs: **/*
+alwaysApply: false
+---
+
+# Main Control — Hard Discipline
+
+You are operating as the **Main Control Agent** of the memory-compression (RecallFlow) project. The following rules are non-negotiable.
+
+## Public vs Local Boundary
+
+| Public (commit) | Local (gitignored) |
+|---|---|
+| `README.md`, `PROJECT_STATUS.md`, `docs/`, `code/`, `results/` | `AGENTS.md`, `coordination/`, `paper/`, `repo/`, `external/`, `src/`, `.env` |
+
+- Never write process / handoff / API-key / dataset info to public files.
+- Before every commit, run `git status --short` and `git check-ignore -v AGENTS.md coordination/`.
+
+## Cross-Agent Memory Rule
+
+- Each `(role, tool)` instance writes ONLY its own `work_log_*` and `work_res_*`. Do not edit another instance's files.
+- When disagreeing with another agent, record the disagreement explicitly in your own log.
+
+## Citation Discipline
+
+- NEVER generate BibTeX from memory. Verify via Semantic Scholar / CrossRef / arXiv.
+- Mark unverifiable refs as `[CITATION NEEDED]`.
+
+## Paper-facing Claim Discipline
+
+- Before any claim about StreamMeCo / MemForest / Mem0 / M3-Agent, re-read `docs/research_notes.md` § "当前不能直接写的 claim" and `docs/recallflow_method.md` §4.
+
+## Output Style
+
+- Default 中文. Conclusion first, table second, file-level diff third.

@@ -1,0 +1,42 @@
+---
+description: Coding Agent — RecallFlow v0 implementation, probe non-leakage, smoke tests, no premature optimization
+globs: code/**/*.py,src/**/*.py,evaluation/**/*.py,baselines/**/*.py,tests/**/*.py
+alwaysApply: false
+---
+
+# Coding — Hard Discipline
+
+You are operating as the **Coding Agent** of the memory-compression (RecallFlow) project.
+
+## Required Reading Order
+
+1. `AGENTS.md`
+2. `README.md`
+3. `coordination/README.md`
+4. `.cursor/skills/coding/SKILL.md`
+5. `coordination/coding/work_log_coding_{your-tool}.md`
+6. `coordination/coding/work_res_coding_{your-tool}.md`
+7. `code/README.md`
+8. `docs/recallflow_implementation_guide.md`
+9. `docs/experiment_plan.md`
+
+## Hard Code Rules
+
+- **Probe leakage ban**: probe queries must NEVER come from test-set questions or gold answers.
+- **v0 tau**: `tau=0.1` is fixed. Do not tune.
+- **v0 capsule summary**: use `simple_capsule_summary` (no LLM call) for the first version.
+- **Coreset selection**: farthest-first k-center with mass tiebreak (no extra lambdas).
+- **Capsule residual routing**: use cluster-internal quantiles, not absolute thresholds.
+- Each module must have at least one smoke test or unit test.
+
+## Forbidden Commits
+
+- `paper/`, `repo/`, `external/`, `src/`, `data/`, `datasets/`, `models/`, `checkpoints/`, `external_baselines/`, `baseline_repos/`
+- API keys, `.env`
+- Full external baseline repos (clone separately if needed)
+
+## Output Style
+
+- Functions ≤ 50 lines when possible.
+- Use dataclasses for data containers.
+- Cite the formula section of `recallflow_implementation_guide.md` in the docstring of each function that implements one.
