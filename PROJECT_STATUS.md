@@ -1,6 +1,6 @@
 # 项目当前进展看板
 
-> 更新时间：2026-07-05  
+> 更新时间：2026-07-09
 > 用途：给合作者快速判断项目现在做什么、缺什么、下一步先做什么。
 
 ## 一屏结论
@@ -9,12 +9,21 @@
 |---|---|
 | 主路线 | Agent Memory Compression |
 | 目标场景 | 流式多模态 Agent 的长期记忆管理 |
-| 方法焦点 | RecallFlow：保持压缩前后的可唤起证据覆盖 |
+| 方法焦点 | RecallFlow：保持压缩前后的可唤起证据覆盖；下一步聚焦 cell-level response-preserving budget routing |
 | 核心 baseline | StreamMeCo、MemForest、Mem0、M3-Agent |
 | 评测基准 | 纯文本 LoCoMo，多模态 MemEye |
-| 当前阶段 | 文档和方向已收敛，代码与实验尚未开始 |
+| 当前阶段 | LoCoMo sample0 已有 Mem0 / MemForest / RF-URB prune-only 初步结果；正在从 prune-only 转向 routed compression |
+
+## 最新结果快照
+
+| 日期 | 结果 | 关键结论 | 链接 |
+|---|---|---|---|
+| 2026-07-09 | RF-URB random node probe-response inspection | 随机 15 个 node 的 URB 10 维响应与文本类型存在弱到中等对应关系，但 top-1 不够尖锐；不建议把单 node role 当硬标签，更适合 cell 级聚合与 response-loss 预算分配。 | `results/recallflow_urb_random_node_probe_response_2026-07-09.md` |
+| 2026-07-09 | LoCoMo sample0 keep70 QA | RF-URB prune-only 整体 Acc 低于 MemForest keep70 2.63pp，但 F1/BLEU1 接近；损失集中在 cat 3 / cat 4，提示纯删除式压缩会伤多跳/时间链。 | `results/memforest_sample0_keep70_2026-07-08.md` |
 
 ## 当前方法假设：RecallFlow
+
+> 📌 **Research Survey 红线更新（2026-07-06, Cursor）**：下列 assume 中「MemForest = EventTree + MST Merging + AGPR」「LoCoMo 支持 online 评测」两点与 `docs/research_notes.md` 2026-07-06 版本不一致；red-line 列表见 `docs/research_notes.md` §4 与 `docs/online_evaluation_protocols.md`。若 Main Control / Paper Writing 引用本节，请同步检查最新红线。
 
 | 组件 | 含义 | 需要验证 |
 |---|---|---|
@@ -37,14 +46,15 @@
 
 ## 近期 TODO
 
-| 优先级 | 任务 | 产出 |
-|---:|---|---|
-| P0 | 深读 StreamMeCo / MemForest | 差异表、复现入口、不能 claim 清单 |
-| P0 | 调查 LoCoMo / MemEye online update 支持程度 | 是否需要自建 streaming wrapper |
-| P0 | 实现 RecallFlow v0 | probe generator、response matrix、coreset、capsule builder |
-| P0 | 跑 RecallFlow 最小实验 | LoCoMo / Mem0 小样本 budget-accuracy 曲线 |
-| P1 | 固定 Qwen 系列评测模型 | model id、调用方式、成本估计 |
-| P1 | 跑 LoCoMo / MemEye smoke test | 第一版评测可行性结果 |
+| 优先级 | 任务 | 产出 | 状态 |
+|---:|---|---|---|
+| P0 | 深读 StreamMeCo / MemForest | 差异表、复现入口、不能 claim 清单 | ✅ 完成（`docs/research_notes.md` §3） |
+| P0 | 调查 LoCoMo / MemEye online update 支持程度 | 是否需要自建 streaming wrapper | ✅ 完成（`docs/online_evaluation_protocols.md`）—结论：**需要自建 wrapper，参考 Neuromem** |
+| P0 | 实现 RecallFlow v0 | probe generator、response matrix、coreset、capsule builder | ✅ 骨架已出现，URB runner 需从 `external/` 回流 |
+| P0 | 跑 RecallFlow 最小实验 | LoCoMo / Mem0 小样本 budget-accuracy 曲线 | ✅ sample0 keep70 初步完成 |
+| P1 | 固定 Qwen 系列评测模型 | model id、调用方式、成本估计 | ✅ 当前 LoCoMo sample0 使用 DashScope `qwen3.6-27b` |
+| P1 | 设计 cell-level routed compression | cell profile、response-loss curve、budget allocation | 🔜 下一轮优先 |
+| P1 | 跑 LoCoMo / MemEye smoke test | 第一版评测可行性结果 | LoCoMo sample0 已跑；MemEye 待跑 |
 
 ## 风险和约束
 
@@ -60,5 +70,5 @@
 
 1. 完成 StreamMeCo / MemForest 的方法对照表。
 2. 给出 LoCoMo / MemEye 是否支持 online evaluation 的明确结论。
-3. 跑出一版 response fingerprint vs embedding clustering 的对比。
-4. 形成 RecallFlow v0 的最小实现和 budget-accuracy 曲线。
+3. 将 `external/.../RecallFlow_URB.py` 的可复用逻辑回流到 `code/compression/`。
+4. 跑出 cell-level response-loss budget routing 的 sample0 对比。
