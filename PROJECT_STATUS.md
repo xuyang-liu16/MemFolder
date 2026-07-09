@@ -16,6 +16,8 @@
 
 ## 当前方法假设：RecallFlow
 
+> 📌 **Research Survey 红线更新（2026-07-06, Cursor）**：下列 assume 中「MemForest = EventTree + MST Merging + AGPR」「LoCoMo 支持 online 评测」两点与 `docs/research_notes.md` 2026-07-06 版本不一致；red-line 列表见 `docs/research_notes.md` §4 与 `docs/online_evaluation_protocols.md`。若 Main Control / Paper Writing 引用本节，请同步检查最新红线。
+
 | 组件 | 含义 | 需要验证 |
 |---|---|---|
 | Recall coverage | 压缩后仍能检索到未来问题需要的证据 | evidence recall@k 是否优于 embedding / recency baseline |
@@ -37,14 +39,14 @@
 
 ## 近期 TODO
 
-| 优先级 | 任务 | 产出 |
-|---:|---|---|
-| P0 | 深读 StreamMeCo / MemForest | 差异表、复现入口、不能 claim 清单 |
-| P0 | 调查 LoCoMo / MemEye online update 支持程度 | 是否需要自建 streaming wrapper |
-| P0 | 实现 RecallFlow v0 | probe generator、response matrix、coreset、capsule builder |
-| P0 | 跑 RecallFlow 最小实验 | LoCoMo / Mem0 小样本 budget-accuracy 曲线 |
-| P1 | 固定 Qwen 系列评测模型 | model id、调用方式、成本估计 |
-| P1 | 跑 LoCoMo / MemEye smoke test | 第一版评测可行性结果 |
+| 优先级 | 任务 | 产出 | 状态 |
+|---:|---|---|---|
+| P0 | 深读 StreamMeCo / MemForest | 差异表、复现入口、不能 claim 清单 | ✅ 完成（`docs/research_notes.md` §3） |
+| P0 | 调查 LoCoMo / MemEye online update 支持程度 | 是否需要自建 streaming wrapper | ✅ 完成（`docs/online_evaluation_protocols.md`）—结论：**需要自建 wrapper，参考 Neuromem** |
+| P0 | 实现 RecallFlow v0 | probe generator、response matrix、coreset、capsule builder | ⏳ Coding 未启动 |
+| P0 | 跑 RecallFlow 最小实验 | LoCoMo / Mem0 小样本 budget-accuracy 曲线 | ⏳ Experiment 未启动 |
+| P1 | 固定 Qwen 系列评测模型 | model id、调用方式、成本估计 | ⏳ |
+| P1 | 跑 LoCoMo / MemEye smoke test | 第一版评测可行性结果 | ⏳ |
 
 ## 风险和约束
 
