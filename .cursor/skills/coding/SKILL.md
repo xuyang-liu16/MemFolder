@@ -65,4 +65,10 @@ Plus evaluation adapters, baseline wrappers, and at least one smoke test per mod
 
 <!-- Experience Notes start -->
 
+- **2026-07-06** — recallflow v0: 在 fixture 上 8 baseline × 3 budget = 24 row dry-run 完成；`recallflow_full` retained> budget 是 exception 设计预期行为，不是 bug；后续 v1 ablation 要把 exception_total 加到 diagnostics 的硬 cap 里（参考 docs/recallflow_implementation_guide.md §11）。
+- **2026-07-06** — embedding 后端：默认 numpy 哈希 + L2-normalize（hash 种子=L2-stable），接口预留 `sentence_transformers_embed`；smoke test 不依赖外部模型。
+- **2026-07-06** — fixture 数据必须是单行 JSONL（一行一条记录）；多行 JSONL 会让 `json.loads(line)` 在第一个 `{` 之后报 column 38 错误，已用 Python 脚本 compact 化修复。
+- **2026-07-06** — adapter / baseline / 入口脚本的接口协议：`nodes, probes → CompressedMemory{capsules, retained_node_ids, archive_node_ids, diagnostics}`；通过 `REGISTRY` + `make_compressor(name)` 统一 dispatch，避免入口 if/else 分发。
+- **2026-07-06** — leakage guard：`assert_no_leakage(probes, forbidden=test_questions)` 在 adapter `collect_test_questions()` 之后调用；CI 重点检查 fixture 里没有 test question 字符串。
+
 <!-- Experience Notes end -->
