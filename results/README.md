@@ -4,6 +4,24 @@ This folder stores shareable small-scale outputs produced during v0
 development. v0 outputs only dry-run compression diagnostics; QA / evidence
 metrics come in v1.
 
+## Latest Result — RecallFlow-NC response-merge on LoCoMo sample0
+
+**Date:** 2026-07-12  
+**Task:** LoCoMo sample0 memory compression, Mem0 search QA, category 5 skipped by official `evals.py`  
+**Result card:** [`recallflow_nc_response_merge_sample0_20260712_summary.md`](recallflow_nc_response_merge_sample0_20260712_summary.md)
+
+| Method | sample0 nodes | Acc | BLEU1 | F1 |
+|---|---:|---:|---:|---:|
+| Full Mem0 | 733 | 75.0% | 42.6% | 52.0% |
+| MemForest keep70 | 529 | 75.0% | 41.6% | 48.3% |
+| MemForest keep50 | 374 | 71.1% | 41.1% | 47.6% |
+| Old NC prune-only keep70 | 513 | 75.0% | 43.4% | 50.1% |
+| Old NC prune-only keep50 | 366 | 69.1% | 38.2% | 44.9% |
+| **New NC response-merge keep70** | **513** | **76.3%** | **42.9%** | **49.1%** |
+| **New NC response-merge keep50** | **366** | **72.4%** | **40.2%** | **47.4%** |
+
+Key takeaway: response-merge improves the previous NC prune-only method, especially at keep50, and has the best sample0 LLM-judge accuracy at keep70. At keep50 it beats MemForest on accuracy but is slightly lower on BLEU1/F1.
+
 ## Files
 
 | File | What it contains |
