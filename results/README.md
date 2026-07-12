@@ -4,22 +4,23 @@ This folder stores shareable small-scale outputs produced during v0
 development. v0 outputs only dry-run compression diagnostics; QA / evidence
 metrics come in v1.
 
-## Latest Results — RecallFlow-NC response-merge on LoCoMo sample0-1
+## Latest Result — LoCoMo sample1 five-run comparison
 
 **Date:** 2026-07-12  
-**Task:** LoCoMo sample0-1 memory compression, Mem0 search QA, category 5 skipped by official `evals.py`  
-**Result cards:** [`sample0`](recallflow_nc_response_merge_sample0_20260712_summary.md), [`sample1`](recallflow_nc_response_merge_sample1_20260712_summary.md)
+**Task:** LoCoMo sample1, Full context vs MemForest vs RecallFlow NC, Mem0 search QA, category 5 skipped by official `evals.py`  
+**Result card:** [`locomo_sample1_five_run_comparison_20260712.md`](locomo_sample1_five_run_comparison_20260712.md)
 
-| Sample | Budget | Nodes before | Nodes after | Eval n | Acc | BLEU1 | F1 |
-|---|---|---:|---:|---:|---:|---:|---:|
-| sample0 | keep70 | 733 | 513 | 152 | 76.3% | 42.9% | 49.1% |
-| sample0 | keep50 | 733 | 366 | 152 | 72.4% | 40.2% | 47.4% |
-| **sample1** | **keep70** | **561** | **393** | **81** | **81.5%** | **47.9%** | **56.5%** |
-| **sample1** | **keep50** | **561** | **280** | **81** | **74.1%** | **42.9%** | **52.6%** |
+| Method | Nodes after | Eval n | Acc | BLEU1 | F1 |
+|---|---:|---:|---:|---:|---:|
+| Full context | 561 | 81 | 82.7% | 50.2% | 59.9% |
+| MemForest keep70 | 393 | 81 | 79.0% | 49.1% | 57.7% |
+| MemForest keep50 | 281 | 81 | 75.3% | 48.3% | 55.8% |
+| **RecallFlow NC keep70** | **393** | **81** | **81.5%** | **47.9%** | **56.5%** |
+| RecallFlow NC keep50 | 280 | 81 | 74.1% | 42.9% | 52.6% |
 
-Key takeaway: sample1 keep70 is currently the strongest response-merge run, with `81.5%` LLM-judge accuracy and `56.5%` F1 after retaining 393/561 nodes. The more aggressive keep50 budget keeps accuracy at `74.1%` but drops category 1 and 4 performance.
+Key takeaway: Full context is still the sample1 upper bound. At the same keep70 retained-node budget, RecallFlow NC improves LLM-judge accuracy over MemForest (`81.5%` vs `79.0%`) but trails MemForest on BLEU1/F1. At keep50, RecallFlow NC is below MemForest across headline metrics.
 
-Sample0 comparison against existing baselines:
+Earlier sample0 response-merge comparison:
 
 | Method | sample0 nodes | Acc | BLEU1 | F1 |
 |---|---:|---:|---:|---:|
@@ -40,8 +41,8 @@ Key takeaway: response-merge improves the previous NC prune-only method, especia
 | `locomo_v0_dryrun.jsonl` | 24 rows = 8 methods × 3 budgets (0.25 / 0.5 / 0.75), LoCoMo fixture. |
 | `memforest_sample0_keep70_2026-07-08.md` | LoCoMo sample0 MemForest keep70 result card. |
 | `recallflow_nc_response_merge_sample0_20260712_summary.md` | LoCoMo sample0 response-merge keep70/keep50 compression and QA result card. |
-| `recallflow_nc_response_merge_sample1_20260712_summary.md` | LoCoMo sample1 response-merge keep70/keep50 compression and QA result card. |
-| `recallflow_nc_response_merge_*_diagnostics.jsonl` | Small compression diagnostics for response-merge runs; raw stores and QA dumps stay under `external/` and are not committed. |
+| `locomo_sample1_five_run_comparison_20260712.md` | LoCoMo sample1 five-run comparison: Full context, MemForest keep70/keep50, RecallFlow NC keep70/keep50. |
+| `recallflow_nc_response_merge_*_diagnostics.jsonl` | Small sample0 compression diagnostics for response-merge runs; raw stores and QA dumps stay under `external/` and are not committed. |
 | `recallflow_urb_random_node_probe_response_2026-07-09.md` | Random 15-node inspection of RecallFlow-URB 10-dimensional response distributions and metadata. |
 
 ## Latest Insight (2026-07-09)
