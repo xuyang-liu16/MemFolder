@@ -4,11 +4,22 @@ This folder stores shareable small-scale outputs produced during v0
 development. v0 outputs only dry-run compression diagnostics; QA / evidence
 metrics come in v1.
 
-## Latest Result — RecallFlow-NC response-merge on LoCoMo sample0
+## Latest Results — RecallFlow-NC response-merge on LoCoMo sample0-1
 
 **Date:** 2026-07-12  
-**Task:** LoCoMo sample0 memory compression, Mem0 search QA, category 5 skipped by official `evals.py`  
-**Result card:** [`recallflow_nc_response_merge_sample0_20260712_summary.md`](recallflow_nc_response_merge_sample0_20260712_summary.md)
+**Task:** LoCoMo sample0-1 memory compression, Mem0 search QA, category 5 skipped by official `evals.py`  
+**Result cards:** [`sample0`](recallflow_nc_response_merge_sample0_20260712_summary.md), [`sample1`](recallflow_nc_response_merge_sample1_20260712_summary.md)
+
+| Sample | Budget | Nodes before | Nodes after | Eval n | Acc | BLEU1 | F1 |
+|---|---|---:|---:|---:|---:|---:|---:|
+| sample0 | keep70 | 733 | 513 | 152 | 76.3% | 42.9% | 49.1% |
+| sample0 | keep50 | 733 | 366 | 152 | 72.4% | 40.2% | 47.4% |
+| **sample1** | **keep70** | **561** | **393** | **81** | **81.5%** | **47.9%** | **56.5%** |
+| **sample1** | **keep50** | **561** | **280** | **81** | **74.1%** | **42.9%** | **52.6%** |
+
+Key takeaway: sample1 keep70 is currently the strongest response-merge run, with `81.5%` LLM-judge accuracy and `56.5%` F1 after retaining 393/561 nodes. The more aggressive keep50 budget keeps accuracy at `74.1%` but drops category 1 and 4 performance.
+
+Sample0 comparison against existing baselines:
 
 | Method | sample0 nodes | Acc | BLEU1 | F1 |
 |---|---:|---:|---:|---:|
@@ -28,6 +39,9 @@ Key takeaway: response-merge improves the previous NC prune-only method, especia
 |---|---|
 | `locomo_v0_dryrun.jsonl` | 24 rows = 8 methods × 3 budgets (0.25 / 0.5 / 0.75), LoCoMo fixture. |
 | `memforest_sample0_keep70_2026-07-08.md` | LoCoMo sample0 MemForest keep70 result card. |
+| `recallflow_nc_response_merge_sample0_20260712_summary.md` | LoCoMo sample0 response-merge keep70/keep50 compression and QA result card. |
+| `recallflow_nc_response_merge_sample1_20260712_summary.md` | LoCoMo sample1 response-merge keep70/keep50 compression and QA result card. |
+| `recallflow_nc_response_merge_*_diagnostics.jsonl` | Small compression diagnostics for response-merge runs; raw stores and QA dumps stay under `external/` and are not committed. |
 | `recallflow_urb_random_node_probe_response_2026-07-09.md` | Random 15-node inspection of RecallFlow-URB 10-dimensional response distributions and metadata. |
 
 ## Latest Insight (2026-07-09)
