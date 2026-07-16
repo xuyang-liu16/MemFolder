@@ -3,6 +3,39 @@
 > **目标会议**：ICLR 2027 | **核心方法**：RecallFlow
 > **协作环境**：Cursor + Claude Code + Codex（每个 role 可由任意一个 agent tool 担任）
 
+> [!IMPORTANT]
+> **LoCoMo sample0-9 full matrix results are available (updated 2026-07-16).**  
+> Official comparison scope filters out category 5. `sample0`, `sample1`, and `sample2` use the 2026-07-14 full-grid versions by experiment-control decision; `sample3` to `sample9` use the completed relay/no-thinking runs.  
+> Main artifact: [`sample0-9 weighted summary`](./results/locomo_sample0_to_9_weighted_mixed_20260716.md).
+
+## 🔥 Latest LoCoMo sample0-9 Results
+
+Total official `n=1540`, weighted by each sample's non-category-5 QA count.
+
+| Method | total n | LLM Acc | F1 | BLEU1 |
+|---|---:|---:|---:|---:|
+| Full Context | 1540 | 0.7208 | 0.5161 | 0.4323 |
+| MemForest keep70 | 1540 | 0.7052 | 0.5008 | 0.4233 |
+| MemForest keep50 | 1540 | 0.7065 | 0.4956 | 0.4184 |
+| MemForest keep30 | 1540 | 0.6916 | 0.4761 | 0.4009 |
+| RecallFlow-NC keep70 | 1540 | 0.7110 | 0.5011 | 0.4242 |
+| RecallFlow-NC keep50 | 1540 | 0.7136 | 0.4961 | 0.4169 |
+| RecallFlow-NC keep30 | 1540 | 0.6831 | 0.4849 | 0.4079 |
+
+**Current read:** Full Context remains the upper bound. RecallFlow-NC keep50 has the best compressed weighted LLM Acc (`0.7136`), ahead of MemForest keep50 (`0.7065`) and MemForest keep70 (`0.7052`), while MemForest keep70 is still slightly stronger on BLEU1 than RecallFlow-NC keep50.
+
+Per-sample result cards:
+[`sample0`](./results/locomo_sample0_fullgrid_2026-07-14.md) ·
+[`sample1`](./results/locomo_sample1_fullgrid_2026-07-14.md) ·
+[`sample2`](./results/locomo_sample2_fullgrid_2026-07-14.md) ·
+[`sample3`](./results/locomo_sample3_relay_nothink_20260715.md) ·
+[`sample4`](./results/locomo_sample4_relay_nothink_20260715.md) ·
+[`sample5`](./results/locomo_sample5_relay_nothink_20260715.md) ·
+[`sample6`](./results/locomo_sample6_relay_nothink_side_20260715.md) ·
+[`sample7`](./results/locomo_sample7_relay_nothink_side_20260715.md) ·
+[`sample8`](./results/locomo_sample8_relay_nothink_side_20260715.md) ·
+[`sample9`](./results/locomo_sample9_relay_nothink_side_20260716.md).
+
 ---
 
 ## 🎯 一句话
