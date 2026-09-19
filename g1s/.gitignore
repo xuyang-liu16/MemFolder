@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+# never commit a real config: it holds endpoints and API keys
+config.json
+config.local.json
+*.local.json
