@@ -4,6 +4,7 @@
     python -m g1s run --keep 0.3 --samples 0,1
     python -m g1s run --until chaining         # stop before spending merge tokens
     python -m g1s run --matching greedy        # an ablation arm
+    python -m g1s run --tele                   # compact-encoding step 5 (g1s.tele)
     python -m g1s inspect --sample 0           # what a finished plan looks like
     python -m g1s compare --keep 0.3 0.5 0.7   # finished arms, side by side
 
@@ -22,6 +23,7 @@ from .pipeline import ALL_SAMPLES, STEPS, Layout, RunConfig, compare, run
 from .plan import Plan, group_size_stats
 from .settings import ConfigError, Settings
 from .steps.s4_chaining import ChainingConfig
+from .tele import TeleConfig
 
 
 def parse_samples(text: str) -> tuple[int, ...]:
@@ -57,6 +59,7 @@ def config_of(args: argparse.Namespace) -> RunConfig:
         merge_workers=args.merge_workers,
         judge_workers=args.judge_workers,
         top_k=args.top_k,
+        tele=TeleConfig(target_ratio=args.tele_target_ratio) if args.tele else None,
     )
 
 
@@ -76,6 +79,12 @@ def add_common(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--merge-workers", type=int, default=8)
     parser.add_argument("--judge-workers", type=int, default=4)
     parser.add_argument("--top-k", type=int, default=30, help="retrieval depth at QA time")
+    # TELE: compact-encoding step 5 instead of the natural-language summary.
+    # Off by default; it trades answer quality for stored tokens (see g1s.tele).
+    parser.add_argument("--tele", action="store_true",
+                        help="compress each group to a compact encoding instead of a summary")
+    parser.add_argument("--tele-target-ratio", type=float, default=TeleConfig.target_ratio,
+                        help="soft token budget as a fraction of the group's source tokens")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -143,6 +152,7 @@ def main(argv: list[str] | None = None) -> int:
             grounding_tag=base.grounding_tag,
             grounding_dir=base.grounding_dir,
             chaining=base.chaining,
+            tele=base.tele,
             top_k=base.top_k,
         )
         for keep in args.keeps

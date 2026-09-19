@@ -14,6 +14,12 @@ and each step's only contract with the next is a JSON *plan* file (see
 
 Steps 1-5 are pure method.  Steps 6-7 are the evaluation harness and are the
 only place where the vendored Mem0 evaluation code is touched.
+
+One optional module plugs into this line rather than extending it: ``g1s.tele``
+supplies an alternative step 5 that compiles each group into a compact encoding
+instead of a summary, trading some answer quality for a third to a half of the
+stored tokens.  It reads the same plan and fills the same field, so nothing
+downstream changes.  Off by default; ``--tele`` turns it on.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"

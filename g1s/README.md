@@ -84,7 +84,13 @@ g1s/
       s5_merge.py        each group      -> one memory               (LLM)
       s6_materialize.py  the plan        -> a compressed vector store
       s7_evaluate.py     that store      -> retrieval QA + scores
+    tele/                  optional step 5: a compact encoding instead of prose
+      facts.py             group text      -> checkable facts + triage  (LLM)
+      compress.py          the compile / verify loop
+      legend.py            teaches the QA reader the grammar
+      prompts.py           the five frozen prompts
   tests/test_method.py   24 tests, no network, no store, no API key
+  tests/test_tele.py     17 more, same rules
 ```
 
 Every step reads and writes one plan JSON, so any step can be inspected,
@@ -100,6 +106,7 @@ cp config.example.json ~/.g1s.json     # then fill in real endpoints and keys
 python -m g1s run --config ~/.g1s.json                  # the main line, 10 samples
 python -m g1s run --config ~/.g1s.json --keep 0.3
 python -m g1s run --until chaining                      # stop before spending merge tokens
+python -m g1s run --tele                                # compact encodings instead of summaries
 python -m g1s inspect --sample 0                        # what a finished plan looks like
 python -m g1s compare --keeps 0.3 0.5 0.7               # finished arms, side by side
 python -m pytest tests -q
@@ -127,6 +134,77 @@ The three switches that define the main line are also the ablation axes:
 
 Each combination writes to its own directory (`g1s_keep50_full_anchor_hungarian`),
 so arms never overwrite one another.
+
+## TELE — compact encodings instead of summaries (optional)
+
+G1S halves the number of memories, but not the number of tokens. Measured over
+all ten samples, step 5's natural-language summary comes out **larger than the
+memories it replaces** — 1.07–1.12× the source tokens. The store holds fewer,
+longer entries.
+
+`--tele` swaps step 5 for a different writer. Instead of readable English, each
+group is compiled into a compact encoding aimed at the reader *model*:
+
+```
+@2023-05-08 Melanie bought kiln -> installed in garage; ~fired yet
+```
+
+Dropping things is the point, so the module has to know what it dropped. Three
+roles run over each group:
+
+- **planner** — extract the group's atomic facts, each with a verification
+  question, an `importance` label and an `inferable` flag.
+- **compiler** — write the encoding under a soft token budget, given the facts
+  and told which to protect and which to drop first.
+- **verifier** — answer the planner's questions from the encoding *alone*
+  (never the source), then judge which facts survived.
+
+Facts that are important and not inferable are **required**. If the blind
+reader cannot recover one, the compiler is sent back with a MUST-FIX list. At
+most three rounds; the shortest clean round wins. A group whose best encoding is
+no smaller than its source keeps its source text.
+
+```bash
+python -m g1s run --tele                          # keep 0.5, budget 0.80
+python -m g1s run --tele --keep 0.3 --tele-target-ratio 0.80
+```
+
+TELE arms get their own directory (`g1s_keep50_..._hungarian_tele_t080`), so a
+native arm and its TELE counterpart never share a plan or a store.
+
+### What it costs
+
+All ten samples, `--tele-target-ratio 0.80`, against the 61 273 source tokens of
+the uncompressed library:
+
+| keep | native step 5 | TELE | tokens saved | Δ accuracy | Δ BLEU-1 | Δ F1 |
+|---|---|---|---|---|---|---|
+| 0.3 | 67 914 (1.11×) | 35 384 (0.58×) | −47.9% | −6.4 pts | −0.083 | −0.094 |
+| 0.5 | 68 660 (1.12×) | 41 937 (0.68×) | −38.9% | −2.0 pts | −0.069 | −0.072 |
+| 0.7 | 65 482 (1.07×) | 41 406 (0.68×) | −36.8% | −0.7 pts | −0.061 | −0.065 |
+
+It is a real trade, not a free win, which is why it is off by default: TELE buys
+a third to a half of the stored text with some answer quality, and the trade
+gets cheaper the more memories are kept.
+
+Two things are worth knowing before running an arm:
+
+- **The QA reader must be told the grammar.** `g1s.tele.legend` patches the
+  decode legend into the evaluation overlay's answer prompt before step 7 runs.
+  Without it the reader sees an encoding it has never been taught to read and
+  scores it as noise — the method gets blamed for a prompting bug.
+- **Singletons are compressed too**, unlike the native step 5, which passes
+  one-member groups through untouched. A single memory is where the grammar pays
+  best, and at keep 0.5 about half of all groups have one member.
+
+These numbers come from the standalone `babel_runner.py` compiles of 2026-09-16,
+whose algorithm this module reproduces. Two details differ and are worth
+recording: those runs carried two different design tags for the same recipe
+(`babel_grammar_v7_...` at keep 0.5, `babel_grammar_v11_...` at keep 0.3 and
+0.7 — the tag was edited between runs and neither matched the code), and they
+ordered a group's memories by raw timestamp string where this module uses the
+same chronological order as step 5. Re-measure before quoting the table as this
+package's own result.
 
 ## Configuration
 
@@ -165,7 +243,6 @@ and every group is emitted in node order. The plan carries a `plan_hash` and a
 
 Deliberately excluded, because none of it is on the main line:
 
-- the v12 / Babel text-compression overlay (a separate method, not a G1S step)
 - ~15 ablation arms that were run and rejected (k-means anchors, random anchors,
   min-max anchors, agglomerative assignment, Bellman route schedules, the
   `-log(affinity)` geometry variant, sparse-control arms)

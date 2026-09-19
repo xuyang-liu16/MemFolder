@@ -23,6 +23,12 @@ other than JSON is produced.
 Resumability is per artifact, not per run: every step checks for its own
 finished output and returns it.  Re-running a completed sample costs no API
 calls, and an interrupted run continues where it stopped.
+
+The one optional substitution is at step 5: with ``RunConfig.tele`` set, the
+group is written as a TELE compact encoding instead of a natural-language
+summary (:mod:`g1s.tele`).  It is a different writer for the same slot -- the
+plan it reads and the field it fills are unchanged -- so it needs no step of
+its own, and the arm gets its own directory so the two can be compared.
 """
 from __future__ import annotations
 
@@ -47,6 +53,7 @@ from .steps import (
     s7_evaluate,
 )
 from .steps.s4_chaining import ChainingConfig
+from .tele import TeleConfig, compress_plan, patch_overlay
 
 #: The ten LoCoMo conversations.
 ALL_SAMPLES = tuple(range(10))
@@ -66,22 +73,31 @@ class RunConfig:
     #: keep ratio or on any chaining switch, so sharing one is always sound.
     grounding_dir: Path | None = None
     chaining: ChainingConfig = field(default_factory=ChainingConfig)
+    #: Opt-in: replace step 5's natural-language summary with a TELE compact
+    #: encoding.  ``None`` is the main line.  See :mod:`g1s.tele`.
+    tele: TeleConfig | None = None
     merge_workers: int = 8
     judge_workers: int = 4
     top_k: int = s7_evaluate.TOP_K
 
     @property
     def name(self) -> str:
-        """Directory name of the arm: ``g1s_keep50_full_anchor_hungarian``."""
-        return "_".join(
-            [
-                "g1s",
-                plan_io.keep_tag(self.keep_ratio),
-                self.chaining.affinity,
-                self.chaining.gating,
-                self.chaining.matching,
-            ]
-        )
+        """Directory name of the arm: ``g1s_keep50_full_anchor_hungarian``.
+
+        A TELE arm appends its budget (``..._hungarian_tele_t080``) so it never
+        shares a directory, a plan or a store with the native arm it is
+        compared against.
+        """
+        parts = [
+            "g1s",
+            plan_io.keep_tag(self.keep_ratio),
+            self.chaining.affinity,
+            self.chaining.gating,
+            self.chaining.matching,
+        ]
+        if self.tele is not None:
+            parts += ["tele", self.tele.tag]
+        return "_".join(parts)
 
     def describe(self) -> dict[str, Any]:
         return {
@@ -97,6 +113,7 @@ class RunConfig:
             "topk": self.chaining.topk,
             "partition_seed": self.chaining.seed,
             "top_k_retrieval": self.top_k,
+            "tele": vars(self.tele) if self.tele is not None else None,
         }
 
 
@@ -230,11 +247,19 @@ def step_chaining(base: Plan, scope: Scope, layout: Layout, config: RunConfig) -
     return plan
 
 
-def step_merge(plan: Plan, scope: Scope, chat: ChatClient, layout: Layout, workers: int) -> Plan:
-    """5 -- one group, one prompt, one memory."""
+def step_merge(plan: Plan, scope: Scope, chat: ChatClient, layout: Layout, config: RunConfig) -> Plan:
+    """5 -- one group, one prompt, one memory.
+
+    TELE arms substitute a different writer here and nothing else: it consumes
+    the plan step 4 produced and fills in the same ``final_text`` field, so
+    steps 6 and 7 cannot tell the two apart.
+    """
     if plan.merged:
         return plan
-    plan = s5_merge.merge_plan(plan, scope, chat, workers=workers)
+    if config.tele is not None:
+        plan = compress_plan(plan, scope, chat, config.tele, workers=config.merge_workers)
+    else:
+        plan = s5_merge.merge_plan(plan, scope, chat, workers=config.merge_workers)
     plan.write(layout.plan(scope.sample))
     return plan
 
@@ -254,7 +279,16 @@ def step_materialize(
 
 
 def step_evaluate(sample: int, layout: Layout, config: RunConfig) -> dict[str, Any]:
-    """7 -- retrieve and score against the compressed store."""
+    """7 -- retrieve and score against the compressed store.
+
+    A TELE arm patches the decode legend into the evaluation overlay first.
+    ``prepare_overlay`` is built once per run directory and then reused, so
+    doing it here means the overlay ``retrieve`` picks up is already patched --
+    step 7 itself needs to know nothing about TELE.
+    """
+    if config.tele is not None:
+        s7_evaluate.prepare_overlay(layout.settings.eval_root, layout.run_dir)
+        patch_overlay(layout.run_dir)
     paths = s7_evaluate.QaPaths.under(layout.qa_dir, sample)
     s7_evaluate.retrieve(
         layout.settings,
@@ -306,7 +340,7 @@ def run_sample(
     if stop == 3:
         return result
 
-    plan = step_merge(plan, scope, chat, layout, config.merge_workers)
+    plan = step_merge(plan, scope, chat, layout, config)
     result["merge_api_calls"] = plan.api_calls()
     if stop == 4:
         return result
