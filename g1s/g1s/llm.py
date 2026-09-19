@@ -136,7 +136,7 @@ class ChatClient:
         self.calls = 0
         self._counter_lock = threading.Lock()
 
-    def complete(self, prompt: str, *, sample: int = 0) -> str:
+    def complete(self, prompt: str, *, sample: int = 0, max_tokens: int | None = None) -> str:
         if self.cache is not None:
             hit = self.cache.get(sample, prompt)
             if hit is not None:
@@ -147,7 +147,7 @@ class ChatClient:
                 model=self.endpoint.model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0,
-                max_tokens=self.max_tokens,
+                max_tokens=max_tokens or self.max_tokens,
             )
             text = (response.choices[0].message.content or "").strip()
             if not text:
