@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/memfolder-hero.png" alt="MemFolder: related memory records become shared groups with RecordFolder, then compact encodings with ContextFolder and its verification loop." width="1100">
+<img src="docs/assets/memfolder-hero.png" alt="MemFolder overview: growing memory stores before compression; RecordFolder groups related records and ContextFolder refines their content; compact memory supports faster retrieval. Personal, research and development assistants frame the three-column illustration." width="1100">
 
 # MemFolder
 

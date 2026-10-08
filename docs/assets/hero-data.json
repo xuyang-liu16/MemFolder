@@ -1,0 +1,15 @@
+{
+  "source": "User-provided intro_figure_final_revision_v19.pptx, slide 1; manuscript Figure 1 for the reported maximum speedup",
+  "record_counts": [5000, 10000, 50000, 100000, 200000],
+  "retrieval_latency_ms": [44.69, 65.12, 254.01, 746.61, 1569.75],
+  "benchmarks": [
+    {"name": "LoCoMo", "latency_ms": [7.4, 5.2, 3.3]},
+    {"name": "LongMemEval", "latency_ms": [38, 27, 7]},
+    {"name": "PersonaMem", "latency_ms": [1900, 1030, 538]},
+    {"name": "M3 robot (100)", "latency_ms": [375, 210, 165]},
+    {"name": "M3 web (176)", "latency_ms": [205, 145, 110]}
+  ],
+  "series": ["Original", "50% record reduction", "70% record reduction"],
+  "reported_maximum_speedup": 5.34,
+  "note": "Benchmark bars use a separate scale per row. Data labels show the original supplied milliseconds. 5.34 is manuscript-reported and is not recomputed from the rounded bar labels. The storage illustration is qualitative; no storage measurements are invented."
+}
