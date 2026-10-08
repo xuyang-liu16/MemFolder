@@ -1,4 +1,9 @@
-# Scene refinement prompts
+# Archived scene-generation prompts
+
+[Figure sources](README.md)
+
+These are the recorded inputs used to create the archived watercolor artwork. The production prompts below are preserved for reference.
+
 
 Model requested: `gpt-image-2`. Quality requested: `high`.
 

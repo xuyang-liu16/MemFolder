@@ -1,14 +1,17 @@
 # Paper results
 
-[Back to the README](../README.md#main-results)
+[Documentation](README.md) · [简体中文](zh-CN/PAPER_RESULTS.md) · [README results](../README.md#full-results)
 
-The tables below reproduce all active main-result rows from the supplied manuscript: Mem0, MemOS and M3-Agent. These are paper-reported results, not a new run of the refactored release. Record reduction is the percentage of records removed; 70% reduction means 30% retained. Accuracy, average accuracy and retention are percentages. Retention is the manuscript-reported average relative to the corresponding uncompressed system.
+These tables report the manuscript's main experiments on Mem0, MemOS, and M3-Agent. They include every active result row and category score from the supplied LaTeX tables.
 
-The record-only method is labeled **MemFolder (Ours)** in the manuscript tables and corresponds to the **RecordFolder** stage. ContextFolder results are reported separately in the [context-compression figure](assets/paper-context-results.pdf).
+## How to read the tables
 
-These full tables retain the manuscript's metric abbreviations and decimal values. **Bold** and <ins>underlining</ins> reproduce the source's best/second-best formatting; the uncompressed row is a reference. Reported averages and retention are preserved rather than recalculated from rounded cells.
+- **Record reduction** is the percentage removed. A 70% reduction retains 30% of the original records.
+- **Accuracy and average accuracy** are percentages. **Retention** is the reported average relative to the corresponding uncompressed system.
+- **MemFolder (Ours)** in these tables refers to RecordFolder. The [context-compression figure](assets/paper-context-results.pdf) reports ContextFolder separately.
+- Bold and <ins>underlined</ins> values follow the source's best/second-best formatting. Averages and retention use the values reported in the paper.
 
-[Machine-readable values and provenance](assets/paper-results-data.json) · [Method figure](assets/paper-overview.pdf) · [Context results](assets/paper-context-results.pdf) · [Retrieval efficiency](assets/paper-retrieval-efficiency.pdf)
+[Exact table data](assets/paper-results-data.json) · [Method figure](assets/paper-overview.pdf) · [Context results](assets/paper-context-results.pdf) · [Retrieval efficiency](assets/paper-retrieval-efficiency.pdf)
 
 ## Mem0
 
@@ -109,8 +112,17 @@ These full tables retain the manuscript's metric abbreviations and decimal value
 | MemForest | 31.2 | 32.9 | 32.4 | 43.6 | 17.4 | 30.7 | 44.8 | 23.9 | 38.9 | 57.3 | 50.4 | 46.3 | 38.5 | 98.5 |
 | **MemFolder (Ours)** | 32.3 | 29.4 | 30.9 | 45.4 | 19.9 | **31.4** | 44.5 | 28.9 | 44.1 | 60.3 | 51.6 | **48.7** | **40.1** | **102.6** |
 
+<a id="source-consistency"></a>
+
 ## Source consistency
 
-The supplied draft has different LongMemEval scores at 50% Mem0 record reduction across sources. The main table reports RecordFolder / MemForest / ToMe as **55.0 / 51.8 / 50.8**; the context-compression figure reports their record-only reference points as **55.2 / 54.6 / 52.6**. Each asset retains its own reported values; these are not merged into a single matched comparison.
+The manuscript's main table and context-compression figure use different LongMemEval reference scores at 50% Mem0 record reduction:
 
-Source files are `Tables/main_results_mem0.tex`, `Tables/main_results_memos.tex`, `Tables/main_results_m3.tex`, `Figures/overview.pdf`, `Figures/context_compression.pdf` and `Figures/retrieval_latency.pdf`. SHA-256 fingerprints and exact table values are recorded in the provenance JSON. Existing PNG exports in the source folder were not used because they differ from the PDF figures referenced by the manuscript.
+| Source | RecordFolder | MemForest | ToMe |
+| --- | ---: | ---: | ---: |
+| Main result table | 55.0 | 51.8 | 50.8 |
+| Context-compression figure | 55.2 | 54.6 | 52.6 |
+
+Each table and figure retains its own reported values. Use the reference scores from the same source when interpreting a comparison.
+
+The table sources are `Tables/main_results_mem0.tex`, `Tables/main_results_memos.tex`, and `Tables/main_results_m3.tex`. The figure sources are `Figures/overview.pdf`, `Figures/context_compression.pdf`, and `Figures/retrieval_latency.pdf`. Their hashes and exact values are recorded in [paper-results-data.json](assets/paper-results-data.json). The README's graphical abstract is taken from the separately supplied manuscript version recorded in [paper-intro-source.json](assets/paper-intro-source.json).

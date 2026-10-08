@@ -4,174 +4,105 @@
 
 **Structure-Guided Memory Folding for Efficient Agent Memory Management**
 
-Fewer retrieval units · Shorter contexts · Verified memory encoding
+Compress stored memories, retrieve relevant history, and answer with shorter context.
 
-[![CI](https://img.shields.io/badge/CI-GitHub_Actions-173453?logo=githubactions&logoColor=white)](https://github.com/xuyang-liu16/MemFolder/actions/workflows/tests.yml) [![Python](https://img.shields.io/badge/Python-3.11%2B-173453?logo=python&logoColor=white)](pyproject.toml) [![Docs](https://img.shields.io/badge/Docs-Module_guides-247D7A)](#documentation)
+[![CI](https://img.shields.io/badge/CI-GitHub_Actions-173453?logo=githubactions&logoColor=white)](https://github.com/xuyang-liu16/MemFolder/actions/workflows/tests.yml) [![Python](https://img.shields.io/badge/Python-3.11%2B-173453?logo=python&logoColor=white)](pyproject.toml) [![Docs](https://img.shields.io/badge/Docs-Guides-247D7A)](docs/README.md)
 
 **English** | [简体中文](README.zh-CN.md)
 
-[News](#news) · [Highlights](#highlights) · [Usage](#usage) · [Full results](#full-results)
+[News](#news) · [Highlights](#highlights) · [Overview](#overview) · [Usage](#usage) · [Full results](#full-results)
 
 </div>
 
 <a id="news"></a>
 
-## 🔥 News
+## News
 
-- **2026-10-08:** The modular development release now includes experiment templates, paper figures, complete main-result tables, and English / Chinese guides.
+- **2026-10-08:** Updated the project overview, experiment guides, and complete paper results, with English and Chinese documentation.
 
 <a id="highlights"></a>
 
-## 📌 Highlights
+## Highlights
 
-- **Two stages, one shared structure.** RecordFolder consolidates related records into fewer retrieval units. ContextFolder reuses the same groups to encode their facts compactly and revise them using recovery checks.
-- **Strong record compression.** With 50% fewer records, RecordFolder retains **99.0%** of uncompressed Mem0 performance averaged across LoCoMo, LongMemEval and PersonaMem.
-- **Shorter retrieved contexts.** At the same 50% record reduction, ContextFolder further reduces tokens per record by **40.3% on LoCoMo** and **37.9% on LongMemEval** relative to RecordFolder alone.
-- **Faster retrieval.** Keeping 30% of records yields up to **5.34×** mean retrieval acceleration in the paper's five evaluated settings.
-- **Composable research infrastructure.** Swap grouping, context encoding, memory wrappers and evaluation through configuration. The framework includes Mem0, MemOS and M3 integrations, multiple baselines, and traceable experiment artifacts.
+- **Compress both record count and text length.** RecordFolder consolidates related memories; ContextFolder shortens each group's text and checks recovery of its important facts.
+- **Preserve answer quality with fewer records.** At 50% record reduction, RecordFolder retains **99.0%** of the original Mem0 system's mean accuracy across LoCoMo, LongMemEval, and PersonaMem.
+- **Read shorter context.** At that record budget, ContextFolder further reduces tokens per record by **40.3% on LoCoMo** and **37.9% on LongMemEval**, relative to RecordFolder alone.
+- **Retrieve faster.** Keeping 30% of records gives up to **5.34×** mean retrieval speedup across the paper's five evaluation settings.
+
+The figures and values below report the paper's experiments. The repository provides configurable methods, data loaders, and evaluation tools for running your own comparisons.
+
+<a id="overview"></a>
+
+## Overview
+
+As an agent accumulates memories, it has more records to search and more text to read. MemFolder addresses both costs in sequence: first consolidate related records, then encode their content more compactly.
 
 <div align="center">
-<a href="docs/assets/paper-intro.png"><img src="docs/assets/paper-intro.png" alt="Figure 1 from the supplied manuscript: two memory cost bottlenecks, the limitations of one-axis compression, and MemFolder folding both record count and context length." width="1100"></a>
+<a href="docs/assets/paper-intro.png"><img src="docs/assets/paper-intro.png" alt="MemFolder graphical abstract: record count and text length create separate costs; RecordFolder and ContextFolder reduce them together." width="1100"></a>
 </div>
 
-**MemFolder at a glance (Figure 1).** Reduce the number of stored records and the text within each retrieval unit. The quantitative highlights above are paper-reported; detailed comparisons are at the end of this page.
+**Graphical abstract.** RecordFolder reduces the number of retrieval units. ContextFolder reduces the text inside each unit, with fact-recovery checks guiding the encoding.
+
+The method follows the four stages shown below:
+
+1. **Load historical memory.** Preserve record content, entities, event times, and source references.
+2. **Group with RecordFolder.** Select representative memories and combine entity similarity, semantic similarity, and temporal links to consolidate related records.
+3. **Encode with ContextFolder.** Extract key facts, write a compact representation, and revise it using a verifier's answers to fact-recovery questions.
+4. **Retrieve and answer.** Search the compressed memory and pass the retrieved content to the answering model.
+
+<div align="center">
+<a href="docs/assets/paper-overview.pdf"><img src="docs/assets/paper-overview.png" alt="Method overview: historical memory, RecordFolder grouping, ContextFolder encoding and verification, then retrieval and answering. The lower panels detail both compression stages." width="1100"></a>
+</div>
+
+**Method overview.** The lower panels show anchor selection and temporal consolidation in RecordFolder, followed by fact planning, encoding, and verification in ContextFolder. Click the figure to open the PDF. See [Compression methods](docs/COMPRESSION.md) for the implementation and configuration options.
 
 <a id="usage"></a>
 <a id="quick-start"></a>
 
-## 🛠 Usage
+## Usage
 
-### 1. Install
+### Install and run an example
 
-Requires **Python 3.11+**. The core package has no mandatory third-party dependencies.
+Use Python 3.11 or newer. From a shell:
 
 ```bash
 git clone https://github.com/xuyang-liu16/MemFolder.git
 cd MemFolder
 python -m pip install -e .
-```
-
-### 2. Run the offline demo
-
-```bash
 python -m memfolder run examples/experiments/offline-demo.json
 python -m memfolder verify build/experiments/offline-demo
 ```
 
-The demo runs loading → compression → native output → retrieval → answering → evaluation, with an uncompressed control and case traces. It uses synthetic histories and a context-echo answerer; no model, API key or network access is required. Its `test_only` scores validate the workflow.
+The example runs locally on a tiny synthetic conversation. It groups records, saves the compressed memory, retrieves context, and writes evaluation and diagnostic files under `build/experiments/offline-demo`. Its `test_only` scores help check the workflow.
 
-Run multiple methods and seeds:
+### Run RecordFolder or ContextFolder
 
-```bash
-python -m memfolder matrix examples/experiments/offline-matrix.json
-```
-
-Reuse a completed, verified run:
+Install the dependencies for the supplied experiment templates:
 
 ```bash
-python -m memfolder run examples/experiments/offline-demo.json --resume
+python -m pip install -e ".[algorithms,contextfolder,evaluation]"
 ```
 
-Artifacts stay under `build/experiments/`. Verification checks source fingerprints, configuration and output integrity.
+Open [recordfolder-template.json](examples/experiments/recordfolder-template.json) or [contextfolder-template.json](examples/experiments/contextfolder-template.json). Set your dataset path, provider URLs, model names and revisions, embedding dimension, and output directory. Supply your API key through `MEMFOLDER_PROVIDER_KEY` in the current shell. The [experiment guide](docs/EXPERIMENTS.md) lists the fields and shell commands.
 
-### 3. Connect real memories and models
-
-```bash
-python -m pip install -e ".[algorithms,contextfolder,qdrant,evaluation]"
-```
-
-Start from the [RecordFolder template](examples/experiments/recordfolder-template.json) or [ContextFolder template](examples/experiments/contextfolder-template.json). Before running, replace the dataset and output paths, provider URLs, model names, revisions and embedding dimensions. Supply the provider key through the `MEMFOLDER_PROVIDER_KEY` environment variable. The templates' `REPLACE_*` and `api.example.invalid` values are placeholders.
-
-After configuring the templates:
+Run the configured template:
 
 ```bash
 python -m memfolder run examples/experiments/recordfolder-template.json
 python -m memfolder run examples/experiments/contextfolder-template.json
 ```
 
-For an existing store, select a [native loader](docs/LOADING.md) with the `bank-initializer`. See the [experiment guide](docs/EXPERIMENTS.md) for assembly and the [wrapper guide](docs/WRAPPERS.md) for Mem0, MemOS and M3 formats. Benchmark questions and gold answers remain outside memory compression.
+Both templates retain half of the eligible records and evaluate the original and compressed memories. ContextFolder also measures text length with the configured tokenizer. To use an existing Mem0, MemOS, or M3 store, follow [Loading memories](docs/LOADING.md).
 
-<a id="compose-an-experiment"></a>
+### Compare and inspect runs
 
-### 4. Compose a different method
-
-Record grouping and context writing are independent choices. For example, use ToMe groups with ContextFolder encoding by changing these fields in a complete configuration:
-
-```json
-{
-  "compression": {
-    "planner": {"plugin": "tome"},
-    "operator": {"plugin": "contextfolder-operator"}
-  },
-  "run": {
-    "mode": "repeat",
-    "budgets": [{"unit": "nodes", "ratio": 0.5}]
-  }
-}
+```bash
+python -m memfolder matrix examples/experiments/offline-matrix.json
+python -m memfolder run examples/experiments/offline-demo.json --resume
+python -m memfolder case build/experiments/offline-demo --dataset-id locomo --sample-id demo --question-id demo:0 --output build/cases/demo-question
 ```
 
-This is a configuration fragment; retain the template's features, wrapper, services, Reader and Evaluator. `ratio: 0.5` is a **record budget**. ContextFolder's token target is configured separately and is a soft target. ToMe text compression uses repeated rounds with fresh embeddings of rewritten text. See the [ToMe + ContextFolder recipe](examples/recipes/tome-with-contextfolder.json).
-
-Set `run.evaluate_source` to `true` for an uncompressed control using the same Reader and Evaluator. Keep retrieval, prompts and scoring fixed when comparing compression methods.
-
-<details>
-<summary><b>Method overview and software architecture</b></summary>
-
-<a id="paper"></a>
-
-<div align="center">
-<a href="docs/assets/paper-overview.pdf"><img src="docs/assets/paper-overview.png" alt="Paper method overview: RecordFolder uses complementary anchors and entity-aware temporal groups; ContextFolder plans facts, compresses each group and verifies recovery." width="1100"></a>
-</div>
-
-The paper's RecordFolder and ContextFolder methods are available through separate Planner and Operator components. ContextFolder also accepts groups from other consolidation methods. The public paper link, author list and citation will be added when available.
-
-<a id="architecture"></a>
-
-<div align="center">
-<img src="docs/assets/memfolder-architecture.svg" alt="Software architecture: configuration assembles loaders, features, a Planner, an Operator, memory wrappers, a Reader and an Evaluator; observation spans all stages." width="1100">
-</div>
-
-The **Planner** decides what to compress; the **Operator** executes those actions; the **Wrapper** preserves native storage and graph semantics; the **Reader and Evaluator** handle retrieval, answering and scoring. Gold labels enter only the Evaluator. Each role can come from a separate plugin package.
-
-| Component | Included implementations |
-| --- | --- |
-| Paper methods | RecordFolder, ContextFolder |
-| Record baselines | ToMe, MemForest, DART memory adaptations, StreamMeCo graph compression, RandomMerge, RandomPrune, KMeansMerge, KMeansPrune |
-| Benchmarks | LoCoMo, LongMemEval, PersonaMem, M3-Bench robot/web |
-| Memory loading and wrappers | Mem0, MemOS, M3 |
-| Experiment tools | Configuration matrices, uncompressed controls, artifact verification, resume, observers and case queries |
-
-Combinations must satisfy graph, time, modality and embedding requirements. StreamMeCo covers its graph compression stage; MemForest's MST implementation and historical M3 proxy have separate recipes. See [compatibility](docs/COMPATIBILITY.md) and [method variants](docs/COMPRESSION.md).
-
-</details>
-
-<a id="extend-one-module"></a>
-
-### 5. Extend and inspect
-
-Add a complete Planner, an Operator or one nested component by implementing its interface and a factory returning a `PluginSpec`:
-
-```json
-{
-  "plugin": "my_module:build",
-  "parameters": {"my_parameter": 0.5}
-}
-```
-
-Installed packages can also register a `memfolder.plugins` entry point. The assembler checks roles, API versions and capabilities. Examples cover a [new benchmark](examples/plugins/new_benchmark), [anchor selection](examples/plugins/recency), [native output](examples/plugins/native_writer), and [answering or evaluation](examples/plugins/experiment_components). See the [extension guide](docs/EXTENDING.md).
-
-<a id="inspect-the-data-flow"></a>
-
-Enable case capture and a read-only observer:
-
-```json
-{
-  "capture": {"profile": "cases", "text_policy": "omit"},
-  "observers": [{"plugin": "event-report-observer", "required": false}]
-}
-```
-
-Use [`FileRunReader`](docs/ANALYSIS.md) to follow source memories through grouping, compression, retrieval and answering, or compare runs by source identity. Missing observations are marked explicitly. Capture policies control public analysis projections; private run artifacts can still contain original memories and evaluation data.
+The matrix compares two methods across two seeds. `--resume` reuses a completed run after checking its inputs and saved files. The `case` command exports the records and events associated with one question. Choose a new output directory for each new experiment or case export.
 
 <a id="documentation"></a>
 
@@ -179,40 +110,25 @@ Use [`FileRunReader`](docs/ANALYSIS.md) to follow source memories through groupi
 
 | Task | Guide |
 | --- | --- |
-| Run experiments or parameter sweeps | [Experiments](docs/EXPERIMENTS.md) |
-| Understand compression methods and variants | [Compression](docs/COMPRESSION.md) |
-| Load memories or choose a benchmark protocol | [Loading](docs/LOADING.md) · [Benchmarks](docs/BENCHMARKS.md) |
-| Export to a memory framework | [Wrappers](docs/WRAPPERS.md) |
-| Add a component or inspect cases | [Extensions](docs/EXTENDING.md) · [Analysis](docs/ANALYSIS.md) |
-| Check interfaces and supported combinations | [Contracts](docs/CONTRACTS.md) · [Compatibility](docs/COMPATIBILITY.md) |
-| Read all category-level paper scores | [Paper results](docs/PAPER_RESULTS.md) |
+| Configure and run experiments | [Experiments](docs/EXPERIMENTS.md) |
+| Choose a compression method | [Compression methods](docs/COMPRESSION.md) |
+| Load memories and evaluate answers | [Loading](docs/LOADING.md) · [Benchmarks](docs/BENCHMARKS.md) |
+| Write memory to a framework | [Framework integration](docs/WRAPPERS.md) |
+| Investigate an answer or add a component | [Analysis](docs/ANALYSIS.md) · [Extensions](docs/EXTENDING.md) |
+| Check data types and supported configurations | [Interfaces](docs/CONTRACTS.md) · [Compatibility](docs/COMPATIBILITY.md) |
 
-<details>
-<summary><b>Development, attribution and licensing</b></summary>
-
-After installing optional dependencies, run:
-
-```bash
-python tools/fetch_test_sources.py
-python tools/check_contracts.py
-```
-
-The source fetcher checks pinned upstream revisions and checksums. Downloads stay in ignored `build/` directories. Optional integration checks skip when their sources are unavailable; historical-archive checks require their separate archives. CI runs checks and the offline workflow on Python 3.11 and 3.12. Full paper-score reproduction, live backends and multimodal inference have their own [validation scope](docs/EXPERIMENTS.md#验证范围).
-
-Method, benchmark and wrapper provenance are recorded in [these](docs/METHOD_PROVENANCE.json) [source](docs/BENCHMARK_SOURCES.json) [manifests](docs/WRAPPER_SOURCES.json). RecordFolder and ContextFolder are the formal names of the earlier G1S and V12 implementations. Third-party attribution, including StreamMeCo's MIT notice, is retained in [THIRD_PARTY_NOTICES.md](docs/THIRD_PARTY_NOTICES.md). A uniform license for historical source contributions has not yet been finalized; this release does not relicense them.
-
-</details>
+The [documentation index](docs/README.md) provides reading paths. Source revisions and attribution appear in [Third-party notices](docs/THIRD_PARTY_NOTICES.md); licensing for historical contributions remains under review.
 
 <a id="main-results"></a>
 <a id="full-results"></a>
 
-## 📊 Full results
+## Full results
 
-All main comparisons are included below: 30% / 50% / 70% record reduction on Mem0, 50% / 70% on MemOS and M3-Agent, context compression, and retrieval efficiency. Values come from the supplied manuscript; this refactored release has not independently reproduced every paper score. See the [complete category breakdowns](docs/PAPER_RESULTS.md) and [exact values with provenance](docs/assets/paper-results-data.json).
+The following tables and figures cover record compression, context compression, and retrieval efficiency. Values come from the manuscript. The [complete tables](docs/PAPER_RESULTS.md) include category-level scores, and the [data file](docs/assets/paper-results-data.json) records the exact values and their sources.
 
 ### RecordFolder: record compression
 
-Tables report overall benchmark accuracy, with averages and retention preserved from the paper. **Retention** is average accuracy relative to the corresponding uncompressed system. Bold rows identify our method. **70% record reduction means 30% of records retained**.
+Accuracy, average accuracy, and retention are percentages. **Retention** compares a method's mean accuracy with its original uncompressed system. A **70% reduction** leaves **30% of records**. Bold rows show RecordFolder, labeled MemFolder in the paper tables.
 
 #### Mem0 · 50% fewer records
 

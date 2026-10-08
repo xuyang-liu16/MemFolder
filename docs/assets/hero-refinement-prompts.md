@@ -1,4 +1,9 @@
-# Overview refinement prompts (v5)
+# Archived refinement prompts (v5)
+
+[Figure sources](README.md)
+
+These are the recorded inputs used to create the archived watercolor artwork. The production prompts below are preserved for reference.
+
 
 These four replacement illustrations were requested using the project owner’s configured API, model `gpt-image-2`, quality `high`, on 2026-10-08. Text and chart data were authored separately as native editable PowerPoint objects.
 

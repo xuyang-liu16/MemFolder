@@ -1,61 +1,12 @@
-# 观察与 case 分析扩展契约
+# Inspecting a run
 
-已实现 TraceRecorder、Observer 生命周期、只读 PublicArtifacts、FileReportWriter 与 FileRunReader。
-完整实验自动观察 initialize/feature/plan/apply/project/materialize/reader/evaluator 和小组件诊断。
-事件保留 span/parent span、round、sample、action/question、来源与 compressed/uncompressed 分支。
-单独运行压缩仍可使用 DiagnosticCollector；完整运行见 [EXPERIMENTS.md](EXPERIMENTS.md)。
+[Documentation](README.md) · [简体中文](zh-CN/ANALYSIS.md)
 
-## 单向观察边界
+Use captured events to follow a source record through grouping, text compression, retrieval, and answering. `FileRunReader` supports queries by original record, compression action, or question, and can export the related events and files.
 
-`Observer.open/on_event/close` 只接收 `EventEnvelope` 和 `ObservationContext`。
-上下文只有 run_id、只读 ArtifactReader 和独立 ReportWriter；没有 PlannerContext、数据库连接或模型资源。
-Observer 不返回策略/文本给算法。想改变算法行为时应实现明确的 Planner/Operator 插件。
+## Enable capture
 
-事件 summary 只允许 scalar，输入输出、候选表、大向量、检索上下文通过 artifact 引用。
-`project_snapshot()` 提供字段明确的递归冻结投影；默认不输出正文/native payload/extension blobs。
-`include_text=True` 是显式读取正文，不是脱敏引擎。进程内 Python 插件属于可信代码，边界不作为安全沙箱。
-
-## 从节点到回答的链接
-
-稳定身份由 dataset fingerprint、sample、scope、origin source_id/revision 构成。
-新 node_id 与 action_id 仅用于运行内关联，不能用生成摘要或自增 action_id 跨 run 对齐。
-
-`DiagnosticLinks` 能链接 node/origin/action/candidate/question。
-候选、分数分解、gate 接受/拒绝与阈值有公共 typed contracts；方法特有解释用 versioned DiagnosticRecord。
-诊断未提供的部分要声明 not_recorded，不从最终结果倒推虚构理由。
-
-`RetrievalHit` 记录 canonical node/native ID、排名、分数和 origins；`Prediction` 关联 question 与 reader context artifact。
-这样 RunReader 能提供三种查询：by_origin、by_action、by_question，以及 compare。
-删除节点是有效的 case 终点；未跑 QA 时不能生成“回答链”。
-
-## 录制范围与完整性
-
-`CapturePolicy` 提供 off/summary/cases/full、sample/scope/stage/diagnostic 筛选及 text/vector policy。
-FileRunReader 对相关动作和来源做 lineage 闭包；不从最终文本倒推未录制的决策。
-`TraceCoverage` 明确采样范围、已写/丢弃事件、缺 artifact/stage。
-`complete_for_capture` 只表示在声明范围内完整，不表示所有样本、正文、候选和向量均被记录。
-
-RunManifest 分开 compression/evaluation/observation 状态，保存插件实现版本和参数指纹，不自动导出原始配置。
-压缩成功但观察失败，应标记 incomplete；评分 not_run 与质量分数零不同。
-optional observer 错误隔离；required observer 失败使实验失败。flush/close 与开销计时已经实现。
-严格 trace 状态不能靠吞掉异常就声明 complete。
-
-## 外部合作者的修改方式
-
-外部 Observer 声明订阅和诊断 schema，通过 public refs 读数据，写自身 reports。
-离线 notebook/UI 只依赖公共 wire schema 与 RunReader，不导入某个框架的内部类。
-新增分析数据可使用 `lab.case_annotation` 一类命名空间，不扩散到业务模块字段。
-第三方 schema 显式注册；dataset/协议身份不匹配时 RunComparison 必须标记 incomparable/partial。
-
-## 已实现的 Wrapper 分析产物
-
-原生物化 bundle 保存 source snapshot、最终 snapshot、native package、来源成员与 canonical/native ID 映射。
-`run.compression.steps` 可查看每轮 request/plan/outcome；`run.snapshot` 包含最终内容向量。
-`memfolder.wrapper.export / edges / embeddings / materialized` 冻结诊断可被外部 callback 读取。
-`example.case-writer` 是独立 wheel，追加 cases.json；不修改方法模块。
-详见 [WRAPPERS.md](WRAPPERS.md)。这些接口与回答链查询已经运行。
-
-## 可运行配置与查询
+Add this to an experiment configuration:
 
 ```json
 {
@@ -64,31 +15,64 @@ optional observer 错误隔离；required observer 失败使实验失败。flush
 }
 ```
 
-summary 保存事件，cases/full 增加公共投影。text_policy=redacted 必须配置 redactor；RegexRedactor 是可替换示例。
-scope 筛选的诊断默认只公开链接和字段名。私有 source/final/prediction/evaluation 文件仍含对应数据；
-capture 策略只控制公共分析投影，不表示整个运行目录脱敏。
-PublicArtifacts 检查哈希和 allowlist，Observer 不可读私有 Snapshot/评分标签；Observer reports 纳入运行校验。
+`summary` saves events; `cases` and `full` also save public data views for inspection. Filters can select samples, scopes, stages, and diagnostic schemas. Choose a text/vector policy according to the data needed for the analysis. `text_policy: "redacted"` requires a configured redactor.
+
+Capture policies apply to the public analysis files. The run's private source snapshots, predictions, and evaluation files still contain the data needed to execute and verify the experiment. Review those files separately before sharing a run directory.
+
+## Inspect the offline example
+
+After running the [offline example](EXPERIMENTS.md), export its first question:
+
+```bash
+python -m memfolder case build/experiments/offline-demo --dataset-id locomo --sample-id demo --question-id demo:0 --output build/cases/demo-question
+```
+
+The command prints the capture status and counts of related events and files. It writes `case.json` and the referenced files into a new export directory. Use `--action-id` to inspect a compression action or `--source-id` to inspect an original record.
+
+The Python API exposes the same queries:
 
 ```python
 from memfolder import FileRunReader
 
-reader = FileRunReader("runs/run-001")
+reader = FileRunReader("build/experiments/offline-demo")
 sample = reader.sample("locomo", "demo")
-case = reader.by_question(sample, question_id, branch="compressed")
-action_case = reader.by_action(sample, action_id)
-origin_case = reader.by_origin(origin_ref)
-reader.export(case, "cases/question-001")
-comparison = reader.compare(FileRunReader("runs/run-002"), origins=(origin_ref,))
+case = reader.by_question(sample, "demo:0", branch="compressed")
+print(case.status, len(case.events), len(case.artifacts))
 ```
 
-```powershell
-python -m memfolder case runs/run-001 --dataset-id locomo --sample-id demo --question-id QUESTION_ID --output cases/question-001
+## Follow a record through the pipeline
+
+| Stage | Useful saved data |
+| --- | --- |
+| Loading and initialization | Source identities, memory records, and sample membership |
+| Grouping | Anchors, assignments, candidate links, scores, and selected groups |
+| Text writing | Action members, output text according to capture policy, and fallback reasons |
+| ContextFolder verification | Required facts, round token counts, recovery checks, and selected round |
+| Framework output | Original/final snapshots and output-node ID mapping |
+| Retrieval | Hit rank, score, output ID, and original sources |
+| Answering and evaluation | Question ID, context reference, prediction, and score status |
+
+Availability depends on the capture policy and the component's diagnostic output. `complete_for_capture` means all data selected by that policy was recorded. `partial` identifies missing files or failed recording. `not_recorded` identifies a case outside the captured data.
+
+## Compare two runs
+
+Use original source identities to align records between runs:
+
+```python
+from memfolder import FileRunReader
+
+left = FileRunReader("runs/experiment-a")
+right = FileRunReader("runs/experiment-b")
+origins = left.origins(sample_id="demo", source_id="d1")
+comparison = left.compare(right, origins=origins)
 ```
 
-未录制 case 为 not_recorded，缺文件/Observer 错误为 partial。complete_for_capture 只代表声明范围的完整性，
-独立于算法/评测成功。失败运行也可检查已留下的 trace。比较时，数据版本不同为 incomparable；Reader、服务、
-prompt、评分/问题协议不同为 partial 并给出差异。
-[独立示例包](../examples/plugins/experiment_components/experiment_plugin.py) 同时提供 Answerer、Metric 和 Observer，
-只使用公共契约，安装后修改配置即可。Observer 通过 context.artifacts.read_json(ref) 读取投影，
-通过 context.reports.write_json(path, FrozenMap(...)) 写自身报告。
-TraceRecorder 默认关闭，是有序本地文件实现；超大 trace、远程持久化、流式分析可扩展 store/recorder 层。
+An original identity includes its dataset, sample, scope, source ID, and revision. Generated output IDs identify records within a run. The comparison records differences in data versions, reader settings, services, prompts, and scoring protocols so you can interpret the result.
+
+## Add an analysis report
+
+An observer implements `open`, `on_event`, and `close`. It receives immutable events, a reader for the public analysis files, and a writer for its reports. Reports can summarize group sizes, fact recovery, or question-level outcomes. Components that change grouping or text implement the planner or operator interface instead.
+
+An optional observer's failure is recorded while the run continues. Setting `required: true` makes successful reporting a requirement for a completed experiment. The [experiment component example](../examples/plugins/experiment_components) includes an observer, answerer, and metric.
+
+For compression-only Python calls, `DiagnosticCollector` collects component diagnostics and can write JSONL. The complete experiment adds sample, round, question, and original/compressed branch information. See [Extensions](EXTENDING.md) for component registration.

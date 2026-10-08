@@ -1,35 +1,35 @@
-# Third-party source notices
+# Third-party sources and attribution
 
-Source revisions and SHA-256 hashes are in `METHOD_PROVENANCE.json`. Archived
-files are not imported wholesale; selected pure routines/prompts are ported into
-the corresponding modules, and independent characterization tests compare them.
+[Documentation](README.md)
+
+MemFolder combines project methods with selected routines and prompts from the sources below. [METHOD_PROVENANCE.json](METHOD_PROVENANCE.json) records source revisions, file hashes, and implementation locations.
 
 ## StreamMeCo
 
-- Repository: https://github.com/Celina-love-sweet/StreamMeCo
-- Revision: `67c8e8c74c97e69f625890936754a9f934f3d35a`
-- Copyright (c) 2026 Celina
-- License: MIT, preserved in `src/memfolder/licenses/StreamMeCo-MIT.txt` and the wheel.
-- Derived routines: `planning/_streammeco.py`; graph adaptation: `planning/streammeco.py`.
+| Item | Source |
+| --- | --- |
+| Repository | [Celina-love-sweet/StreamMeCo](https://github.com/Celina-love-sweet/StreamMeCo) |
+| Revision | `67c8e8c74c97e69f625890936754a9f934f3d35a` |
+| Copyright | Copyright (c) 2026 Celina |
+| License | [MIT notice](../src/memfolder/licenses/StreamMeCo-MIT.txt), included in the package |
+| Implementation | `planning/_streammeco.py` and `planning/streammeco.py` |
 
-The copied pure selectors preserve the original formulas and quotas. Canonical
-graph projection, protected-node handling and explicit feature-space validation
-are integration adaptations. Temporal retrieval is outside this port.
+The selection routines preserve the source formulas and class quotas. MemFolder adds graph conversion, protected-record handling, and vector-space checks. This port covers graph compression; the upstream temporal retrieval stage requires a separate reader.
 
-## Authoritative MemFolder release and experiment archives
+## RecordFolder, ContextFolder, and archived methods
 
-The user-designated standardized `MemFolder-main.zip` supplies RecordFolder and
-ContextFolder. Older experiment archives supply text ToMe, M3 pooled ToMe,
-average-linkage MemForest proxy, Random methods and DART memory adaptations.
-Their full provenance remains recorded locally. This development checkout does
-not assign a new license to those existing sources.
+RecordFolder and ContextFolder come from the project authors' standardized `MemFolder-main.zip` release. Earlier implementation names are G1S and V12, respectively. The archived experiments provide text ToMe, M3 pooled ToMe, the average-linkage MemForest proxy, Random methods, and DART memory adaptations.
 
-The MemForest MST routines and pair prompt derive from the archived paper
-supplement (`11318_MemForest_Efficient_Agen_Supplementary_Material`). The selected
-archive does not include a separately verified license grant in this record.
-Its release attribution/permission must be resolved with that source before an
-open-source distribution license is finalized. This notice does not assert that
-all archived material is MIT licensed.
+The MemForest tree-based routines and pair prompt come from `11318_MemForest_Efficient_Agen_Supplementary_Material`. Release permission for that archive still needs confirmation from the source. Licensing for the historical contributions remains under review, and their existing terms continue to apply.
 
-KMeans stages are new implementations of the user's approved definition and use
-scikit-learn through an optional dependency; they do not copy scikit-learn source.
+The KMeans stages are implemented in this project and call scikit-learn through an optional dependency.
+
+## Dataset and framework sources
+
+The following records identify the upstream versions used for parsing, scoring, and framework integration:
+
+- [BENCHMARK_SOURCES.json](BENCHMARK_SOURCES.json): benchmark formats and evaluation code.
+- [LOADING_SOURCES.json](LOADING_SOURCES.json): memory-store formats and readers.
+- [WRAPPER_SOURCES.json](WRAPPER_SOURCES.json): native output and readback implementations.
+
+Dataset downloads, model access, and upstream libraries remain subject to their own terms. The repository's test-source fetcher uses the recorded revisions and verifies the downloaded file hashes.

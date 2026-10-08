@@ -6,215 +6,131 @@
 
 **结构引导的记忆折叠：面向智能体的高效记忆管理**
 
-更少的检索单元 · 更短的上下文 · 经过核验的记忆编码
+压缩历史记忆，检索相关内容，用更短的上下文回答问题。
 
-[![CI](https://img.shields.io/badge/CI-GitHub_Actions-173453?logo=githubactions&logoColor=white)](https://github.com/xuyang-liu16/MemFolder/actions/workflows/tests.yml) [![Python](https://img.shields.io/badge/Python-3.11%2B-173453?logo=python&logoColor=white)](pyproject.toml) [![Docs](https://img.shields.io/badge/Docs-Module_guides-247D7A)](#documentation)
+[![CI](https://img.shields.io/badge/CI-GitHub_Actions-173453?logo=githubactions&logoColor=white)](https://github.com/xuyang-liu16/MemFolder/actions/workflows/tests.yml) [![Python](https://img.shields.io/badge/Python-3.11%2B-173453?logo=python&logoColor=white)](pyproject.toml) [![Docs](https://img.shields.io/badge/Docs-Guides-247D7A)](docs/zh-CN/README.md)
 
 [English](README.md) | **简体中文**
 
-[最新动态](#news) · [核心亮点](#highlights) · [使用说明](#usage) · [全部结果](#full-results)
+[最新动态](#news) · [核心亮点](#highlights) · [方法概览](#overview) · [使用说明](#usage) · [全部结果](#full-results)
 
 </div>
 
 <a id="news"></a>
 
-## 🔥 最新动态
+## 最新动态
 
-- **2026-10-08：** 模块化开发版本已补充实验配置模板、论文插图、完整主结果表，以及中英文使用指南。
+- **2026-10-08：** 更新项目概览、实验指南和完整论文结果，并提供中英文文档。
 
 <a id="highlights"></a>
 
-## 📌 核心亮点
+## 核心亮点
 
-- **两个阶段，共享分组结构。** RecordFolder 将相关记忆整合为更少的检索单元；ContextFolder 复用这些分组，将事实编码为紧凑文本，并通过事实恢复检查指导修订。
-- **高性能的记录压缩。** 在 Mem0 上减少 50% 记录后，RecordFolder 在 LoCoMo、LongMemEval 和 PersonaMem 三个基准上仍保留未压缩平均性能的 **99.0%**。
-- **更短的检索上下文。** 在同样减少 50% 记录的条件下，ContextFolder 相比仅使用 RecordFolder，进一步将 LoCoMo 和 LongMemEval 的每条记录 token 数降低 **40.3%** 和 **37.9%**。
-- **更快的检索。** 仅保留 30% 记录时，论文的五个评测设置中最高取得 **5.34×** 的平均检索加速。
-- **可组合的研究框架。** 通过配置替换分组策略、上下文编码、记忆封装和评测组件；支持 Mem0、MemOS、M3 集成、多种压缩基线和可追踪的实验产物。
+- **同时压缩记录数量和文本长度。** RecordFolder 整合相关记忆；ContextFolder 缩短每组记忆的文本，并检查其中的重要事实能否恢复。
+- **用更少的记录保持问答效果。** 缩减 50% 记录后，RecordFolder 在 LoCoMo、LongMemEval 和 PersonaMem 上保留了原始 Mem0 系统 **99.0%** 的平均准确率。
+- **缩短模型需要读取的上下文。** 在相同记录预算下，ContextFolder 相比单独使用 RecordFolder，进一步将 LoCoMo 和 LongMemEval 的每条记录 token 数降低 **40.3%** 和 **37.9%**。
+- **加快检索。** 保留 30% 记录时，论文的五个评测设置中最高取得 **5.34×** 的平均检索加速。
+
+以下图表和数值来自论文实验。仓库提供可配置的压缩方法、数据加载和评测工具，供你运行自己的对比实验。
+
+<a id="overview"></a>
+
+## Overview · 方法概览
+
+随着交互积累，智能体需要搜索更多记忆，也需要读取更长的文本。MemFolder 分两步降低这些开销：先把相关记录整合为更少的检索单元，再将每个单元的内容编码为更短的文本。
 
 <div align="center">
-<a href="docs/assets/paper-intro.png"><img src="docs/assets/paper-intro.png" alt="所提供论文的图 1：记忆管理的两个成本瓶颈、单轴压缩方法的局限，以及 MemFolder 同时折叠记录数量和上下文长度。" width="1100"></a>
+<a href="docs/assets/paper-intro.png"><img src="docs/assets/paper-intro.png" alt="MemFolder 摘要图：记录数量和文本长度分别带来搜索与阅读开销，RecordFolder 和 ContextFolder 配合压缩这两个维度。" width="1100"></a>
 </div>
 
-**MemFolder 摘要图（论文图 1）。** 同时减少存储的记录数量与每个检索单元的文本长度。上述定量亮点来自论文报告，详细比较见本页末尾。
+**摘要图。** RecordFolder 减少需要检索的记录数量；ContextFolder 缩短每条记录的内容，并通过事实恢复检查指导编码。
+
+下方主图展示了完整流程：
+
+1. **载入历史记忆。** 保留记录内容、实体、事件时间和来源信息。
+2. **RecordFolder 分组整合。** 选择代表性记忆，结合实体相似度、语义相似度和时间关系，将相关记录归为一组。
+3. **ContextFolder 编码与验证。** 提取关键事实，生成紧凑文本，再让验证模型根据编码回答事实问题，用回答结果指导修订。
+4. **检索与回答。** 从压缩后的记忆中查找相关内容，交给问答模型生成答案。
+
+<div align="center">
+<a href="docs/assets/paper-overview.pdf"><img src="docs/assets/paper-overview.png" alt="论文方法主图：从历史记忆出发，经过 RecordFolder 分组和 ContextFolder 编码验证，再用于检索与回答；下方展开两个压缩阶段。" width="1100"></a>
+</div>
+
+**方法主图。** 下方分别展开 RecordFolder 的锚点选择与时间链整合，以及 ContextFolder 的事实规划、编码与验证。点击图片可查看 PDF；实现和配置见[压缩方法](docs/zh-CN/COMPRESSION.md)。
 
 <a id="usage"></a>
 <a id="quick-start"></a>
 
-## 🛠 使用说明
+## 使用说明
 
-### 1. 安装
+### 安装并运行示例
 
-需要 **Python 3.11+**。核心包不强制依赖第三方库。
+使用 Python 3.11 或更新版本，在终端执行：
 
 ```bash
 git clone https://github.com/xuyang-liu16/MemFolder.git
 cd MemFolder
 python -m pip install -e .
-```
-
-### 2. 运行离线示例
-
-```bash
 python -m memfolder run examples/experiments/offline-demo.json
 python -m memfolder verify build/experiments/offline-demo
 ```
 
-示例贯通“加载 → 压缩 → 原生输出 → 检索 → 回答 → 评测”，并包含未压缩对照和案例轨迹。示例使用合成历史与回显上下文的回答器，无需模型、API 密钥或网络访问；标为 `test_only` 的分数仅用于验证流程。
+示例使用一段简短的合成对话，在本地完成记忆分组、保存、检索和评分。结果与过程记录写入 `build/experiments/offline-demo`。其中标为 `test_only` 的分数用于检查运行流程。
 
-运行多方法、多随机种子的实验矩阵：
+### 运行 RecordFolder 或 ContextFolder
 
-```bash
-python -m memfolder matrix examples/experiments/offline-matrix.json
-```
-
-复用已经完成且通过校验的运行：
+先安装实验模板使用的依赖：
 
 ```bash
-python -m memfolder run examples/experiments/offline-demo.json --resume
+python -m pip install -e ".[algorithms,contextfolder,evaluation]"
 ```
 
-产物保存在 `build/experiments/` 下。校验会检查源数据指纹、配置与输出完整性。
+打开 [recordfolder-template.json](examples/experiments/recordfolder-template.json) 或 [contextfolder-template.json](examples/experiments/contextfolder-template.json)，填写数据集路径、服务地址、模型名称与版本、向量维度和输出目录。在当前终端通过 `MEMFOLDER_PROVIDER_KEY` 设置 API 密钥；具体字段和终端命令见[实验指南](docs/zh-CN/EXPERIMENTS.md)。
 
-### 3. 接入真实记忆与模型
-
-```bash
-python -m pip install -e ".[algorithms,contextfolder,qdrant,evaluation]"
-```
-
-从 [RecordFolder 模板](examples/experiments/recordfolder-template.json)或 [ContextFolder 模板](examples/experiments/contextfolder-template.json)开始。运行前，替换数据和输出路径、服务地址、模型名称、版本标识及向量维度，并通过环境变量 `MEMFOLDER_PROVIDER_KEY` 提供密钥。模板中的 `REPLACE_*` 与 `api.example.invalid` 均为占位值。
-
-完成模板配置后运行：
+完成配置后运行：
 
 ```bash
 python -m memfolder run examples/experiments/recordfolder-template.json
 python -m memfolder run examples/experiments/contextfolder-template.json
 ```
 
-已有记忆库可通过[原生加载器](docs/LOADING.md)与 `bank-initializer` 接入。完整组装方式见[实验指南](docs/EXPERIMENTS.md)，Mem0、MemOS 和 M3 的格式见[封装器指南](docs/WRAPPERS.md)。基准问题与标准答案不参与记忆压缩。
+两个模板都保留一半可压缩记录，并分别评测原始记忆和压缩后的记忆。ContextFolder 还会使用配置的 tokenizer 统计文本长度。已有 Mem0、MemOS 或 M3 记忆库时，按[加载指南](docs/zh-CN/LOADING.md)接入。
 
-<a id="compose-an-experiment"></a>
+### 对比实验与查看案例
 
-### 4. 组合不同方法
-
-记录分组与上下文编码可以独立替换。例如，在完整配置中修改以下字段，即可使用 ToMe 分组和 ContextFolder 编码：
-
-```json
-{
-  "compression": {
-    "planner": {"plugin": "tome"},
-    "operator": {"plugin": "contextfolder-operator"}
-  },
-  "run": {
-    "mode": "repeat",
-    "budgets": [{"unit": "nodes", "ratio": 0.5}]
-  }
-}
+```bash
+python -m memfolder matrix examples/experiments/offline-matrix.json
+python -m memfolder run examples/experiments/offline-demo.json --resume
+python -m memfolder case build/experiments/offline-demo --dataset-id locomo --sample-id demo --question-id demo:0 --output build/cases/demo-question
 ```
 
-这只是配置片段；请保留模板中的特征、封装器、服务、Reader 和 Evaluator。`ratio: 0.5` 表示**记录数量预算**；ContextFolder 的 token 目标另行配置，且是软约束。ToMe 文本压缩采用多轮处理，并为改写后的文本刷新向量。完整示例见 [ToMe + ContextFolder 配方](examples/recipes/tome-with-contextfolder.json)。
-
-设置 `run.evaluate_source: true`，可使用相同 Reader 和 Evaluator 运行未压缩对照。比较压缩方法时，应固定检索设置、提示词与评分方式。
-
-<details>
-<summary><b>论文方法与代码架构</b></summary>
-
-<a id="paper"></a>
-
-<div align="center">
-<a href="docs/assets/paper-overview.pdf"><img src="docs/assets/paper-overview.png" alt="论文方法主图：RecordFolder 使用互补锚点和实体感知时序分组；ContextFolder 规划事实、压缩分组并核验事实恢复。" width="1100"></a>
-</div>
-
-论文中的 RecordFolder 和 ContextFolder 通过独立的 Planner、Operator 组件实现。ContextFolder 也能接收其他整合方法产生的分组。论文公开链接、作者名单与引用信息将在确定后补充。
-
-<a id="architecture"></a>
-
-<div align="center">
-<img src="docs/assets/memfolder-architecture.svg" alt="代码架构：通过配置组装加载器、特征、Planner、Operator、记忆封装器、Reader 和 Evaluator，观察器覆盖各处理阶段。" width="1100">
-</div>
-
-**Planner** 决定压缩哪些内容；**Operator** 执行压缩；**Wrapper** 保留原生存储和图语义；**Reader 与 Evaluator** 负责检索、回答和评分。标准答案仅进入 Evaluator。每种角色都可以由独立插件提供。
-
-| 组件 | 已包含的实现 |
-| --- | --- |
-| 论文方法 | RecordFolder、ContextFolder |
-| 记录压缩基线 | ToMe、MemForest、DART 记忆适配、StreamMeCo 图压缩、RandomMerge、RandomPrune、KMeansMerge、KMeansPrune |
-| 评测基准 | LoCoMo、LongMemEval、PersonaMem、M3-Bench robot/web |
-| 记忆加载与封装 | Mem0、MemOS、M3 |
-| 实验工具 | 配置矩阵、未压缩对照、产物校验、恢复运行、观察器与案例查询 |
-
-组件组合需满足图结构、时间、模态和向量空间要求。StreamMeCo 对应其图压缩阶段；MemForest 的 MST 实现与历史 M3 代理版本提供独立配方。具体范围见[兼容性](docs/COMPATIBILITY.md)和[方法变体](docs/COMPRESSION.md)。
-
-</details>
-
-<a id="extend-one-module"></a>
-
-### 5. 扩展组件与查看过程
-
-实现相应接口，以及返回 `PluginSpec` 的工厂函数，即可添加完整的 Planner、Operator 或其中一个子组件：
-
-```json
-{
-  "plugin": "my_module:build",
-  "parameters": {"my_parameter": 0.5}
-}
-```
-
-安装的插件包也可注册 `memfolder.plugins` 入口。组装器会检查角色、API 版本和能力声明。现有示例包括[新基准](examples/plugins/new_benchmark)、[锚点选择](examples/plugins/recency)、[原生输出](examples/plugins/native_writer)和[回答或评测组件](examples/plugins/experiment_components)。详见[扩展指南](docs/EXTENDING.md)。
-
-<a id="inspect-the-data-flow"></a>
-
-启用案例记录与只读观察器：
-
-```json
-{
-  "capture": {"profile": "cases", "text_policy": "omit"},
-  "observers": [{"plugin": "event-report-observer", "required": false}]
-}
-```
-
-使用 [`FileRunReader`](docs/ANALYSIS.md)，可以沿源记忆追踪分组、压缩、检索与回答过程，也可按来源标识比较不同运行。缺失的观察项会明确标记。捕获策略控制公开分析投影；私有运行产物仍可能包含原始记忆与评测数据。
+矩阵示例比较两种方法和两个随机种子。`--resume` 检查输入和结果文件后，复用已经完成的实验。`case` 命令导出某道问题相关的记录与事件。每次新实验或案例导出都使用新的输出目录。
 
 <a id="documentation"></a>
 
 ### 文档导航
 
-| 需求 | 指南 |
+| 任务 | 指南 |
 | --- | --- |
-| 运行实验或参数扫描 | [实验](docs/EXPERIMENTS.md) |
-| 理解压缩方法与变体 | [压缩](docs/COMPRESSION.md) |
-| 加载记忆或选择评测协议 | [加载](docs/LOADING.md) · [基准](docs/BENCHMARKS.md) |
-| 导出到记忆框架 | [封装器](docs/WRAPPERS.md) |
-| 添加组件或查看案例 | [扩展](docs/EXTENDING.md) · [分析](docs/ANALYSIS.md) |
-| 检查接口与兼容组合 | [契约](docs/CONTRACTS.md) · [兼容性](docs/COMPATIBILITY.md) |
-| 查看论文全部分类分数 | [完整结果表](docs/PAPER_RESULTS.md) |
+| 配置与运行实验 | [实验指南](docs/zh-CN/EXPERIMENTS.md) |
+| 选择压缩方法 | [压缩方法](docs/zh-CN/COMPRESSION.md) |
+| 加载记忆与评测答案 | [记忆加载](docs/zh-CN/LOADING.md) · [基准与评测](docs/zh-CN/BENCHMARKS.md) |
+| 将结果写回框架格式 | [框架接入](docs/zh-CN/WRAPPERS.md) |
+| 分析问答过程或添加组件 | [运行分析](docs/zh-CN/ANALYSIS.md) · [组件扩展](docs/zh-CN/EXTENDING.md) |
+| 查看数据类型与支持范围 | [数据与接口](docs/zh-CN/CONTRACTS.md) · [支持的配置](docs/zh-CN/COMPATIBILITY.md) |
 
-<details>
-<summary><b>开发、来源与许可</b></summary>
-
-安装可选依赖后运行：
-
-```bash
-python tools/fetch_test_sources.py
-python tools/check_contracts.py
-```
-
-源代码获取工具会核验固定的上游版本与校验和，下载内容保存在被 Git 忽略的 `build/` 下。缺少对应源文件时，可选集成检查会明确跳过；历史归档检查需要单独提供归档。CI 在 Python 3.11 和 3.12 上运行检查与离线流程。完整论文分数复现、在线后端与多模态推理有各自的[验证范围](docs/EXPERIMENTS.md#验证范围)。
-
-[方法](docs/METHOD_PROVENANCE.json)、[基准](docs/BENCHMARK_SOURCES.json)和[封装器](docs/WRAPPER_SOURCES.json)均记录了来源。RecordFolder、ContextFolder 分别是早期 G1S、V12 实现的正式名称。[第三方声明](docs/THIRD_PARTY_NOTICES.md)保留了来源与改编说明，包括 StreamMeCo 的 MIT 声明。历史源代码贡献的统一发布许可证尚未最终确定，本版本不会重新授予其许可。
-
-</details>
+[文档索引](docs/zh-CN/README.md)提供了按任务组织的阅读路径。代码来源与署名见[第三方说明](docs/THIRD_PARTY_NOTICES.md)；历史代码的统一许可仍在确认中。
 
 <a id="main-results"></a>
 <a id="full-results"></a>
 
-## 📊 全部结果
+## 全部结果
 
-以下展示论文的全部主结果比较：Mem0 的 30% / 50% / 70% 记录缩减，MemOS 与 M3-Agent 的 50% / 70% 记录缩减，以及上下文压缩和检索效率结果。数值来自论文稿件；本次代码重构并未独立复现全部论文分数。[完整分类指标表](docs/PAPER_RESULTS.md)与[原始数值及来源](docs/assets/paper-results-data.json)可供核对。
+以下图表展示记录压缩、上下文压缩和检索效率，数值均来自论文。[完整结果表](docs/zh-CN/PAPER_RESULTS.md)包含各类别的细分分数，[数据文件](docs/assets/paper-results-data.json)保留精确数值与来源。
 
 ### RecordFolder：记录压缩
 
-表格报告各基准的总体准确率；平均准确率与性能保留率均沿用论文原值。**性能保留率**指压缩后平均准确率相对于对应未压缩系统的比例。加粗行标识本文方法。**缩减 70% 记录，即保留 30% 记录**。
+准确率、平均准确率和保留率均以百分比表示。**性能保留率**是压缩后的平均准确率相对于原始系统的比例。**缩减 70% 记录**对应**保留 30% 记录**。加粗行表示 RecordFolder，在论文表格中记作 MemFolder。
 
 #### Mem0 · 缩减 50% 记录
 
@@ -340,4 +256,4 @@ python tools/check_contracts.py
 
 **平均检索时延与 P95 时延。** 保留 30% 记录时，论文在五个设置中报告了 **1.88–5.34×** 的平均检索加速。图中横轴表示**保留比例**，上面的表格表示**缩减比例**。点击图片可查看原始 PDF。
 
-论文表格与上下文结果图的部分 LongMemEval 参考分数存在差异；这里分别保留原稿数值，具体见[来源一致性说明](docs/PAPER_RESULTS.md#source-consistency)。
+论文表格与上下文结果图的部分 LongMemEval 参考分数存在差异；这里分别保留原稿数值，具体见[来源一致性说明](docs/zh-CN/PAPER_RESULTS.md#source-consistency)。

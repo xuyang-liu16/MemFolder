@@ -1,87 +1,49 @@
-# README artwork
+# Figures and data sources
 
-- `paper-intro.png` is Figure 1 on page 2 of the owner-supplied
-  `7707_MemFolder_Structure_Guide (2).pdf`. It appears after Highlights in both
-  language versions. It was rendered at 500 dpi and cropped to the figure bounds,
-  preserving all figure content while excluding the manuscript header, line
-  numbers and surrounding prose. Dimensions are 2750 × 1170. Source and output
-  fingerprints are recorded in [the extraction record](paper-intro-source.json).
-- `memfolder-hero.png` is the archived watercolor overview, retained as an optional
-  artwork asset. It is no longer displayed on the README. It presents memory growth before
-  compression, RecordFolder / ContextFolder, and retrieval after compression.
-  The warm watercolor style, assistant characters and source numerical labels
-  originate in the authors' artwork. Scenes were recomposed for their panel
-  dimensions with GPT-IMAGE-2. The README preview is 1920 × 1080.
-- `memfolder-architecture.svg` describes the software interfaces. It is editable
-  SVG source with an accessible description. Projection and feature refresh also
-  occur between compression rounds; native materialization is the final output
-  step. Gold labels enter only the Evaluator.
+[Documentation](../README.md) · [Paper results](../PAPER_RESULTS.md)
 
-## Hero production
+This directory contains the paper figures displayed in the README, their source records, and an archived illustrated overview.
 
-The decorative layout plate was generated on 2026-10-08 using the project owner's
-configured image API with **`model=gpt-image-2`**, **`quality=high`** and requested
-size **3840 × 2160**. The response also identified `gpt-image-2`; the downloaded
-plate has those pixel dimensions. The API key is not stored in this repository.
+## Figures used in the README
 
-The generated paper, ribbons, frames and upper-left vignette were placed as
-separate layers. A subsequent refinement used the same configured model and high
-quality for seven scenes: memory growth, RecordFolder, two ContextFolder panels,
-successful retrieval, a panoramic debugging story and a panoramic burden-relief
-story. The top-right research vignette retains the author-supplied artwork.
-The latest refinement replaced four scenes: precise historical version retrieval
-for debugging, the reading burden of an expanding single-node context, verified
-compact memory, and memory burden relief. Footer scenes use fading watercolor
-edges, and the title lockup and footer summary use larger Forte display lettering.
-Titles and all seven data charts were authored as editable PowerPoint objects,
-then rendered for the README.
+| Asset | Content and source |
+| --- | --- |
+| [paper-intro.png](paper-intro.png) | Graphical abstract, Figure 1 on page 2 of `7707_MemFolder_Structure_Guide (2).pdf` |
+| [paper-overview.png](paper-overview.png) / [PDF](paper-overview.pdf) | Method overview from `Figures/overview.pdf` |
+| [paper-context-results.png](paper-context-results.png) / [PDF](paper-context-results.pdf) | Context-compression results from `Figures/context_compression.pdf` |
+| [paper-retrieval-efficiency.png](paper-retrieval-efficiency.png) / [PDF](paper-retrieval-efficiency.pdf) | Retrieval results from `Figures/retrieval_latency.pdf` |
+| [paper-results-data.json](paper-results-data.json) | Exact active rows from the three main LaTeX result tables, with source hashes |
 
-Academic layout examples informed visual hierarchy and spacing; their figures,
-labels, logos and research results are not reproduced in the final artwork.
-The design uses ivory paper, navy lettering, coral, teal and sage accents.
-See [the framework prompt](hero-prompt.txt),
-[the initial scene prompts](hero-scene-prompts.md),
-[the latest refinement prompts](hero-refinement-prompts.md) and
-[the supplied chart values](hero-data.json).
+The graphical abstract was rendered at 500 dpi and cropped to its figure bounds, producing a 2750 × 1170 image. The crop preserves the figure and excludes the page header, line numbers, caption, and surrounding text. [paper-intro-source.json](paper-intro-source.json) records the source and output hashes and crop coordinates.
 
-## Data interpretation
+The method and experimental figures are PNG renders of the PDFs referenced by the supplied manuscript source. Both language versions display the same figures. Their values retain the source's reporting and rounding; the [results guide](../PAPER_RESULTS.md#source-consistency) explains the LongMemEval reference-score differences between the table and context figure.
 
-The latency values and 5.34× callout reproduce the supplied manuscript artwork;
-they are not new measurements from this refactored release. The benchmark bars
-have separate scales for each row, with labels in milliseconds. The 5.34× maximum
-is manuscript-reported and should not be reconstructed from rounded bar labels.
-The storage chart transcribes the owner's measured LME memory-bank `du` plot:
-1,000 / 5,000 / 10,000 / 50,000 / 100,000 / 200,000 / 310,120 nodes correspond to
-14 / 69 / 138 / 686 / 1,371 / 2,743 / 4,873 MB of vectors plus index storage.
-The node-count axis is ordered categorical, matching the supplied chart. These
-measurements were not independently rerun for this artwork revision.
+## Software diagram
 
-The naive-summary panel depicts a growing context within one memory node and its
-reading burden; it makes no retrieval-latency claim.
+[memfolder-architecture.svg](memfolder-architecture.svg) describes the software components from loading through evaluation. The SVG is editable and includes an accessible description. It shows how configuration selects components and how repeated compression updates memory before the next round.
 
-The editable export was checked for package integrity, slide bounds, font policy,
-seven native charts with embedded data workbooks, and successful reimport/rendering.
-This does not establish native PowerPoint application compatibility or independent
-reproduction of the paper's measurements.
+## Archived illustrated overview
 
-## Original paper figures and tables
+[memfolder-hero.png](memfolder-hero.png) is the earlier 1920 × 1080 watercolor overview. Its layout plate and replacement scenes were generated on 2026-10-08 with the configured `gpt-image-2` model at high quality. The plate was requested and returned at 3840 × 2160. Titles and charts were added as editable PowerPoint objects before rendering.
 
-The README method overview, context-compression results and retrieval-efficiency
-figures are complete-page PNG renders of the PDFs actually referenced by the
-owner-supplied manuscript. Their original PDFs are also included for zooming.
-They were not regenerated with an image model. Existing PNG exports were omitted
-because they differ from the manuscript PDF versions.
+The artwork combines the authors' robot and memory illustrations with generated scenes for record growth, grouping, context compression, historical debugging, and retrieval. Its title and footer use Forte lettering, and the footer illustrations use fading edges.
 
-- `paper-overview.png` / `.pdf`: `Figures/overview.pdf`.
-- `paper-context-results.png` / `.pdf`: `Figures/context_compression.pdf`.
-- `paper-retrieval-efficiency.png` / `.pdf`: `Figures/retrieval_latency.pdf`.
-- `paper-results-data.json`: exact active rows from the three main LaTeX tables,
-  with source fingerprints and a documented cross-source score discrepancy.
-- [Full result tables](../PAPER_RESULTS.md): Markdown category breakdowns for all
-  methods and reported record-reduction ratios. No values are inferred from pixels.
+Production records are preserved in the [layout prompt](hero-prompt.txt), [scene prompts](hero-scene-prompts.md), [refinement prompts](hero-refinement-prompts.md), and [chart data](hero-data.json). These files document the archived artwork.
 
-Both READMEs now begin with the title, News, Highlights and the introduction figure,
-followed by usage instructions and the full result display. The method figure and
-software architecture are available in the expandable usage section; the original
-experimental plots appear in the final results section. The v5 watercolor overview
-remains available as an archived asset.
+## Reading the archived charts
+
+The latency values and maximum 5.34× speedup come from the supplied manuscript artwork. Benchmark bars use a separate scale within each row, with labels in milliseconds. The maximum speedup follows the manuscript's value before label rounding.
+
+The storage chart transcribes the supplied LME memory-store measurement:
+
+| Records | Vector and index storage (MB) |
+| ---: | ---: |
+| 1,000 | 14 |
+| 5,000 | 69 |
+| 10,000 | 138 |
+| 50,000 | 686 |
+| 100,000 | 1,371 |
+| 200,000 | 2,743 |
+| 310,120 | 4,873 |
+
+Its record-count axis follows the source's ordered categories. The simple-summary illustration depicts the reading burden caused by a longer single-record context. These charts and scenes present the supplied measurements and method explanation.

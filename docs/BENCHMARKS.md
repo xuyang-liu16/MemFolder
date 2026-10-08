@@ -1,52 +1,79 @@
-# 原始 benchmark 与评分协议
+# Benchmarks and evaluation
 
-benchmark loader 与原生 memory loader 独立。前者输出历史/已有 Snapshot 与 EvaluationSet，Initializer 决定如何构建记忆。
-评分由 evaluator 配置选择，不由框架名猜测。组件配置见 [dataset-components.json](../examples/experiments/dataset-components.json)。
+[Documentation](README.md) · [简体中文](zh-CN/BENCHMARKS.md)
 
-| benchmark / plugin | 输入与处理 | 评分插件 |
-| --- | --- | --- |
-| LoCoMo / locomo-dataset | 数字顺序 session、speaker、dia_id、日期、caption；QA/category/evidence 独立 | locomo-f1、evidence-recall |
-| LongMemEval / longmemeval-dataset | session ID/date/history 平行数组，query time；has_answer 不进入历史 | official-judge + longmemeval-judge-prompt |
-| PersonaMem v1 / personamem-dataset | CSV + context JSONL，初始化前按 end_index 截取；公开 options 独立 | personamem-accuracy 或更严格的 choice-accuracy |
-| M3 robot / m3-dataset | annotations + 显式 video→库映射；before_clip 限制原生节点前缀、清理悬空边 | official-judge + m3-judge-prompt |
-| M3 web / m3-dataset | annotations + 显式 video→库映射，已提供视频的完整图 | official-judge + m3-judge-prompt |
+The benchmark loader reads histories, questions, and reference answers. The initializer builds or selects memory. After compression, the reader retrieves memory and answers each question; the evaluator scores the answers using the selected protocol.
 
-无时区日期要求 utc_offset_minutes，缺失时间不推断。PersonaMem 为共享 context 建字节偏移索引，每题只初始化历史前缀；v2 是独立协议。
-M3 的 mem_path 不作为可信路径，所选视频必须配置 memory_loaders；缺失 cutoff 对应节点时拒绝回退完整图。
-M3 是开放问答，不将其改成选择题。
+## Select a dataset and metric
 
-## 锁定官方来源
+| Dataset | Loader | Input | Evaluation |
+| --- | --- | --- | --- |
+| LoCoMo | `locomo-dataset` | Conversation sessions, dates, speakers, and QA annotations | `locomo-f1`, optionally `evidence-recall` |
+| LongMemEval | `longmemeval-dataset` | Session histories, dates, query times, and answers | `official-judge` with `longmemeval-judge-prompt` |
+| PersonaMem v1 | `personamem-dataset` | Question CSV and context JSONL | `personamem-accuracy` |
+| M3 robot | `m3-dataset`, `variant: "robot"` | Annotations and a video-to-memory-loader mapping | `official-judge` with `m3-judge-prompt` |
+| M3 web | `m3-dataset`, `variant: "web"` | Annotations and a video-to-memory-loader mapping | `official-judge` with `m3-judge-prompt` |
 
-[BENCHMARK_SOURCES.json](BENCHMARK_SOURCES.json) 保存 commit、文件哈希和链接：
+Copy the relevant component from [dataset-components.json](../examples/experiments/dataset-components.json) into your experiment's `dataset` section. Set the file paths and sample selection for your data.
 
-- [LoCoMo 评价代码](https://github.com/snap-research/locomo/blob/3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376/task_eval/evaluation.py)：分类 F1、Porter stemming、多答案与拒答约定。
-- [LongMemEval 评价代码](https://github.com/xiaowu0162/LongMemEval/blob/9e0b455f4ef0e2ab8f2e582289761153549043fc/src/evaluation/evaluate_qa.py)：按问题类型生成评分 prompt。
-- [PersonaMem 推理代码](https://github.com/bowen-upenn/PersonaMem/blob/d07e6ade22e85e0e5d562247323a9c3e07553226/inference_standalone_openai.py)：context 前缀、options 与 final_answer 解析。
-- [M3 控制器](https://github.com/ByteDance-Seed/m3-agent/blob/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/m3_agent/control.py) 和 [评分 prompt](https://github.com/ByteDance-Seed/m3-agent/blob/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/mmagent/prompts.py)：clip 截断与开放问答验证。
+For example:
 
-LoCoMoF1 使用可选 nltk，不下载语料；token-f1 无 stemming，版本不同。
-PersonaMemAccuracy 保留官方 option-set 匹配；choice-accuracy 使用严格标签/文本匹配。
-ChatJudge 是框架提供的 YES/NO 策略，不等于官方 LongMemEval/M3 judge。
+```json
+{
+  "dataset": {
+    "plugin": "locomo-dataset",
+    "parameters": {"path": "data/locomo.json", "utc_offset_minutes": 0}
+  },
+  "evaluator": {
+    "plugin": "metric-evaluator",
+    "parameters": {"metrics": [{"plugin": "locomo-f1"}, {"plugin": "evidence-recall"}]}
+  }
+}
+```
 
-官方 prompt 从用户持有的哈希锁定源文件提取，不直接 import 官方代码。
-LongMemEval 只编译限制 AST 的 get_anscheck_prompt；M3 只提取指定字符串常量。
-指标版本包含源文件 SHA，保留官方 YES 子串解析；配置真实 judge service 后才有模型评分。
-不打包官方数据集或私有记忆库，各来源许可独立遵守。
+Use the source timezone for `utc_offset_minutes`. Add the reader, initializer, compression method, and services as shown in [Experiments](EXPERIMENTS.md).
+
+## Preserve each task's input window
+
+**LoCoMo** keeps session order, speaker identities, dialog IDs, and dates. Evidence annotations refer to source dialog IDs. The default `evidence_policy: "strict"` validates each reference. With `preserve_unknown`, unresolved evidence labels are saved for inspection and answer scoring remains available. Evidence recall returns `not_run` for those cases because the full reference set is unresolved.
+
+**LongMemEval** keeps session IDs aligned with dates and histories. The query time controls the available memory. Question type and answerability labels are used by the evaluator.
+
+**PersonaMem v1** initializes memory from the context prefix ending at `end_index`. Shared context files use a byte-offset index for loading. Public answer options go to the reader; the correct choice goes to the evaluator. PersonaMem v2 requires its own loader and scoring protocol.
+
+**M3 robot** limits memory to nodes available before the annotated `before_clip` cutoff. **M3 web** uses the supplied video's full graph. Configure `memory_loaders` explicitly for each selected video, and provide a graph containing the required cutoff. Both variants use open-ended question answering.
+
+## Configure a model judge
+
+LongMemEval and M3 scoring use a caller-supplied `judge` service and a pinned upstream prompt source. Example evaluator configuration:
 
 ```json
 {
   "plugin": "metric-evaluator",
   "parameters": {
-    "metrics": [{"plugin": "official-judge", "parameters": {
-      "service": "judge",
-      "prompt": {"plugin": "longmemeval-judge-prompt", "parameters": {
-        "path": "upstream/evaluate_qa.py", "sha256": "REPLACE_PINNED_FILE_SHA256"
-      }}
-    }}]
+    "metrics": [{
+      "plugin": "official-judge",
+      "parameters": {
+        "service": "judge",
+        "prompt": {
+          "plugin": "longmemeval-judge-prompt",
+          "parameters": {"path": "upstream/evaluate_qa.py", "sha256": "REPLACE_PINNED_FILE_SHA256"}
+        }
+      }
+    }]
   }
 }
 ```
 
-已有记忆库通过 bank-initializer 按 sample_id 明确绑定，不按数组位置拼接。
-composite-dataset + protocol-evaluator 可以混合数据集和评分，无需增加 Runner 分支。
-格式测试、真实库验收与合成 QA 链路分别记录，不代表论文成绩。
+Use the source file and hash listed in [BENCHMARK_SOURCES.json](BENCHMARK_SOURCES.json), then configure the model under `services.judge`. The loader extracts the required prompt function or string from that file. Metric versions record its hash and the upstream YES-substring parsing rule.
+
+The generic `chat-judge` has its own YES/NO policy. Choose `official-judge` when the experiment requires the pinned LongMemEval or M3 scoring behavior.
+
+## Read scores consistently
+
+- `locomo-f1` follows the pinned category, multiple-answer, abstention, and stemming rules. It uses the optional NLTK dependency. `token-f1` is a separate metric with simpler token matching.
+- `personamem-accuracy` follows the release's option-set and `final_answer` parsing. `choice-accuracy` uses stricter label/text matching.
+- `evidence-recall` scores retrieved source references. Its status identifies cases with unresolved evidence.
+- A score's metric version, status, and sample selection are part of the result. Include them when comparing runs.
+
+For an existing memory store, match each sample through `bank-initializer`; see [Loading memories](LOADING.md). For several datasets in one experiment, `composite-dataset` combines loaders and `protocol-evaluator` selects the evaluator by protocol. [Paper results](PAPER_RESULTS.md) contains the manuscript's reported scores.
