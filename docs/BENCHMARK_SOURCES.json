@@ -1,0 +1,92 @@
+{
+  "sources": [
+    {
+      "dataset": "locomo",
+      "repository": "snap-research/locomo",
+      "revision": "3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376",
+      "files": [
+        {
+          "path": "README.MD",
+          "sha256": "9f8e6fd00a3400aa687109f40ed53715f0a2c028ee3f8c465bdfa96475640e8a",
+          "url": "https://github.com/snap-research/locomo/blob/3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376/README.MD"
+        },
+        {
+          "path": "task_eval/evaluation.py",
+          "sha256": "8e3be5d57ff2ff9ec5cd05939592f468c5f3f1fd95d13e431932bdf6bf0fd6fd",
+          "url": "https://github.com/snap-research/locomo/blob/3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376/task_eval/evaluation.py"
+        }
+      ]
+    },
+    {
+      "dataset": "longmemeval",
+      "repository": "xiaowu0162/LongMemEval",
+      "revision": "9e0b455f4ef0e2ab8f2e582289761153549043fc",
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "c4ff45676683d9e2f7cf7d9099d26426f14635ec110dbb1da818d1019a142573",
+          "url": "https://github.com/xiaowu0162/LongMemEval/blob/9e0b455f4ef0e2ab8f2e582289761153549043fc/README.md"
+        },
+        {
+          "path": "src/evaluation/evaluate_qa.py",
+          "sha256": "ecce9c4c79dc89d99534ac17b383a5cbb5b9f0c69ee98adaf0684742e3d95251",
+          "url": "https://github.com/xiaowu0162/LongMemEval/blob/9e0b455f4ef0e2ab8f2e582289761153549043fc/src/evaluation/evaluate_qa.py"
+        }
+      ]
+    },
+    {
+      "dataset": "personamem",
+      "repository": "bowen-upenn/PersonaMem",
+      "revision": "d07e6ade22e85e0e5d562247323a9c3e07553226",
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "62c843f394c7b23af8abde359e9e5380647d8db262e539d27abfc40ddc36d875",
+          "url": "https://github.com/bowen-upenn/PersonaMem/blob/d07e6ade22e85e0e5d562247323a9c3e07553226/README.md"
+        },
+        {
+          "path": "inference.py",
+          "sha256": "9b77115a0d92d255c4c6ef6a710f8975e178d7f0c902739a1538411e06b8a71a",
+          "url": "https://github.com/bowen-upenn/PersonaMem/blob/d07e6ade22e85e0e5d562247323a9c3e07553226/inference.py"
+        },
+        {
+          "path": "inference_standalone_openai.py",
+          "sha256": "7ef9efca3bed32052a014efceb4daffad181ea4c3bad4bbbcb8ffbe386a9a472",
+          "url": "https://github.com/bowen-upenn/PersonaMem/blob/d07e6ade22e85e0e5d562247323a9c3e07553226/inference_standalone_openai.py"
+        }
+      ]
+    },
+    {
+      "dataset": "m3",
+      "repository": "ByteDance-Seed/m3-agent",
+      "revision": "0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c",
+      "files": [
+        {
+          "path": "README.md",
+          "sha256": "9df06d372fdb35699e98b353f717f0966601babbe21c1edb5f6e9235854674f8",
+          "url": "https://github.com/ByteDance-Seed/m3-agent/blob/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/README.md"
+        },
+        {
+          "path": "data/annotations/robot.json",
+          "sha256": "f43031bf0216a2ef2e7909f20ecd534e0098da17b63cdf94325a07f1bea372c1",
+          "url": "https://github.com/ByteDance-Seed/m3-agent/blob/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/data/annotations/robot.json"
+        },
+        {
+          "path": "data/annotations/web.json",
+          "sha256": "9af953751203471e00c360dbf4b6c072d5b0782ae89e26a60ea366f4d8f14e02",
+          "url": "https://github.com/ByteDance-Seed/m3-agent/blob/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/data/annotations/web.json"
+        },
+        {
+          "path": "m3_agent/control.py",
+          "sha256": "b8cd5884b1617ba64724367aebdc3e77b9cb3f8676006b37a94508d20a6ce03f",
+          "url": "https://github.com/ByteDance-Seed/m3-agent/blob/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/m3_agent/control.py"
+        },
+        {
+          "path": "mmagent/prompts.py",
+          "sha256": "e9967c958b67481e5e0635dcaf3f16df52e1ead8d7433e32417f2c1932a93740",
+          "url": "https://raw.githubusercontent.com/ByteDance-Seed/m3-agent/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/mmagent/prompts.py"
+        }
+      ]
+    }
+  ]
+}

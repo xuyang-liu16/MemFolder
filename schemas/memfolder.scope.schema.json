@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.scope"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.scope"
+    }
+  },
+  "$defs": {
+    "memfolder.scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "sample_id": {
+          "type": "string"
+        },
+        "partition_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "sample_id",
+        "partition_id"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

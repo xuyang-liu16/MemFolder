@@ -1,0 +1,13 @@
+{
+  "planner": {
+    "plugin": "recordfolder",
+    "parameters": {
+      "anchors": {
+        "plugin": "example.recency"
+      }
+    }
+  },
+  "operator": {
+    "plugin": "recordfolder-operator"
+  }
+}

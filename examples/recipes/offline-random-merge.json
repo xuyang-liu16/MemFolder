@@ -1,0 +1,13 @@
+{
+  "planner": {
+    "plugin": "random-merge"
+  },
+  "operator": {
+    "plugin": "text-operator",
+    "parameters": {
+      "writer": {
+        "plugin": "concat-writer"
+      }
+    }
+  }
+}

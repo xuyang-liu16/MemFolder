@@ -1,0 +1,8 @@
+{
+  "planner": {
+    "plugin": "recordfolder"
+  },
+  "operator": {
+    "plugin": "recordfolder-operator"
+  }
+}

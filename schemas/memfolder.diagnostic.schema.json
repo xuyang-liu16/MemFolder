@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.diagnostic"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.diagnostic"
+    }
+  },
+  "$defs": {
+    "memfolder.diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer"
+        },
+        "component_id": {
+          "type": "string"
+        },
+        "links": {
+          "$ref": "#/$defs/memfolder.diagnostic_links"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.artifact_ref"
+          }
+        }
+      },
+      "required": [
+        "schema",
+        "version",
+        "component_id"
+      ]
+    },
+    "memfolder.diagnostic_links": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "node_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "origins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.origin"
+          }
+        },
+        "action_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "candidate_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "question_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": []
+    },
+    "memfolder.origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/memfolder.scope"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope",
+        "source_id"
+      ]
+    },
+    "memfolder.scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "sample_id": {
+          "type": "string"
+        },
+        "partition_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "sample_id",
+        "partition_id"
+      ]
+    },
+    "memfolder.artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "schema_id": {
+          "type": "string"
+        },
+        "record_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "artifact_id",
+        "path",
+        "sha256",
+        "media_type"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

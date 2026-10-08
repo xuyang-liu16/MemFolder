@@ -1,0 +1,110 @@
+{
+  "experiment": {
+    "dataset": {
+      "plugin": "locomo-dataset",
+      "parameters": {
+        "path": "tiny_locomo.json"
+      }
+    },
+    "initializer": {
+      "plugin": "history-initializer"
+    },
+    "compression": {
+      "planner": {
+        "plugin": "random-merge"
+      },
+      "operator": {
+        "plugin": "text-operator",
+        "parameters": {
+          "writer": {
+            "plugin": "concat-writer"
+          }
+        }
+      },
+      "wrapper": {
+        "plugin": "memos-wrapper",
+        "parameters": {
+          "output_dir": "unused"
+        }
+      }
+    },
+    "reader": {
+      "plugin": "retrieval-reader",
+      "parameters": {
+        "answerer": {
+          "plugin": "context-echo-answerer"
+        }
+      }
+    },
+    "evaluator": {
+      "plugin": "metric-evaluator"
+    },
+    "capture": {
+      "profile": "cases",
+      "text_policy": "omit"
+    },
+    "observers": [
+      {
+        "plugin": "event-report-observer",
+        "required": true
+      }
+    ],
+    "output_dir": "../../build/experiments/offline-demo",
+    "run": {
+      "seed": 7,
+      "evaluate_source": true,
+      "budgets": [
+        {
+          "unit": "nodes",
+          "ratio": 0.5
+        }
+      ]
+    }
+  },
+  "output_dir": "../../build/experiments/offline-matrix",
+  "axes": [
+    {
+      "path": "compression",
+      "values": [
+        {
+          "planner": {
+            "plugin": "random-merge"
+          },
+          "operator": {
+            "plugin": "text-operator",
+            "parameters": {
+              "writer": {
+                "plugin": "concat-writer"
+              }
+            }
+          },
+          "wrapper": {
+            "plugin": "memos-wrapper",
+            "parameters": {
+              "output_dir": "unused"
+            }
+          }
+        },
+        {
+          "planner": {
+            "plugin": "random-prune"
+          },
+          "operator": {
+            "plugin": "rule-operator"
+          },
+          "wrapper": {
+            "plugin": "memos-wrapper",
+            "parameters": {
+              "output_dir": "unused"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "seeds": [
+    7,
+    11
+  ],
+  "max_runs": 4
+}

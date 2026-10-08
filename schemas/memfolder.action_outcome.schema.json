@@ -1,0 +1,409 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.action_outcome"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.action_outcome"
+    }
+  },
+  "$defs": {
+    "memfolder.action_outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.memory_record"
+          }
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "diagnostic_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.artifact_ref"
+          }
+        },
+        "usage": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "action_id",
+        "status"
+      ]
+    },
+    "memfolder.memory_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "node_id": {
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/memfolder.scope"
+        },
+        "order": {
+          "type": "integer"
+        },
+        "origins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.origin"
+          }
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.content_part"
+          }
+        },
+        "kind": {
+          "type": "string"
+        },
+        "eligible": {
+          "type": "boolean"
+        },
+        "retention": {
+          "$ref": "#/$defs/memfolder.retention"
+        },
+        "time_ranges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.time_range"
+          }
+        },
+        "available_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.time_point"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expires_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.time_point"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "embeddings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.embedding"
+          }
+        },
+        "native": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "node_id",
+        "scope",
+        "order",
+        "origins"
+      ]
+    },
+    "memfolder.scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "sample_id": {
+          "type": "string"
+        },
+        "partition_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "sample_id",
+        "partition_id"
+      ]
+    },
+    "memfolder.origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/memfolder.scope"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope",
+        "source_id"
+      ]
+    },
+    "memfolder.content_part": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "modality": {
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.artifact_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        "time_range": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.time_range"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "modality"
+      ]
+    },
+    "memfolder.artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "schema_id": {
+          "type": "string"
+        },
+        "record_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "artifact_id",
+        "path",
+        "sha256",
+        "media_type"
+      ]
+    },
+    "memfolder.time_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "$ref": "#/$defs/memfolder.time_point"
+        },
+        "end": {
+          "$ref": "#/$defs/memfolder.time_point"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ]
+    },
+    "memfolder.time_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "clock": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "clock"
+      ]
+    },
+    "memfolder.retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "may_drop": {
+          "type": "boolean"
+        },
+        "may_merge": {
+          "type": "boolean"
+        },
+        "may_rewrite": {
+          "type": "boolean"
+        }
+      },
+      "required": []
+    },
+    "memfolder.embedding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "space": {
+          "$ref": "#/$defs/memfolder.embedding_space"
+        },
+        "source_fingerprint": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.artifact_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "space",
+        "source_fingerprint"
+      ]
+    },
+    "memfolder.embedding_space": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        },
+        "dimension": {
+          "type": "integer"
+        },
+        "metric": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "revision",
+        "dimension"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

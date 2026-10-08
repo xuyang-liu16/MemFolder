@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.resolved_budget"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.resolved_budget"
+    }
+  },
+  "$defs": {
+    "memfolder.resolved_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/memfolder.budget_request"
+        },
+        "reference_fingerprint": {
+          "type": "string"
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.budget_target"
+          }
+        }
+      },
+      "required": [
+        "request",
+        "reference_fingerprint",
+        "targets"
+      ]
+    },
+    "memfolder.budget_request": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "unit": {
+          "type": "string"
+        },
+        "limit": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ratio": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "allocation": {
+          "type": "string"
+        },
+        "rounding": {
+          "type": "string"
+        },
+        "minimum": {
+          "type": "integer"
+        },
+        "enforcement": {
+          "type": "string"
+        },
+        "reference": {
+          "type": "string"
+        },
+        "measurement_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "unit"
+      ]
+    },
+    "memfolder.budget_target": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "$ref": "#/$defs/memfolder.budget_group"
+        },
+        "input_amount": {
+          "type": "integer"
+        },
+        "limit": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "group",
+        "input_amount",
+        "limit"
+      ]
+    },
+    "memfolder.budget_group": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "group_id": {
+          "type": "string"
+        },
+        "member_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "group_id",
+        "member_ids"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

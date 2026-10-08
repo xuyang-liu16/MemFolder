@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.diagnostic_links"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.diagnostic_links"
+    }
+  },
+  "$defs": {
+    "memfolder.diagnostic_links": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "node_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "origins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.origin"
+          }
+        },
+        "action_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "candidate_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "question_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": []
+    },
+    "memfolder.origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/memfolder.scope"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope",
+        "source_id"
+      ]
+    },
+    "memfolder.scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "sample_id": {
+          "type": "string"
+        },
+        "partition_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "sample_id",
+        "partition_id"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

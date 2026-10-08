@@ -1,0 +1,471 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.run_comparison"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.run_comparison"
+    }
+  },
+  "$defs": {
+    "memfolder.run_comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "left": {
+          "$ref": "#/$defs/memfolder.case_view"
+        },
+        "right": {
+          "$ref": "#/$defs/memfolder.case_view"
+        },
+        "alignment": {
+          "enum": [
+            "matched",
+            "incomparable",
+            "partial"
+          ]
+        },
+        "protocol_differences": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "left",
+        "right",
+        "alignment"
+      ]
+    },
+    "memfolder.case_view": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "run_id": {
+          "type": "string"
+        },
+        "sample": {
+          "$ref": "#/$defs/memfolder.sample_ref"
+        },
+        "origins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.origin"
+          }
+        },
+        "coverage": {
+          "$ref": "#/$defs/memfolder.trace_coverage"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.event"
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.artifact_ref"
+          }
+        },
+        "status": {
+          "enum": [
+            "complete_for_capture",
+            "partial",
+            "not_recorded"
+          ]
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "run_id",
+        "sample",
+        "origins",
+        "coverage"
+      ]
+    },
+    "memfolder.sample_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "sample_id": {
+          "type": "string"
+        },
+        "split": {
+          "type": "string"
+        },
+        "dataset_fingerprint": {
+          "type": "string"
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "dataset_id",
+        "sample_id",
+        "split",
+        "dataset_fingerprint"
+      ]
+    },
+    "memfolder.origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "$ref": "#/$defs/memfolder.scope"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scope",
+        "source_id"
+      ]
+    },
+    "memfolder.scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "sample_id": {
+          "type": "string"
+        },
+        "partition_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "sample_id",
+        "partition_id"
+      ]
+    },
+    "memfolder.trace_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "capture": {
+          "$ref": "#/$defs/memfolder.capture_policy"
+        },
+        "complete_for_capture": {
+          "type": "boolean"
+        },
+        "events_written": {
+          "type": "integer"
+        },
+        "events_dropped": {
+          "type": "integer"
+        },
+        "missing_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missing_stages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "capture",
+        "complete_for_capture"
+      ]
+    },
+    "memfolder.capture_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "enum": [
+            "off",
+            "summary",
+            "cases",
+            "full"
+          ]
+        },
+        "sample_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.scope"
+          }
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "diagnostic_schemas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "text_policy": {
+          "enum": [
+            "omit",
+            "redacted",
+            "selected",
+            "full"
+          ]
+        },
+        "vector_policy": {
+          "enum": [
+            "omit",
+            "metadata",
+            "selected",
+            "full"
+          ]
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": []
+    },
+    "memfolder.event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "stage": {
+          "type": "string"
+        },
+        "phase": {
+          "enum": [
+            "started",
+            "completed",
+            "validated",
+            "failed",
+            "diagnostic"
+          ]
+        },
+        "span_id": {
+          "type": "string"
+        },
+        "monotonic_ns": {
+          "type": "integer"
+        },
+        "sample": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.sample_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.scope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "round_index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parent_span_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "question_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "component_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.artifact_ref"
+          }
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "event_id",
+        "run_id",
+        "sequence",
+        "name",
+        "stage",
+        "phase",
+        "span_id",
+        "monotonic_ns"
+      ]
+    },
+    "memfolder.artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "schema_id": {
+          "type": "string"
+        },
+        "record_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "artifact_id",
+        "path",
+        "sha256",
+        "media_type"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

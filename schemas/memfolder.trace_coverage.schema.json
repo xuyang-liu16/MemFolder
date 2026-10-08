@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.trace_coverage"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.trace_coverage"
+    }
+  },
+  "$defs": {
+    "memfolder.trace_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "capture": {
+          "$ref": "#/$defs/memfolder.capture_policy"
+        },
+        "complete_for_capture": {
+          "type": "boolean"
+        },
+        "events_written": {
+          "type": "integer"
+        },
+        "events_dropped": {
+          "type": "integer"
+        },
+        "missing_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missing_stages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "capture",
+        "complete_for_capture"
+      ]
+    },
+    "memfolder.capture_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "enum": [
+            "off",
+            "summary",
+            "cases",
+            "full"
+          ]
+        },
+        "sample_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.scope"
+          }
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "diagnostic_schemas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "text_policy": {
+          "enum": [
+            "omit",
+            "redacted",
+            "selected",
+            "full"
+          ]
+        },
+        "vector_policy": {
+          "enum": [
+            "omit",
+            "metadata",
+            "selected",
+            "full"
+          ]
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": []
+    },
+    "memfolder.scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "sample_id": {
+          "type": "string"
+        },
+        "partition_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "sample_id",
+        "partition_id"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

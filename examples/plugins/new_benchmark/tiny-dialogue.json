@@ -1,0 +1,15 @@
+[
+  {
+    "sample_id": "conversation-a",
+    "turns": [
+      {"id": "turn-0", "speaker": "user", "text": "I am preparing a trip."},
+      {"id": "turn-1", "speaker": "assistant", "text": "We can discuss your itinerary."}
+    ],
+    "questions": [{"id": "q-0", "text": "What is the destination?", "answers": ["LABEL_ONLY_ANSWER_A"]}]
+  },
+  {
+    "sample_id": "conversation-b",
+    "turns": [{"id": "turn-0", "speaker": "user", "text": "I have a new hobby."}],
+    "questions": [{"id": "q-0", "text": "Which hobby?", "answers": ["LABEL_ONLY_ANSWER_B"]}]
+  }
+]

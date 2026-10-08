@@ -1,0 +1,16 @@
+{
+  "planner": {
+    "plugin": "memforest"
+  },
+  "operator": {
+    "plugin": "memforest-operator"
+  },
+  "features": [
+    {
+      "plugin": "event-time-features",
+      "parameters": {
+        "aggregation": "latest"
+      }
+    }
+  ]
+}

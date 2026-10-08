@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.score_batch"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.score_batch"
+    }
+  },
+  "$defs": {
+    "memfolder.score_batch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "candidate_fingerprint": {
+          "type": "string"
+        },
+        "scores": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.candidate_score"
+          }
+        },
+        "preference": {
+          "enum": [
+            "maximize",
+            "minimize"
+          ]
+        },
+        "complete": {
+          "type": "boolean"
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "candidate_fingerprint",
+        "scores"
+      ]
+    },
+    "memfolder.candidate_score": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        },
+        "components": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "candidate_id",
+        "value"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

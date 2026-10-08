@@ -1,0 +1,16 @@
+{
+  "dataset_id": "locomo",
+  "split": "test",
+  "sample_id": "locomo-1",
+  "selectors": {"user_id": ["Alice_1", "Bob_1"]},
+  "naive_timezone": "UTC",
+  "embedding_spaces": {
+    "default": {
+      "provider": "synthetic",
+      "model": "fixture-2d",
+      "revision": "1",
+      "dimension": 2,
+      "metric": "cosine"
+    }
+  }
+}

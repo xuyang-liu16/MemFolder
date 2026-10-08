@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.event"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.event"
+    }
+  },
+  "$defs": {
+    "memfolder.event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "stage": {
+          "type": "string"
+        },
+        "phase": {
+          "enum": [
+            "started",
+            "completed",
+            "validated",
+            "failed",
+            "diagnostic"
+          ]
+        },
+        "span_id": {
+          "type": "string"
+        },
+        "monotonic_ns": {
+          "type": "integer"
+        },
+        "sample": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.sample_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.scope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "round_index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "parent_span_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "question_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "component_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/memfolder.artifact_ref"
+          }
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "event_id",
+        "run_id",
+        "sequence",
+        "name",
+        "stage",
+        "phase",
+        "span_id",
+        "monotonic_ns"
+      ]
+    },
+    "memfolder.sample_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "sample_id": {
+          "type": "string"
+        },
+        "split": {
+          "type": "string"
+        },
+        "dataset_fingerprint": {
+          "type": "string"
+        },
+        "extensions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      },
+      "required": [
+        "dataset_id",
+        "sample_id",
+        "split",
+        "dataset_fingerprint"
+      ]
+    },
+    "memfolder.scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "sample_id": {
+          "type": "string"
+        },
+        "partition_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "sample_id",
+        "partition_id"
+      ]
+    },
+    "memfolder.artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "schema_id": {
+          "type": "string"
+        },
+        "record_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "artifact_id",
+        "path",
+        "sha256",
+        "media_type"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

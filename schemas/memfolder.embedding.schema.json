@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.embedding"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.embedding"
+    }
+  },
+  "$defs": {
+    "memfolder.embedding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "space": {
+          "$ref": "#/$defs/memfolder.embedding_space"
+        },
+        "source_fingerprint": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.artifact_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "space",
+        "source_fingerprint"
+      ]
+    },
+    "memfolder.embedding_space": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "string"
+        },
+        "dimension": {
+          "type": "integer"
+        },
+        "metric": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "revision",
+        "dimension"
+      ]
+    },
+    "memfolder.artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "schema_id": {
+          "type": "string"
+        },
+        "record_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "artifact_id",
+        "path",
+        "sha256",
+        "media_type"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

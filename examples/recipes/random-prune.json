@@ -1,0 +1,8 @@
+{
+  "planner": {
+    "plugin": "random-prune"
+  },
+  "operator": {
+    "plugin": "rule-operator"
+  }
+}

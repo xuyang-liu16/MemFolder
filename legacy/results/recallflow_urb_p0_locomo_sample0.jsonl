@@ -1,3 +1,0 @@
-{"method": "embedding_kcenter", "budget": 366, "num_nodes_before": 733, "num_nodes_after": 366, "num_representatives": 366, "num_exceptions": 0, "diagnostics_path": "external/rf_outputs/diagnostics/locomo_0/embedding_kcenter_budget50_seed0.json"}
-{"method": "recallflow_urb_prune_only", "budget": 366, "num_nodes_before": 733, "num_nodes_after": 366, "num_representatives": 366, "num_exceptions": 0, "diagnostics_path": "external/rf_outputs/diagnostics/locomo_0/recallflow_urb_prune_only_budget50_seed0.json"}
-{"method": "recallflow_urb_full", "budget": 366, "num_nodes_before": 733, "num_nodes_after": 497, "num_representatives": 366, "num_exceptions": 131, "diagnostics_path": "external/rf_outputs/diagnostics/locomo_0/recallflow_urb_full_budget50_seed0.json"}

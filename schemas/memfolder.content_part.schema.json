@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Structural schema. Semantic invariants are enforced by memfolder.core.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "schema_version",
+    "data"
+  ],
+  "properties": {
+    "schema_id": {
+      "const": "memfolder.content_part"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "data": {
+      "$ref": "#/$defs/memfolder.content_part"
+    }
+  },
+  "$defs": {
+    "memfolder.content_part": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "modality": {
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.artifact_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        "time_range": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/memfolder.time_range"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "modality"
+      ]
+    },
+    "memfolder.artifact_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "schema_id": {
+          "type": "string"
+        },
+        "record_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "artifact_id",
+        "path",
+        "sha256",
+        "media_type"
+      ]
+    },
+    "memfolder.time_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "$ref": "#/$defs/memfolder.time_point"
+        },
+        "end": {
+          "$ref": "#/$defs/memfolder.time_point"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ]
+    },
+    "memfolder.time_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "clock": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "clock"
+      ]
+    },
+    "JSONValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    }
+  }
+}

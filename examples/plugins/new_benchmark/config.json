@@ -1,0 +1,8 @@
+{
+  "plugin": "example.newbench",
+  "parameters": {
+    "path": "tiny-dialogue.json",
+    "dataset_id": "newbench",
+    "split": "test"
+  }
+}

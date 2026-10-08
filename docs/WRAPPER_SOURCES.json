@@ -1,0 +1,80 @@
+{
+  "checked_date": "2026-10-05",
+  "status": "passed",
+  "official_sources": {
+    "mem0": {
+      "repository": "mem0ai/mem0",
+      "revision": "abb81c88e1f738a8117d8293530fbc31a5ef8fd9",
+      "sources": [
+        {
+          "path": "mem0/memory/main.py",
+          "url": "https://raw.githubusercontent.com/mem0ai/mem0/abb81c88e1f738a8117d8293530fbc31a5ef8fd9/mem0/memory/main.py",
+          "sha256": "f329ca4a17af1fbefb32ac10d4cc7ae7ddbdb7435a87eb74c30915cff98b8b7c"
+        },
+        {
+          "path": "mem0/vector_stores/qdrant.py",
+          "url": "https://raw.githubusercontent.com/mem0ai/mem0/abb81c88e1f738a8117d8293530fbc31a5ef8fd9/mem0/vector_stores/qdrant.py",
+          "sha256": "da570579d5cad69e6f123fdfe32b725235a25604e70047666bec763ba6e2bf43"
+        }
+      ]
+    },
+    "memos": {
+      "repository": "MemTensor/MemOS",
+      "revision": "a7367d07e55db61099f7b4e2c1108bc5831a24f3",
+      "sources": [
+        {
+          "path": "src/memos/memories/textual/naive.py",
+          "url": "https://raw.githubusercontent.com/MemTensor/MemOS/a7367d07e55db61099f7b4e2c1108bc5831a24f3/src/memos/memories/textual/naive.py",
+          "sha256": "e46693f1238197678d34502f74caa2ca8e119d6af509f260ee1b4e72b1f9f606"
+        },
+        {
+          "path": "src/memos/memories/textual/tree.py",
+          "url": "https://raw.githubusercontent.com/MemTensor/MemOS/a7367d07e55db61099f7b4e2c1108bc5831a24f3/src/memos/memories/textual/tree.py",
+          "sha256": "c2ec0f3559169d04ec540f719428ce6271e6d5769fae56f9e41c2557ac4bca9e"
+        },
+        {
+          "path": "src/memos/memories/textual/item.py",
+          "url": "https://raw.githubusercontent.com/MemTensor/MemOS/a7367d07e55db61099f7b4e2c1108bc5831a24f3/src/memos/memories/textual/item.py",
+          "sha256": "b3571ddb63735ca1f4f480a605d76e477946654162335119410db7e5956d92ad"
+        },
+        {
+          "path": "src/memos/graph_dbs/neo4j.py",
+          "url": "https://raw.githubusercontent.com/MemTensor/MemOS/a7367d07e55db61099f7b4e2c1108bc5831a24f3/src/memos/graph_dbs/neo4j.py",
+          "sha256": "b873514db754380f0ff1a87e0c1e6acfdcc1ef8068dab21a44cf862105a80b3c"
+        }
+      ]
+    },
+    "m3": {
+      "repository": "ByteDance-Seed/m3-agent",
+      "revision": "0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c",
+      "sources": [
+        {
+          "path": "mmagent/videograph.py",
+          "url": "https://raw.githubusercontent.com/ByteDance-Seed/m3-agent/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/mmagent/videograph.py",
+          "sha256": "ce289bbb8b066b9fa64a9982ad5565854c334713628006039be295d4f8520a81"
+        }
+      ]
+    }
+  },
+  "historical_sources": [
+    {
+      "id": "m3:tools/g1s/materialize.py",
+      "sha256": "5326de3e7a56d4a1d2d37e35dfcb407be317c3a8322a056167035f0981b17717"
+    },
+    {
+      "id": "standard_release:g1s/g1s/steps/s6_materialize.py",
+      "sha256": "6931fc12066db9c9155bcf7aa31ebb1bb83cc5f5209a6a5ee2d03bff708b8474"
+    }
+  ],
+  "scope": "Source-format/API characterization, not complete SDK installation or live Neo4j execution",
+  "design": "Native representation independently implemented; graph projection and embeddings are replaceable",
+  "adaptations": [
+    "New output rather than historical inplace modification",
+    "Explicit encoder/model-space injection",
+    "Default max-weight edge redirection; optional projector replaces it",
+    "M3 text/clip/event indexes rebuilt; character names not recomputed",
+    "MemOS full credential configuration not exported",
+    "Mem0 named/sparse changed content requires specialized codec",
+    "Mem0 native expiration uses dates; sub-day expiration rejected"
+  ]
+}
