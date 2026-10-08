@@ -56,3 +56,22 @@ The editable export was checked for package integrity, slide bounds, font policy
 seven native charts with embedded data workbooks, and successful reimport/rendering.
 This does not establish native PowerPoint application compatibility or independent
 reproduction of the paper's measurements.
+
+## Original paper figures and tables
+
+The README method overview, context-compression results and retrieval-efficiency
+figures are complete-page PNG renders of the PDFs actually referenced by the
+owner-supplied manuscript. Their original PDFs are also included for zooming.
+They were not regenerated with an image model. Existing PNG exports were omitted
+because they differ from the manuscript PDF versions.
+
+- `paper-overview.png` / `.pdf`: `Figures/overview.pdf`.
+- `paper-context-results.png` / `.pdf`: `Figures/context_compression.pdf`.
+- `paper-retrieval-efficiency.png` / `.pdf`: `Figures/retrieval_latency.pdf`.
+- `paper-results-data.json`: exact active rows from the three main LaTeX tables,
+  with source fingerprints and a documented cross-source score discrepancy.
+- [Full result tables](../PAPER_RESULTS.md): Markdown category breakdowns for all
+  methods and reported record-reduction ratios. No values are inferred from pixels.
+
+The README hero remains the latest v5 watercolor design; the original paper method
+figure appears separately under **Paper → Method overview**.

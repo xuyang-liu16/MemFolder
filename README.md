@@ -10,7 +10,7 @@ Paper companion code · Composable infrastructure for memory compression researc
 
 [![CI](https://img.shields.io/badge/CI-GitHub_Actions-173453?logo=githubactions&logoColor=white)](https://github.com/xuyang-liu16/MemFolder/actions/workflows/tests.yml) [![Python](https://img.shields.io/badge/Python-3.11%2B-173453?logo=python&logoColor=white)](pyproject.toml) [![Paper overview](https://img.shields.io/badge/Paper-Overview-C48052)](#paper) [![Documentation](https://img.shields.io/badge/Docs-Module_guides-247D7A)](#documentation)
 
-[Paper](#paper) · [Architecture](#architecture) · [Quick start](#quick-start) · [Compose](#compose-an-experiment) · [Extend](#extend-one-module) · [Case analysis](#inspect-the-data-flow)
+[Paper](#paper) · [Main results](#main-results) · [Architecture](#architecture) · [Quick start](#quick-start) · [Compose](#compose-an-experiment) · [Extend](#extend-one-module) · [Case analysis](#inspect-the-data-flow)
 
 </div>
 
@@ -24,6 +24,14 @@ This repository contains the refactored implementation of the paper's methods an
 
 Long-term memory has two coupled costs. More records enlarge the retrieval search space; longer retrieved records increase the context processed by the agent. Merging records can reduce the first cost while increasing the second. MemFolder connects record consolidation and context compression through shared memory groups.
 
+### Method overview
+
+<div align="center">
+<a href="docs/assets/paper-overview.pdf"><img src="docs/assets/paper-overview.png" alt="Paper method overview: RecordFolder grounds entities, selects complementary anchors and refines temporal groups; ContextFolder plans facts, encodes each group and verifies recovery before retrieval and answering." width="1100"></a>
+</div>
+
+**Paper method figure.** RecordFolder folds related records into fewer retrieval units. ContextFolder reuses those groups for compact encoding with factual recovery checks. Click the figure for the original PDF.
+
 | Component | What it does | Replaceable parts |
 | --- | --- | --- |
 | **RecordFolder** | Grounds entities, selects complementary anchors, and refines groups through semantic/entity affinity and temporal chains. Each group becomes one retrieval unit. | Anchor selection, assignment, candidates, affinity, gating, matching and group routing |
@@ -31,15 +39,59 @@ Long-term memory has two coupled costs. More records enlarge the retrieval searc
 
 ContextFolder can use groups produced by other record compression methods. Its internal verification questions are derived from source memories; benchmark questions and gold answers remain outside compression.
 
-### Results reported in the paper
+The public paper link, author list and citation will be added when available.
 
-| Setting | Reported finding |
-| --- | --- |
-| RecordFolder on Mem0, averaged over LoCoMo, LongMemEval and PersonaMem | **99.0% performance retention with 50% fewer records**, 1.9 percentage points above MemForest in retention |
-| RecordFolder + ContextFolder on LoCoMo | **40.3% fewer tokens per record** relative to RecordFolder alone, at 50% record reduction |
-| RecordFolder + ContextFolder on LongMemEval | **37.9% fewer tokens per record** relative to RecordFolder alone, at 50% record reduction |
+## Main results
 
-These figures come from Table 1, Figure 3 and the accompanying manuscript analysis. Context compression involves an accuracy trade-off; token reduction is separate from the record budget. These are **paper-reported results**, not a claim that this refactored release has independently reproduced every score. The public paper link, author list and citation will be added when available.
+Results below come from the supplied manuscript tables and figures. Record-count reduction and tokens per record are separate compression measures. [All main-result tables](docs/PAPER_RESULTS.md) include every reported ratio and category; [the data file](docs/assets/paper-results-data.json) preserves exact values and source provenance. These are paper-reported results, not independently reproduced scores from this refactored release.
+
+### Record compression
+
+With **50% fewer records on Mem0**, RecordFolder retains **99.0%** of the uncompressed average accuracy across LoCoMo, LongMemEval and PersonaMem. The table below shows overall accuracy; the bold row identifies our method. Retention is relative to uncompressed Mem0.
+
+| Method | LoCoMo | LongMemEval | PersonaMem | Avg. | Retention (%) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Mem0 (uncompressed) | 60.2 | 55.2 | 67.9 | 61.1 | 100.0 |
+| Random Pruning | 43.1 | 43.6 | 64.3 | 50.3 | 82.3 |
+| KMeans | 46.8 | 47.0 | 65.2 | 53.0 | 86.7 |
+| DART | 51.9 | 41.4 | 64.3 | 52.5 | 85.9 |
+| Random Merging | 51.4 | 48.6 | 64.5 | 54.8 | 89.7 |
+| ToMe | 54.7 | 50.8 | 65.9 | 57.1 | 93.5 |
+| MemForest | 58.4 | 51.8 | 67.7 | 59.3 | 97.1 |
+| **MemFolder (RecordFolder)** | **59.3** | **55.0** | **67.2** | **60.5** | **99.0** |
+
+<details>
+<summary><b>Across record budgets and memory frameworks</b></summary>
+
+| Memory framework | Records removed | Uncompressed avg. | RecordFolder avg. | Retention (%) |
+| --- | ---: | ---: | ---: | ---: |
+| Mem0 | 30% | 61.1 | 61.5 | 100.7 |
+| Mem0 | 50% | 61.1 | 60.5 | 99.0 |
+| Mem0 | 70% | 61.1 | 59.0 | 96.6 |
+| MemOS | 50% | 71.1 | 64.7 | 91.0 |
+| MemOS | 70% | 71.1 | 60.3 | 84.8 |
+| M3-Agent | 50% | 39.1 | 39.6 | 101.3 |
+| M3-Agent | 70% | 39.1 | 40.1 | 102.6 |
+
+The complete baseline comparisons and category breakdowns for **Mem0 (30/50/70%)**, **MemOS (50/70%)** and **M3-Agent (50/70%)** are in [the full result tables](docs/PAPER_RESULTS.md).
+
+</details>
+
+### Context compression
+
+<div align="center">
+<a href="docs/assets/paper-context-results.pdf"><img src="docs/assets/paper-context-results.png" alt="Paper context-compression results at 50% record-count reduction: accuracy versus tokens per record on LoCoMo, LongMemEval and M3-Bench-robot, comparing ContextFolder, BabelTele, LLMLingua-2 and record-only baselines." width="1100"></a>
+</div>
+
+**Accuracy versus tokens per record at 50% record-count reduction.** Upper left is better. Colors identify the record compressor; markers identify the context compressor. After RecordFolder, ContextFolder further reduces tokens per record by **40.3% on LoCoMo** and **37.9% on LongMemEval**, with final accuracy of **56.6%** and **51.8%**, respectively. These token reductions are relative to RecordFolder alone.
+
+### Retrieval efficiency
+
+<div align="center">
+<a href="docs/assets/paper-retrieval-efficiency.pdf"><img src="docs/assets/paper-retrieval-efficiency.png" alt="Paper retrieval-efficiency results across five settings: mean and P95 latency at 100%, 50% and 30% of records retained, with reported mean speedups up to 5.34 times." width="1100"></a>
+</div>
+
+**Mean and P95 retrieval latency.** Keeping 30% of records yields the paper-reported **1.88–5.34×** mean speedups across five settings. The horizontal axis shows records **retained**, whereas the result tables state records **removed**.
 
 ## Architecture
 
@@ -172,6 +224,7 @@ Capture policies control public analysis projections. Private experiment artifac
 | I want to… | Guide |
 | --- | --- |
 | Run experiments and parameter sweeps | [Experiments](docs/EXPERIMENTS.md) |
+| Browse paper figures and all main-result tables | [Paper results](docs/PAPER_RESULTS.md) |
 | Understand methods and baseline variants | [Compression](docs/COMPRESSION.md) |
 | Load an existing memory library | [Memory loading](docs/LOADING.md) |
 | Parse a benchmark and select a scoring protocol | [Benchmarks](docs/BENCHMARKS.md) |
