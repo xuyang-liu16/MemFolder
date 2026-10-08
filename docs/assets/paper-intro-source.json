@@ -1,0 +1,18 @@
+{
+  "source_file": "7707_MemFolder_Structure_Guide (2).pdf",
+  "source_sha256": "d8e053b7ed4105cb51d96be155d691728299455a3644b7ea24be2d3c2e9dfbbe",
+  "page": 2,
+  "figure": 1,
+  "extraction": "Poppler pdftoppm: 500 dpi; crop x=750, y=568, width=2750, height=1170 pixels. Figure content is unchanged; manuscript header, line numbers, caption and body are outside the crop.",
+  "figure_bounds_pdf_points_top_origin": [
+    108.0,
+    81.86,
+    504.0,
+    250.23
+  ],
+  "png_sha256": "27f4385f21c9588404591ceb82eb486c5e3765f482e44d255e0dff985ae884c9",
+  "dimensions": [
+    2750,
+    1170
+  ]
+}

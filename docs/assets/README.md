@@ -1,6 +1,13 @@
 # README artwork
 
-- `memfolder-hero.png` presents the paper in three columns: memory growth before
+- `paper-intro.png` is Figure 1 on page 2 of the owner-supplied
+  `7707_MemFolder_Structure_Guide (2).pdf`. It appears after Highlights in both
+  language versions. It was rendered at 500 dpi and cropped to the figure bounds,
+  preserving all figure content while excluding the manuscript header, line
+  numbers and surrounding prose. Dimensions are 2750 × 1170. Source and output
+  fingerprints are recorded in [the extraction record](paper-intro-source.json).
+- `memfolder-hero.png` is the archived watercolor overview, retained as an optional
+  artwork asset. It is no longer displayed on the README. It presents memory growth before
   compression, RecordFolder / ContextFolder, and retrieval after compression.
   The warm watercolor style, assistant characters and source numerical labels
   originate in the authors' artwork. Scenes were recomposed for their panel
@@ -73,5 +80,8 @@ because they differ from the manuscript PDF versions.
 - [Full result tables](../PAPER_RESULTS.md): Markdown category breakdowns for all
   methods and reported record-reduction ratios. No values are inferred from pixels.
 
-The README hero remains the latest v5 watercolor design; the original paper method
-figure appears separately under **Paper → Method overview**.
+Both READMEs now begin with the title, News, Highlights and the introduction figure,
+followed by usage instructions and the full result display. The method figure and
+software architecture are available in the expandable usage section; the original
+experimental plots appear in the final results section. The v5 watercolor overview
+remains available as an archived asset.
