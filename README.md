@@ -14,6 +14,12 @@ Compress stored memories, retrieve relevant history, and answer with shorter con
 
 </div>
 
+<div align="center">
+<a href="docs/assets/paper-intro.png"><img src="docs/assets/paper-intro.png" alt="MemFolder graphical abstract: record count and text length create separate costs; RecordFolder and ContextFolder reduce them together." width="1100"></a>
+</div>
+
+**Graphical abstract.** RecordFolder reduces the number of retrieval units. ContextFolder reduces the text inside each unit, with fact-recovery checks guiding the encoding.
+
 <a id="news"></a>
 
 ## News
@@ -29,19 +35,13 @@ Compress stored memories, retrieve relevant history, and answer with shorter con
 - **Read shorter context.** At that record budget, ContextFolder further reduces tokens per record by **40.3% on LoCoMo** and **37.9% on LongMemEval**, relative to RecordFolder alone.
 - **Retrieve faster.** Keeping 30% of records gives up to **5.34×** mean retrieval speedup across the paper's five evaluation settings.
 
-The figures and values below report the paper's experiments. The repository provides configurable methods, data loaders, and evaluation tools for running your own comparisons.
+The figures and values on this page report the paper's experiments. The repository provides configurable methods, data loaders, and evaluation tools for running your own comparisons.
 
 <a id="overview"></a>
 
 ## Overview
 
 As an agent accumulates memories, it has more records to search and more text to read. MemFolder addresses both costs in sequence: first consolidate related records, then encode their content more compactly.
-
-<div align="center">
-<a href="docs/assets/paper-intro.png"><img src="docs/assets/paper-intro.png" alt="MemFolder graphical abstract: record count and text length create separate costs; RecordFolder and ContextFolder reduce them together." width="1100"></a>
-</div>
-
-**Graphical abstract.** RecordFolder reduces the number of retrieval units. ContextFolder reduces the text inside each unit, with fact-recovery checks guiding the encoding.
 
 The method follows the four stages shown below:
 

@@ -16,6 +16,12 @@
 
 </div>
 
+<div align="center">
+<a href="docs/assets/paper-intro.png"><img src="docs/assets/paper-intro.png" alt="MemFolder 摘要图：记录数量和文本长度分别带来搜索与阅读开销，RecordFolder 和 ContextFolder 配合压缩这两个维度。" width="1100"></a>
+</div>
+
+**摘要图。** RecordFolder 减少需要检索的记录数量；ContextFolder 缩短每条记录的内容，并通过事实恢复检查指导编码。
+
 <a id="news"></a>
 
 ## 最新动态
@@ -31,19 +37,13 @@
 - **缩短模型需要读取的上下文。** 在相同记录预算下，ContextFolder 相比单独使用 RecordFolder，进一步将 LoCoMo 和 LongMemEval 的每条记录 token 数降低 **40.3%** 和 **37.9%**。
 - **加快检索。** 保留 30% 记录时，论文的五个评测设置中最高取得 **5.34×** 的平均检索加速。
 
-以下图表和数值来自论文实验。仓库提供可配置的压缩方法、数据加载和评测工具，供你运行自己的对比实验。
+本页图表和数值来自论文实验。仓库提供可配置的压缩方法、数据加载和评测工具，供你运行自己的对比实验。
 
 <a id="overview"></a>
 
 ## Overview · 方法概览
 
 随着交互积累，智能体需要搜索更多记忆，也需要读取更长的文本。MemFolder 分两步降低这些开销：先把相关记录整合为更少的检索单元，再将每个单元的内容编码为更短的文本。
-
-<div align="center">
-<a href="docs/assets/paper-intro.png"><img src="docs/assets/paper-intro.png" alt="MemFolder 摘要图：记录数量和文本长度分别带来搜索与阅读开销，RecordFolder 和 ContextFolder 配合压缩这两个维度。" width="1100"></a>
-</div>
-
-**摘要图。** RecordFolder 减少需要检索的记录数量；ContextFolder 缩短每条记录的内容，并通过事实恢复检查指导编码。
 
 下方主图展示了完整流程：
 
