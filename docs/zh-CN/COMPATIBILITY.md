@@ -13,7 +13,8 @@
 | RandomPrune / RandomMerge | 记录、稳定 ID 和随机种子 | 选择记录或随机分组 |
 | KmeansPrune / KmeansMerge | 同一声明空间的向量 | 选择代表或合并聚类 |
 | DART 记忆变体 | 向量、pivot 设置和种子 | 选择记录 |
-| 文本 ToMe | 当前文本向量和文本处理组件 | 逐轮匹配、改写、更新向量 |
+| 文本 ToMe | 当前文本向量、可比较的事件时间或全部采用顺序时钟、chat 和 embeddings | 按时间二分、逐对合并、允许重复目的节点、立即更新向量 |
+| LLMLingua-2 Context | 最终 Record 快照和 LLMLingua-2 服务 | 每条当前记录改写一次，默认保留率 0.55；官方实现为可选依赖 |
 | M3 pooled ToMe | 向量和累计质量 | 按配置合并特征 |
 | 文本 MemForest | 语义特征和事件时间 | 逐轮聚类并沿树合并 |
 | M3 MemForest proxy | 向量 | 归档中的平均链接分组 |

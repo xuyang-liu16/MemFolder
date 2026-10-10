@@ -60,7 +60,9 @@ ContextFolder 使用 RecordFolder 的分组，也会改写仅含一条记录的�
 | KmeansPrune | [kmeans-prune.json](../../examples/recipes/kmeans-prune.json) | 保留靠近各聚类中心的真实记录 |
 | KmeansMerge | [kmeans-merge.json](../../examples/recipes/kmeans-merge.json) | 整合各聚类的记录 |
 | DART | [随机锚点](../../examples/recipes/dart-random_anchor_farthest.json)、[medoid](../../examples/recipes/dart-medoid_pivot.json) | 使用归档实验中的记忆选择变体 |
-| 文本 ToMe | [tome-text.json](../../examples/recipes/tome-text.json) | 逐轮匹配、合并文本并更新向量 |
+| 文本 ToMe | [tome-text.json](../../examples/recipes/tome-text.json) | 按时间连续二分，逐对合并当前文本，立即更新向量 |
+| 旧 BSM ToMe | [tome-bsm-text.json](../../examples/recipes/tome-bsm-text.json) | 显式命名为 `tome-bsm` 的历史交错二分变体 |
+| LLMLingua-2 Context | [llmlingua2-post-record.json](../../examples/recipes/llmlingua2-post-record.json) | 压缩最终 Record 文本，默认保留率 0.55 |
 | M3 ToMe | [tome-m3-pooled.json](../../examples/recipes/tome-m3-pooled.json) | 按累计质量合并特征 |
 | 文本 MemForest | [scope 预算](../../examples/recipes/memforest-mst-capacity.json)、[分簇预算](../../examples/recipes/memforest-mst-cluster-ceil.json) | 按语义和时间聚类，再沿树边合并 |
 | M3 MemForest proxy | [memforest-m3-proxy.json](../../examples/recipes/memforest-m3-proxy.json) | 使用归档中的平均链接近似实现 |
@@ -75,16 +77,24 @@ ContextFolder 使用 RecordFolder 的分组，也会改写仅含一条记录的�
 
 ## 组合分组方法与文本编码
 
-下面使用 ToMe 分组，再用 ContextFolder 编码：
+新版 ToMe 按时间将记录分成连续的较旧半部和较新半部。从较旧半部依次取节点，选择较新半部中当前最相似的节点，合并后保留较新节点的 ID、顺序和时间，并立即为新文本计算向量。同一较新节点可以接收多次合并。较旧半部耗尽后，如仍未达到节点预算，再次二分；达到预算即停止。详见[时间二分 ToMe 契约](../TOME_TEMPORAL_CONTRACT.md)。
+
+叠加 ContextFolder 或 LLMLingua-2 时，先完成 Record 压缩，再对最终快照中的各条当前文本独立压缩：
 
 ```json
 {
-  "planner": {"plugin": "tome"},
-  "operator": {"plugin": "contextfolder-operator"}
+  "planner": {"plugin": "current-record-rewrite"},
+  "operator": {
+    "plugin": "text-operator",
+    "parameters": {
+      "writer": {"plugin": "contextfolder-writer"},
+      "record_builder": {"plugin": "current-record-builder"}
+    }
+  }
 }
 ```
 
-将这部分放入实验的 `compression` 配置，同时加入特征和 wrapper。设置 `run.mode: "repeat"`，并配置 chat、embeddings 和 tokenizer。压缩配置示例见 [tome-with-contextfolder.json](../../examples/recipes/tome-with-contextfolder.json)。
+第二阶段使用 `mode: "once"`，不重新分组，也不恢复原始文本。参考[两阶段组合示例](../../examples/record_then_context.py)。[LLMLingua-2 配置](../LLMLINGUA2.md)默认使用 **rate 0.55**，与 Record keep50 节点预算不同；ContextFolder 自身的默认目标仍是 0.8。LLMLingua-2 的 rate 可以显式修改，并进入请求及实验指纹。历史 [tome-with-contextfolder.json](../../examples/recipes/tome-with-contextfolder.json) 已显式使用 `tome-bsm`，保留为旧分组加组内编码的变体。
 
 ## 提供特征与服务
 

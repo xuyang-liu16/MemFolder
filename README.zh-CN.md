@@ -96,6 +96,8 @@ python -m memfolder run examples/experiments/contextfolder-template.json
 
 两个模板都保留一半可压缩记录，并分别评测原始记忆和压缩后的记忆。ContextFolder 还会使用配置的 tokenizer 统计文本长度。已有 Mem0、MemOS 或 M3 记忆库时，按[加载指南](docs/zh-CN/LOADING.md)接入。
 
+默认[文本 ToMe](docs/TOME_TEMPORAL_CONTRACT.md)已改为按时间连续二分、逐对合并，并立即更新目的节点向量；历史交错 BSM 变体命名为 `tome-bsm`。[LLMLingua-2 Context 阶段](docs/LLMLINGUA2.md)独立压缩最终 Record 文本，默认保留率 **0.55**。下方表格保留论文报告时的设置；修改参数和方法后的实验结果使用单独的身份与记录。
+
 ### 对比实验与查看案例
 
 ```bash

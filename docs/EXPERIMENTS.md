@@ -89,6 +89,10 @@ This example retains half of the eligible records within each scope and also eva
 
 `ratio` is the fraction retained. A node budget controls record count. Text length is measured separately with the configured tokenizer. Text ToMe and MST MemForest use `run.mode: "repeat"` to alternate merging and embedding updates; see [Compression methods](COMPRESSION.md).
 
+When `run.max_rounds` is omitted or `null`, the runner uses an input-size-aware
+limit, allowing sequential ToMe to finish on libraries requiring more than 256
+pair merges. An explicit positive integer remains a hard iteration cap.
+
 ## Compare methods and seeds
 
 ```bash

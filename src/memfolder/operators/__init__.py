@@ -2,6 +2,7 @@
 from .types import Chat,ChatRequest,Tokenizer,Cl100kTokenizer,Member,Fact,EncodingRound,TextWriteResult
 from .text import TextOperator,RuleOperator,NativeSummaryWriter,ConcatWriter,ConservativeRecordBuilder,ChronologicalMembers
 from .memforest import MemForestPairWriter
+from .tome import TomePairWriter,TomeEmbeddingBuilder
 from .dispatch import DispatchOperator
 from .contextfolder import (ContextFolderWriter,FactPlanner,FactTriage,ContextCompiler,
     BlindFactVerifier,RepairFeedback,ShortestCleanRound)

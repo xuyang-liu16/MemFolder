@@ -126,6 +126,9 @@ class Mem0Codec:
                     if isinstance(payload.get('metadata'), dict): payload['metadata'].pop(key, None)
                 payload['memfolder'] = provenance[node.node_id]
             payload['data'] = node.text
+            if node.extensions.get('memfolder.timestamp_policy') == 'latest':
+                from ..operators.text import timestamp
+                payload['timestamp'] = timestamp(node, 'latest')
             for alias in ('memory','text'):payload.pop(alias,None)
             if node.expires_at is not None:
                 require(node.expires_at.clock == 'unix_seconds', 'Mem0 expiration requires wall-clock seconds')

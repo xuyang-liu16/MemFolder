@@ -60,7 +60,9 @@ A recipe selects a planner, which decides record membership, and an operator, wh
 | KmeansPrune | [kmeans-prune.json](../examples/recipes/kmeans-prune.json) | Keep a real record near each cluster center |
 | KmeansMerge | [kmeans-merge.json](../examples/recipes/kmeans-merge.json) | Merge each cluster with the chosen writer |
 | DART | [random-anchor](../examples/recipes/dart-random_anchor_farthest.json), [medoid](../examples/recipes/dart-medoid_pivot.json) | Select memories using archived DART adaptations |
-| Text ToMe | [tome-text.json](../examples/recipes/tome-text.json) | Repeated bipartite matching, text merging, and re-embedding |
+| Text ToMe | [tome-text.json](../examples/recipes/tome-text.json) | Chronological halves, sequential current-text pair merges, and immediate re-embedding |
+| Legacy BSM ToMe | [tome-bsm-text.json](../examples/recipes/tome-bsm-text.json) | Earlier alternating-partition adaptation, explicitly named `tome-bsm` |
+| LLMLingua-2 context | [llmlingua2-post-record.json](../examples/recipes/llmlingua2-post-record.json) | Compress final current Record text with default rate 0.55 |
 | M3 ToMe | [tome-m3-pooled.json](../examples/recipes/tome-m3-pooled.json) | Pool features with their accumulated mass |
 | Text MemForest | [scope budget](../examples/recipes/memforest-mst-capacity.json), [cluster budgets](../examples/recipes/memforest-mst-cluster-ceil.json) | Cluster by semantics and time, then merge along tree edges |
 | M3 MemForest proxy | [memforest-m3-proxy.json](../examples/recipes/memforest-m3-proxy.json) | Use the archived average-linkage approximation |
@@ -68,23 +70,35 @@ A recipe selects a planner, which decides record membership, and an operator, wh
 
 Method variants have different execution settings:
 
-- **Text ToMe and text MemForest:** set `mode` to `repeat` and provide an embedding service for rewritten text. MemForest uses the latest member event time after a merge.
+- **Text ToMe and text MemForest:** set `mode` to `repeat` and provide an embedding service for rewritten text. ToMe splits temporally ordered records into contiguous older/newer halves, merges each older source into its most similar current newer destination, retains the newer ID/order/time, and immediately re-embeds the resulting text. Destinations can receive multiple sequential merges. Re-split when the older half is exhausted and stop at the resolved budget, including mid-pass. See [the temporal ToMe contract](TOME_TEMPORAL_CONTRACT.md). MemForest uses the latest member event time after a merge.
 - **MemForest cluster budgets:** the historical variant rounds each initial cluster's retained count upward. Use `resolve_memforest_budget()` with the matching clusterer and ratio. The scope-budget variant allocates a specified total count instead.
 - **StreamMeCo:** selection uses separate class quotas for clip-level and sample-level records. Its recipe works with those quotas or a compatible external budget. This port implements graph compression; the upstream method's temporal retrieval stage requires a separate reader implementation.
 - **DART and the M3 MemForest proxy:** these names identify the memory adaptations in the archived experiments. Use the exact recipe name when reporting a comparison.
 
 ## Combine grouping and text encoding
 
-For example, this configuration uses ToMe grouping with ContextFolder encoding:
+For temporal ToMe followed by ContextFolder or LLMLingua-2, first complete the
+Record stage, then rewrite each record in its final snapshot. The context stage
+does not re-read original records or change their membership:
 
 ```json
 {
-  "planner": {"plugin": "tome"},
-  "operator": {"plugin": "contextfolder-operator"}
+  "planner": {"plugin": "current-record-rewrite"},
+  "operator": {
+    "plugin": "text-operator",
+    "parameters": {
+      "writer": {"plugin": "contextfolder-writer"},
+      "record_builder": {"plugin": "current-record-builder"}
+    }
+  }
 }
 ```
 
-Place it in the experiment's `compression` section along with its feature providers and wrapper. Set `run.mode` to `repeat` and configure chat, embeddings, and a tokenizer. A complete compression recipe appears in [tome-with-contextfolder.json](../examples/recipes/tome-with-contextfolder.json).
+Use `mode: "once"` for this context stage and configure its services. The
+[two-stage example](../examples/record_then_context.py) composes the stages;
+[LLMLingua-2](LLMLINGUA2.md) documents rate 0.55 and the official optional service.
+The earlier [tome-with-contextfolder.json](../examples/recipes/tome-with-contextfolder.json)
+is retained explicitly as legacy `tome-bsm` grouping with a group writer.
 
 ## Supply features and services
 

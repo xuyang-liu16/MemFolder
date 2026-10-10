@@ -22,7 +22,8 @@ write('recordfolder-semantic-only', {'plugin': 'recordfolder', 'parameters': {
 write('random-prune', {'plugin': 'random-prune'}, {'plugin': 'rule-operator'})
 write('random-merge', {'plugin': 'random-merge'}, {'plugin': 'recordfolder-operator'})
 write('random-merge-round', {'plugin': 'random-merge-round'}, {'plugin': 'recordfolder-operator'})
-write('tome-text', {'plugin': 'tome'}, {'plugin': 'recordfolder-operator'})
+write('tome-text', {'plugin': 'tome'}, {'plugin': 'tome-operator'}, ({'plugin': 'current-embeddings'},))
+write('tome-bsm-text', {'plugin': 'tome-bsm'}, {'plugin': 'recordfolder-operator'})
 write('tome-m3-pooled', {'plugin': 'tome-pooled', 'parameters': {'partitioner': {
     'plugin': 'tome-pooled-groups', 'parameters': {'id_order': 'source_numeric'}}}}, {'plugin': 'recordfolder-operator'})
 memforest_features = ({'plugin': 'event-time-features', 'parameters': {'aggregation': 'latest'}},)
@@ -37,7 +38,13 @@ for variant in ('random_anchor_farthest', 'medoid_pivot'):
 for method in ('kmeans-prune', 'kmeans-merge'):
     write(method, {'plugin': method}, {'plugin': 'rule-operator' if method.endswith('prune') else 'recordfolder-operator'})
 write('streammeco-official', {'plugin': 'streammeco'}, {'plugin': 'rule-operator'})
-write('tome-with-contextfolder', {'plugin': 'tome'}, {'plugin': 'contextfolder-operator'})
+write('tome-with-contextfolder', {'plugin': 'tome-bsm'}, {'plugin': 'contextfolder-operator'})
+write('llmlingua2-post-record', {'plugin': 'current-record-rewrite'},
+    {'plugin': 'llmlingua2-operator', 'parameters': {'writer': {
+        'plugin': 'llmlingua2-writer', 'parameters': {'rate': 0.55}}}})
+write('contextfolder-post-record', {'plugin': 'current-record-rewrite'},
+    {'plugin': 'text-operator', 'parameters': {'writer': {'plugin': 'contextfolder-writer'},
+                                           'record_builder': {'plugin': 'current-record-builder'}}})
 write('random-anchors-with-contextfolder', {'plugin': 'contextfolder', 'parameters': {
     'anchors': {'plugin': 'random-selector'}}}, {'plugin': 'contextfolder-operator'})
 write('external-recency-with-recordfolder', {'plugin': 'recordfolder', 'parameters': {

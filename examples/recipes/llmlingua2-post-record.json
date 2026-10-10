@@ -1,0 +1,9 @@
+{
+  "planner": {"plugin": "current-record-rewrite"},
+  "operator": {
+    "plugin": "llmlingua2-operator",
+    "parameters": {
+      "writer": {"plugin": "llmlingua2-writer", "parameters": {"rate": 0.55}}
+    }
+  }
+}

@@ -3,6 +3,7 @@
     "plugin": "tome"
   },
   "operator": {
-    "plugin": "recordfolder-operator"
-  }
+    "plugin": "tome-operator"
+  },
+  "features": [{"plugin": "current-embeddings"}]
 }

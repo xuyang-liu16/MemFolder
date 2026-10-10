@@ -144,7 +144,11 @@ class CompressionEngine:
         validate_result(request.snapshot,planning.plan,result)
         return CompressionStep(request,planning,result)
 
-    async def run(self,request,*,services=None,diagnostics=None,projector=None,originals=None,max_rounds=256):
+    async def run(self,request,*,services=None,diagnostics=None,projector=None,originals=None,max_rounds=None):
+        if max_rounds is None:
+            # Sequential plugins may remove just one node per step. Keep a finite
+            # default large enough for an arbitrary input size; explicit caps win.
+            max_rounds=max(256,sum(n.eligible for n in request.snapshot.records))
         require(type(max_rounds) is int and max_rounds>0,'max_rounds must be positive')
         initial=request.snapshot;current=initial;archive=originals or OriginalArchive(initial)
         services=services or ServiceMap();diagnostics=diagnostics or NullDiagnostics();projector=projector or NodeProjection()

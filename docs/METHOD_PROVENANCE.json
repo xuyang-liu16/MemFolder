@@ -105,5 +105,23 @@
     "target": "planning/baselines.py",
     "symbols": null,
     "changes": "Two DART memory adaptation variants, stable seed and retained pivots; not transformer token DART."
+  },
+  {
+    "source": "User-approved chronological memory ToMe contract, 2026-10-09",
+    "target": "planning/temporal_tome.py",
+    "symbols": [
+      "TemporalTomePlanner"
+    ],
+    "changes": "New default tome/tome-temporal memory adaptation: contiguous temporal halves, dynamic current-vector pair selection, repeated destinations, latest timestamp and repeated halving. Historical alternating BSM remains tome-bsm."
+  },
+  {
+    "source": "https://pypi.org/project/llmlingua/0.2.2/",
+    "target": "lingua_service.py",
+    "symbols": [
+      "LLMLingua2Service"
+    ],
+    "changes": "Adapter calling the optional official package, with default writer retention rate 0.55, explicit use_llmlingua2=True, use_context_level_filter=False, current Record input and no target_token override.",
+    "model": "microsoft/llmlingua-2-xlm-roberta-large-meetingbank",
+    "model_revision": "ebaba9b0e874dadd3003ffcff828e4397e568089"
   }
 ]

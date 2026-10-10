@@ -13,7 +13,8 @@ An experiment combines a dataset, a memory framework, a compression method, and 
 | RandomPrune / RandomMerge | Records, stable IDs, and a seed | Select records or form random groups |
 | KmeansPrune / KmeansMerge | Vectors in one declared space | Select representatives or merge clusters |
 | DART memory variants | Vectors, pivot settings, and a seed | Select records |
-| Text ToMe | Current-text vectors and a text writer | Repeated matching, rewriting, and embedding refresh |
+| Text ToMe | Current content-bound vectors, comparable event times (or all-ordinal order), chat and embeddings | Sequential chronological-half pair merges, repeated destinations, immediate embedding refresh |
+| LLMLingua-2 context | Final current Record snapshot and an LLMLingua-2 service | One rewrite per record, default retention rate 0.55; optional official package |
 | M3 pooled ToMe | Vectors and accumulated mass | Pool features according to the recipe |
 | Text MemForest | Semantic features and event times | Repeated cluster/tree-based merging |
 | M3 MemForest proxy | Vectors | Archived average-linkage grouping |

@@ -94,6 +94,13 @@ python -m memfolder run examples/experiments/contextfolder-template.json
 
 Both templates retain half of the eligible records and evaluate the original and compressed memories. ContextFolder also measures text length with the configured tokenizer. To use an existing Mem0, MemOS, or M3 store, follow [Loading memories](docs/LOADING.md).
 
+The default [text ToMe](docs/TOME_TEMPORAL_CONTRACT.md) now uses chronological
+halves and sequential merges with fresh destination embeddings. The earlier
+alternating BSM variant is available as `tome-bsm`. The independent
+[LLMLingua-2 context stage](docs/LLMLINGUA2.md) compresses final Record text with
+default rate **0.55**. Paper tables below retain their reported settings;
+experiments with corrected configurations have separate results and identities.
+
 ### Compare and inspect runs
 
 ```bash

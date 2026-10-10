@@ -274,9 +274,11 @@ def assemble_experiment(configuration,*,registry=None,base_path=None,available=(
     redactor=build(configuration['redactor'],'redactor') if 'redactor' in configuration else None
     require(capture.text_policy!='redacted' or redactor is not None,'Redacted capture needs a redactor plugin')
     services=tuple((name,build(v,'service')) for name,v in configuration.get('services',{}).items())
-    settings={'seed':0,'mode':'once','max_rounds':256,'budgets':[],'allow_empty':False,'evaluate_source':False}
+    settings={'seed':0,'mode':'once','max_rounds':None,'budgets':[],'allow_empty':False,'evaluate_source':False}
     require(set(configuration.get('run',{}))<=set(settings),'Unknown run setting');settings.update(configuration.get('run',{}))
-    require(type(settings['seed']) is int and settings['mode'] in ('once','repeat') and type(settings['max_rounds']) is int and settings['max_rounds']>0,'Invalid batch execution settings')
+    require(type(settings['seed']) is int and settings['mode'] in ('once','repeat') and
+            (settings['max_rounds'] is None or type(settings['max_rounds']) is int and settings['max_rounds']>0),
+            'Invalid batch execution settings')
     require(all(type(settings[k]) is bool for k in ('allow_empty','evaluate_source')),'Invalid run boolean')
     require(not settings['evaluate_source'] or reader is not None,'Source QA requires reader/evaluator')
     for b in settings['budgets']:from_data(BudgetRequest,to_data(FrozenMap(b)))

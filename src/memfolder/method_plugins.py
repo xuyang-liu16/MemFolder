@@ -10,6 +10,10 @@ from .plugins import PluginRequest
 from .planning import recordfolder as rf, baselines as bl, features as ft, memforest as mf, streammeco as sm
 from .operators import text as tx, contextfolder as cf
 from .operators.memforest import MemForestPairWriter
+from .planning.temporal_tome import TemporalTomePlanner
+from .operators.tome import TomePairWriter, TomeEmbeddingBuilder
+from .planning.rewrite import CurrentRecordRewritePlanner
+from .operators.llmlingua2 import LLMLingua2Writer, CurrentRecordRewriteBuilder
 
 
 class Factory:
@@ -61,7 +65,10 @@ def factories():
         'random-groups':Factory(bl.RandomGroups),
         'random-merge':Factory(bl.PartitionPlanner,roles={'partitioner':'partitioner'}),
         'random-merge-round':Factory(bl.TomeRoundPlanner,defaults={'random_pairs':True}),
-        'tome':Factory(bl.TomeRoundPlanner),
+        'tome':Factory(TemporalTomePlanner),
+        'tome-temporal':Factory(TemporalTomePlanner),
+        'tome-bsm':Factory(bl.TomeRoundPlanner),
+        'current-record-rewrite':Factory(CurrentRecordRewritePlanner),
         'tome-pooled-groups':Factory(bl.TomePooledGroups),
         'tome-pooled':Factory(bl.PartitionPlanner,defaults={'partitioner':{'plugin':'tome-pooled-groups'}},roles={'partitioner':'partitioner'}),
         'average-linkage-groups':Factory(bl.AverageLinkageGroups),
@@ -77,7 +84,19 @@ def factories():
         'importance-diversity':Factory(sm.ImportanceDiversity),
         'streammeco':Factory(sm.StreamMeCoPlanner,roles={'classifier':'graph_classifier','first_selector':'graph_selector','second_selector':'graph_selector'}),
         'native-summary':Factory(tx.NativeSummaryWriter),'concat-writer':Factory(tx.ConcatWriter),
+        'tome-pair-writer':Factory(TomePairWriter),
+        'tome-embedding-builder':Factory(TomeEmbeddingBuilder,roles={'builder':'record_builder'}),
+        'tome-operator':Factory(tx.TextOperator,
+            defaults={'writer':{'plugin':'tome-pair-writer'},
+                      'record_builder':{'plugin':'tome-embedding-builder'}},
+            roles={'writer':'text_writer','record_builder':'record_builder','member_resolver':'member_resolver'}),
         'record-builder':Factory(tx.ConservativeRecordBuilder),
+        'llmlingua2-writer':Factory(LLMLingua2Writer),
+        'current-record-builder':Factory(CurrentRecordRewriteBuilder,roles={'builder':'record_builder'}),
+        'llmlingua2-operator':Factory(tx.TextOperator,
+            defaults={'writer':{'plugin':'llmlingua2-writer'},
+                      'record_builder':{'plugin':'current-record-builder'}},
+            roles={'writer':'text_writer','record_builder':'record_builder','member_resolver':'member_resolver'}),
         'member-resolver':Factory(tx.ChronologicalMembers),
         'text-operator':Factory(tx.TextOperator,roles={'writer':'text_writer','record_builder':'record_builder','member_resolver':'member_resolver'}),
         'recordfolder-operator':Factory(tx.TextOperator,roles={'writer':'text_writer','record_builder':'record_builder','member_resolver':'member_resolver'}),
@@ -90,6 +109,7 @@ def factories():
         'context-compiler':Factory(cf.ContextCompiler),'blind-verifier':Factory(cf.BlindFactVerifier),
         'repair-feedback':Factory(cf.RepairFeedback),'shortest-clean-round':Factory(cf.ShortestCleanRound),
         'stored-embeddings':Factory(ft.StoredEmbeddings),'semantic-encoder':Factory(ft.SemanticEmbeddingFeatures),
+        'current-embeddings':Factory(ft.CurrentEmbeddings),
         'grounding-features':Factory(ft.GroundingFeatures),'event-time-features':Factory(ft.EventTimeFeatures),
     }
 

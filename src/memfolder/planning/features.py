@@ -27,6 +27,33 @@ class StoredEmbeddings:
         return FeatureBatch(name=self.name,input_fingerprint=snapshot.fingerprint,rows=tuple(rows),space=self.space)
 
 
+@dataclass(frozen=True)
+class CurrentEmbeddings:
+    """Read current content-bound vectors; reject stale or ambiguous spaces."""
+    space: object | None = None
+    name: str = 'semantic'
+    spec = spec('features.current_content_embeddings', 'feature_provider')
+    def extract(self, snapshot, context):
+        nodes = [n for n in snapshot.records if n.eligible]
+        if not nodes:
+            return FeatureBatch(name=self.name, input_fingerprint=snapshot.fingerprint,
+                                rows=(), space=self.space)
+        spaces = {e.space for n in nodes for e in n.embeddings
+                  if e.source_fingerprint == n.content_fingerprint}
+        space = self.space
+        if space is None:
+            require(len(spaces) == 1, 'Current embeddings require an explicit unambiguous space')
+            space = next(iter(spaces))
+        rows = []
+        for n in nodes:
+            matches = [e for e in n.embeddings if e.space == space
+                       and e.source_fingerprint == n.content_fingerprint and e.values]
+            require(len(matches) == 1, 'Missing/stale current content embedding: '+n.node_id)
+            rows.append(FeatureRow(node_id=n.node_id, vector=matches[0].values))
+        return FeatureBatch(name=self.name, input_fingerprint=snapshot.fingerprint,
+                           rows=tuple(rows), space=space)
+
+
 def event_time(value, *, timezone_offset=None):
     """Only explicit ISO timestamps/numbers with a declared clock are admitted."""
     if type(value) in (int,float): return float(value)

@@ -12,6 +12,7 @@ from .evaluation.evaluator import MetricEvaluator,ProtocolEvaluator
 from .evaluation.official import LongMemEvalPrompt,M3Prompt,OfficialJudge,PersonaMemAccuracy
 from .observation import EventReportObserver,RegexRedactor
 from .services import CompatibleHTTP,CachedService,TiktokenCounter
+from .lingua_service import LLMLingua2Service
 from .planning.grounding import ChatGroundingFeatures
 from .evaluation.native import QdrantRetriever,M3NativeRetriever,SDKRetriever
 from .evaluation.prompts import QAPrompt,ContextFolderPrompt
@@ -65,5 +66,6 @@ def register_experiment_plugins(registry):
         'event-report-observer':StageFactory(EventReportObserver),'regex-redactor':StageFactory(RegexRedactor),
         'compatible-http':StageFactory(CompatibleHTTP),'cached-service':StageFactory(CachedService,roles={'provider':'service'},paths=('path',)),
         'tiktoken-counter':StageFactory(TiktokenCounter),'chat-grounding':StageFactory(ChatGroundingFeatures),
+        'llmlingua2-service':StageFactory(LLMLingua2Service),
     }
     for name,factory in factories.items():registry.register(name,factory)
