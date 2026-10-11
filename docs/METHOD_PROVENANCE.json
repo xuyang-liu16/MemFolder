@@ -15,18 +15,19 @@
   {
     "source": "reference_releases/MemFolder-main_2026-10-04_e8b562e02c3a/MemFolder-main/g1s/g1s/tele/prompts.py",
     "sha256": "d5d825a05c6bc77a20a81008f05a502be8862ac25d9b7f514f4beb151f730f04",
-    "target": "operators/prompts.py",
+    "target": "operators/contextfolder_prompts.py",
     "symbols": null,
-    "changes": "Prompt wording preserved"
+    "changes": "ContextFolder internal encoding/fact-recovery instructions preserved; symbols renamed for scope; standalone summary removed in favor of shared MemForest merge."
   },
   {
-    "source": "reference_releases/MemFolder-main_2026-10-04_e8b562e02c3a/MemFolder-main/g1s/g1s/steps/s5_merge.py",
-    "sha256": "7464fc17f707416d409899ed6b7de74cb9441cf4905f68f1dc5d7a3613a6c97e",
-    "target": "operators/native_prompt.py",
+    "source": "Archived MemForest supplementary Mem0/evaluation/MemForest.py: PROMPT_TEMPLATE",
+    "sha256": "181b0d937a2371f196ebdd5da5924195fcb2ba12ca37398f59e05404123120f1",
+    "target": "prompt_templates.py",
     "symbols": [
-      "MERGE_PROMPT"
+      "MEMFOREST_MERGE_PROMPT"
     ],
-    "changes": "Prompt wording preserved"
+    "prompt_sha256": "9e24917dbd537d43afeeffa0e6a506199108bcdbbe0820bee51de6ddff109a4c",
+    "changes": "Verbatim shared pair merge template for RecordFolder, ToMe, MemForest and other built-in summary writers; N-way adapter changes only count and slots."
   },
   {
     "source": "backups/g1s_v12_2026-10-04/source/g1s_code_package_20260921/external/11318_MemForest_Efficient_Agen_Supplementary_Material/Mem0/evaluation/MemForest.py",
@@ -128,7 +129,11 @@
     "source": "Recovered pre-refactor tmp/mf_textzip_20260924/run_textzip_encode_lme.py and run_materialize_v12_lme.py",
     "sha256": "8dd326be6c11e702431c0c95f1df9547e5d9320a72f21a6d271c89565b1c2e2d",
     "target": "lingua_historical.py; wrappers/lingua_historical.py",
-    "symbols": ["HistoricalLLMLingua2Service", "HistoricalLLMLinguaMem0Codec", "HistoricalAllTextEmbeddings"],
+    "symbols": [
+      "HistoricalLLMLingua2Service",
+      "HistoricalLLMLinguaMem0Codec",
+      "HistoricalAllTextEmbeddings"
+    ],
     "changes": "Opt-in current Record text strip, cl100k max(6, python_round(rate*tokens)), force digits and conditional newline, pinned checkpoint with original constructor defaults, latest-contributor point ID/native payload and all-text embedding refresh. Empty output explicitly retains normalized input; other inference failures propagate.",
     "materializer_sha256": "54d5b8e38fa09ed089a195eb7d56db32630aa3c72405348f47fc912543978677",
     "reproduction_scope": "Recovered compression calls and QA-visible projection policy. The original common.py snapshot and its parser dependency are now recovered; the explicit sample_index option restores its owner projection. Original plan-specific compression_* annotations, Record parents, converted QA schema, historical package/runtime and complete numerical paper reproduction remain unverified. The completed 51.8% local check predates the all-text embedding/native-payload and owner-schema follow-ups.",
@@ -139,8 +144,31 @@
     "source": "Recovered tmp/lme_g1s_20260917/common.py, archived agent-6 Write at wire.jsonl:118 with successful result at :119; complete later reads in agent-7:59 and agent-8:62 agree",
     "sha256": "bad245057ab515586b5b57f0e3e32df2227f3ea4ffc9a55f65bbe4879d01fabb",
     "target": "wrappers/lingua_historical.py",
-    "symbols": ["HistoricalLLMLinguaMem0Codec.owner_id", "HistoricalLLMLinguaMem0Codec.owner_ids"],
+    "symbols": [
+      "HistoricalLLMLinguaMem0Codec.owner_id",
+      "HistoricalLLMLinguaMem0Codec.owner_ids"
+    ],
     "changes": "Explicit sample_index enables the recovered user_qid_turn/assistant_qid_turn to User_i/Assistant_i projection. Already converted IDs for this sample are accepted, unrelated IDs rejected. Callers must use the same mapped owners for native retrieval filters and QA speaker labels. Default native-owner preservation and all other codecs remain unchanged.",
     "reproduction_scope": "Byte-backed schema recovery and offline all-500 current-source comparison; original grouping/NPZ/converted QA artifacts and causal accuracy effects remain unverified. No corrected-schema score is reported."
+  },
+  {
+    "source": "Archived MemForest supplementary ANSWER_PROMPT",
+    "sha256": "407bea1c1453dc6832c234bb1ed936d401d796fabcc0b28337a47ba63517d3ba",
+    "target": "prompt_templates.py",
+    "symbols": [
+      "MEMFOREST_QA_PROMPT"
+    ],
+    "prompt_sha256": "f3c786104816bba61d03b7f41c2be45009e6c8c296a04d9712ab1a59e4ae2399",
+    "changes": "Verbatim shared benchmark QA template; no method-specific decoder legend."
+  },
+  {
+    "source": "Archived MemForest supplementary ACCURACY_PROMPT",
+    "sha256": "5643455db1d7355b599a2225120c0209d0248550629ff31a71469276302c48f4",
+    "target": "prompt_templates.py",
+    "symbols": [
+      "MEMFOREST_JUDGE_PROMPT"
+    ],
+    "prompt_sha256": "62395dd312a631dfd9355026a0b69cc936018274c3198b6365b5c2a5c9bca9e0",
+    "changes": "Verbatim shared benchmark judge template; strict JSON CORRECT/WRONG label parsing."
   }
 ]

@@ -9,7 +9,7 @@ from .benchmarks.composite import CompositeDatasetLoader
 from .initialization import HistoryInitializer,SummaryInitializer,BankInitializer
 from .evaluation import retrieval as rt,reader as rd,metrics as mt
 from .evaluation.evaluator import MetricEvaluator,ProtocolEvaluator
-from .evaluation.official import LongMemEvalPrompt,M3Prompt,OfficialJudge,PersonaMemAccuracy
+from .evaluation.official import PersonaMemAccuracy
 from .observation import EventReportObserver,RegexRedactor
 from .services import CompatibleHTTP,CachedService,TiktokenCounter
 from .lingua_service import LLMLingua2Service
@@ -52,7 +52,8 @@ def register_experiment_plugins(registry):
         'graph-retriever':StageFactory(rt.GraphExpansion,roles={'retriever':'retriever'}),
         'time-decay-retriever':StageFactory(rt.TimeDecayRetriever,roles={'retriever':'retriever'}),
         'context-builder':StageFactory(rd.ContextBuilder),'chat-answerer':StageFactory(rd.ChatAnswerer,roles={'prompt_builder':'reader_prompt'}),
-        'qa-prompt':StageFactory(QAPrompt),'contextfolder-qa-prompt':StageFactory(ContextFolderPrompt),
+        'qa-prompt':StageFactory(QAPrompt),'memforest-qa-prompt':StageFactory(QAPrompt),
+        'contextfolder-qa-prompt':StageFactory(ContextFolderPrompt),
         'context-echo-answerer':StageFactory(rd.ContextAnswerer),
         'retrieval-reader':StageFactory(rd.RetrievalReader,roles={'retriever':'retriever','context_builder':'context_builder','answerer':'answerer'}),
         'metric-evaluator':StageFactory(MetricEvaluator,lists={'metrics':'metric'}),
@@ -60,10 +61,8 @@ def register_experiment_plugins(registry):
         'exact-match':StageFactory(mt.ExactMatch),'token-f1':StageFactory(mt.TokenF1),
         'choice-accuracy':StageFactory(mt.ChoiceAccuracy),'evidence-recall':StageFactory(mt.EvidenceRecall),
         'locomo-f1':StageFactory(mt.LoCoMoF1),'chat-judge':StageFactory(mt.ChatJudge),
+        'memforest-judge':StageFactory(mt.ChatJudge),
         'personamem-accuracy':StageFactory(PersonaMemAccuracy),
-        'official-judge':StageFactory(OfficialJudge,roles={'prompt':'judge_prompt'}),
-        'longmemeval-judge-prompt':StageFactory(LongMemEvalPrompt,paths=('path',)),
-        'm3-judge-prompt':StageFactory(M3Prompt,paths=('path',)),
         'event-report-observer':StageFactory(EventReportObserver),'regex-redactor':StageFactory(RegexRedactor),
         'compatible-http':StageFactory(CompatibleHTTP),'cached-service':StageFactory(CachedService,roles={'provider':'service'},paths=('path',)),
         'tiktoken-counter':StageFactory(TiktokenCounter),'chat-grounding':StageFactory(ChatGroundingFeatures),

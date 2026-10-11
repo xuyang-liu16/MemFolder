@@ -25,8 +25,9 @@ cross owner/scope boundaries. If every record lacks parsed time, explicit
 ordinal `order` is used; mixed unknown/known times or incomparable clocks fail.
 
 `TemporalTomePlanner` selects pairs and maintains pending halves in versioned
-state. `TomePairWriter` generates pair text using the historical fact-preserving
-prompt; replace it with any `text_writer` plugin to explore another compressor.
+state. `TomePairWriter` generates pair text using the shared MemForest merge
+prompt, identical to the other record writers for the same pair. An explicit
+external `text_writer` plugin can define a separately recorded research protocol.
 `TomeEmbeddingBuilder` retains conservative origin/time-range lineage, records
 the effective latest timestamp, and attaches a freshly content-bound embedding.
 Its inner `record_builder` and encoder service/space are configurable.

@@ -11,8 +11,9 @@ import json
 from ..core import FrozenMap, fingerprint
 from ..core.values import require
 from ..planning.common import emit, spec
-from . import prompts
+from . import contextfolder_prompts as prompts
 from .types import ChatRequest, TextWriteResult, Fact, EncodingRound
+from ..prompt_protocol import PROTOCOL_ID, render_merge, prompt_hash
 
 
 def json_object(raw):
@@ -82,13 +83,13 @@ class BlindFactVerifier:
         questions='\n'.join(f'{i+1}. {f.question}' for i,f in enumerate(facts))
         # The answerer receives encoding + questions + decode legend ONLY.
         answered=json_object(await chat(context,self.service,'blind_answer',
-            prompts.ANSWER.format(enc=encoding,questions=questions,k=len(facts)),self.answer_tokens))
+            prompts.BLIND_FACT_ANSWER.format(enc=encoding,questions=questions,k=len(facts)),self.answer_tokens))
         answers=answered.get('answers',[])
         if not isinstance(answers,list): answers=[]
         block='\n'.join(f'{i+1}. {a}' for i,a in enumerate(answers))
         reference='\n'.join(f'{i+1}. fact: {f.fact} | expected: {f.answer}' for i,f in enumerate(facts))
         judged=json_object(await chat(context,self.service,'fact_judge',
-            prompts.JUDGE.format(facts=reference,answers=block,k=len(facts)),self.judge_tokens))
+            prompts.FACT_RECOVERY_JUDGE.format(facts=reference,answers=block,k=len(facts)),self.judge_tokens))
         ok=judged.get('ok',[])
         if not isinstance(ok,list): ok=[]
         # Invalid/missing verdicts are failure; never coerce arbitrary strings to True.
@@ -160,13 +161,17 @@ class ContextFolderWriter:
             facts=[{'question_hash':fingerprint(f.question),'importance':f.importance,'inferable':f.inferable,
                     **({'fact':f.fact,'question':f.question,'answer':f.answer} if self.capture_text else {})} for f in facts])
         if not facts:
-            text=(await chat(context,self.fallback_service,'oneshot_fallback',prompts.ONESHOT.format(n=len(members),lines=lines))).strip()
+            fallback_prompt=render_merge(members)
+            text=(await resolve(context.services.require(self.fallback_service).complete(ChatRequest(
+                role='memory_merge',prompt=fallback_prompt,prompt_id=PROTOCOL_ID+'.merge')))).strip()
             if not text:
                 text='; '.join(m.text.strip() for m in members if m.text.strip());reason='empty_oneshot_source_fallback'
             else: reason='no_facts_oneshot'
             return TextWriteResult(text=text,status='fallback',reason_code=reason,
                 usage=FrozenMap({'chat_calls':meter.calls,'source_tokens':source_tokens,'final_tokens':count(text)}),
-                metadata=FrozenMap({'design':'contextfolder.triage_loop.v1','measurement_id':measurement,'status':'oneshot'}))
+                metadata=FrozenMap({'design':'contextfolder.triage_loop.v1','measurement_id':measurement,'status':'oneshot',
+                    'protocol_id':PROTOCOL_ID,'prompt_id':PROTOCOL_ID+'.merge',
+                    'prompt_sha256':prompt_hash(fallback_prompt)}))
         rounds=[];feedback=''
         for index in range(1,self.max_rounds+1):
             encoding=await resolve(self.compiler.compile(lines,len(members),facts,source_tokens,target,feedback,context))

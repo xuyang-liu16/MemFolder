@@ -9,7 +9,7 @@ from ..core import (ActionOutcome, OperatorResult, MemoryRecord, ContentPart, Re
 from ..core.values import require
 from ..planning.common import emit, spec
 from .types import Member, ChatRequest, TextWriteResult
-from .native_prompt import MERGE_PROMPT
+from ..prompt_protocol import PROTOCOL_ID, render_merge, prompt_hash
 
 
 def timestamp(record,policy='earliest'):
@@ -56,11 +56,13 @@ class NativeSummaryWriter:
     async def write(self,members,action,context):
         if len(members)==1:
             return TextWriteResult(text=members[0].text,usage=FrozenMap({'chat_calls':0}))
-        lines='\n'.join(f'Memory {i+1}: {m.text}, Timestamp {i+1}: {m.time}' for i,m in enumerate(members))
-        prompt=MERGE_PROMPT.format(n=len(members),lines=lines)
-        text=await resolve(context.services.require(self.service).complete(ChatRequest(role='native_merge',prompt=prompt)))
+        prompt=render_merge(members)
+        text=await resolve(context.services.require(self.service).complete(ChatRequest(
+            role='memory_merge',prompt=prompt,prompt_id=PROTOCOL_ID+'.merge')))
         require(type(text) is str and bool(text.strip()),'Native summary returned empty or invalid text')
-        return TextWriteResult(text=text,usage=FrozenMap({'chat_calls':1}),metadata=FrozenMap({'prompt_id':'recordfolder.oneshot_n_way.v1'}))
+        return TextWriteResult(text=text,usage=FrozenMap({'chat_calls':1}),metadata=FrozenMap({
+            'prompt_id':PROTOCOL_ID+'.merge','protocol_id':PROTOCOL_ID,
+            'prompt_sha256':prompt_hash(prompt),'input_count':len(members)}))
 
 
 @dataclass(frozen=True)

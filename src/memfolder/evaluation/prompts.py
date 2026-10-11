@@ -1,26 +1,26 @@
-"""Replaceable reader protocol: decoding instructions are explicit experimental inputs."""
+"""MemForest benchmark reader protocol, independent of compression method."""
 from dataclasses import dataclass
-import json
-from ..core import to_data
+from ..core.values import require
 from ..planning.common import spec
+from ..prompt_protocol import PROTOCOL_ID, render_qa, public_question_text
 
 
 @dataclass(frozen=True)
 class QAPrompt:
-    instructions: str = 'Answer using the memory context. If it is insufficient, say you do not know. For a multiple-choice question, return the option label only.'
+    instructions: str = ''
     legend: str = ''
-    spec=spec('reader.prompt','reader_prompt')
+    protocol_id: str = PROTOCOL_ID
+    spec=spec('reader.memforest_prompt.v1','reader_prompt')
+    def __post_init__(self):
+        require(not self.instructions and not self.legend and self.protocol_id == PROTOCOL_ID,
+                'Shared MemForest QA forbids method-specific instructions or decoder legends; use an explicit external protocol plugin for a separate experiment')
     def build(self,question,memory_context):
-        prompt=self.instructions+'\n'
-        if self.legend:prompt+='DECODE LEGEND\n'+self.legend+'\n'
-        if question.as_of is not None:
-            prompt+='QUERY TIME\n'+json.dumps(to_data(question.as_of))+'\n'
-        prompt+='MEMORY\n'+memory_context.text+'\nQUESTION\n'+'\n'.join(p.text or '' for p in question.parts)
-        if question.options:prompt+='\nOPTIONS\n'+json.dumps(to_data(question.options),ensure_ascii=False)
-        return prompt
+        groups=getattr(memory_context,'speaker_memories',())
+        if not groups:
+            groups=(('user',(memory_context.text,) if memory_context.text else ()),('assistant',()))
+        return render_qa(public_question_text(question),groups)
 
 
 @dataclass(frozen=True)
 class ContextFolderPrompt(QAPrompt):
-    legend: str = '@YYYY-MM-DD marks the fact date; A -> B marks change or transfer; E: x marks an entity attribute; ~ marks negation; ? marks uncertainty; semicolons and newlines separate facts. Decode compact facts before answering. Preserve names, dates, numbers and relation directions.'
-    spec=spec('reader.contextfolder_prompt','reader_prompt')
+    """Legacy configuration alias: identical QA, with no appended legend."""

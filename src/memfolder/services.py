@@ -41,8 +41,9 @@ class CompatibleHTTP:
         except (HTTPError,URLError,TimeoutError,OSError):
             raise ContractError('Provider request failed; inspect endpoint/credentials outside run artifacts') from None
     async def complete(self,request):
-        payload={'model':self.model,'messages':[{'role':'user','content':request.prompt}],'temperature':request.temperature}
+        payload={'model':self.model,'messages':[{'role':request.message_role,'content':request.prompt}],'temperature':request.temperature}
         if request.max_tokens is not None:payload['max_tokens']=request.max_tokens
+        if request.response_format is not None:payload['response_format']={'type':request.response_format}
         response=await asyncio.to_thread(self._post,'chat/completions',payload)
         require(type(response) is dict and len(response.get('choices',[]))==1,'Invalid chat response')
         text=response['choices'][0]['message']['content'];require(type(text) is str and text.strip(),'Empty/nontext provider response');return text
@@ -82,7 +83,8 @@ class CachedService:
     @property
     def cache_identity(self):return fingerprint((self.namespace,getattr(self.provider,'cache_identity',self.namespace)))
     async def complete(self,request):
-        key=fingerprint((self.cache_identity,'chat',request.role,request.prompt,request.max_tokens,request.temperature))
+        key=fingerprint((self.cache_identity,'chat',request.role,request.prompt,request.max_tokens,
+                         request.temperature,request.message_role,request.response_format,request.prompt_id))
         value=await asyncio.to_thread(cache_get,self.path,key)
         if value is None:
             value=await resolve(self.provider.complete(request));require(type(value) is str and value.strip(),'Invalid cached chat result')

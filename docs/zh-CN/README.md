@@ -12,6 +12,7 @@ MemFolder 压缩智能体保存的历史记忆，并评测使用压缩记忆后�
 | 使用 RecordFolder、ContextFolder 或基线方法 | [压缩方法](COMPRESSION.md) |
 | 读取 Mem0、MemOS 或 M3 记忆库 | [加载记忆](LOADING.md) |
 | 选择数据集和评分方法 | [基准与评测](BENCHMARKS.md) |
+| 查看统一的 merge、QA 和 judge 模板 | [MemForest 提示词协议](PROMPT_PROTOCOL.md) |
 | 按框架格式保存压缩记忆 | [框架接入](WRAPPERS.md) |
 | 查看分组、检索内容和答案 | [运行分析](ANALYSIS.md) |
 

@@ -6,6 +6,8 @@ from ..planning.common import spec,resolve,emit
 from ..operators.types import ChatRequest
 from .retrieval import LexicalRetriever,visible
 from .prompts import QAPrompt
+from ..operators.text import timestamp
+from ..prompt_protocol import prompt_hash
 
 
 @dataclass(frozen=True)
@@ -13,6 +15,7 @@ class ReaderContext:
     text: str
     parts: tuple
     node_ids: tuple
+    speaker_memories: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -21,26 +24,32 @@ class ContextBuilder:
     spec=spec('reader.context','context_builder')
     def build(self,question,view,retrieval,context):
         require(self.max_characters>0,'Invalid context budget')
-        nodes={n.node_id:n for n in view.snapshot.records};lines=[];parts=[];used=0;included=[]
+        nodes={n.node_id:n for n in view.snapshot.records};lines=[];parts=[];used=0;included=[];groups={}
         for hit in retrieval:
             node=nodes[hit.node_id]
             line='['+node.node_id+'] '+(node.text or '<'+node.kind+' memory>')
             if used+len(line)>self.max_characters:continue
             lines.append(line);parts.extend(node.parts);included.append(node.node_id);used+=len(line)
-        return ReaderContext('\n'.join(lines),tuple(parts),tuple(included))
+            owner=str(node.native.get('user_id') or node.scope.partition_id)
+            groups.setdefault(owner,[]).append(f'{timestamp(node,"latest")}: {node.text or "<"+node.kind+" memory>"}')
+        return ReaderContext('\n'.join(lines),tuple(parts),tuple(included),
+                             tuple((owner,tuple(memories)) for owner,memories in groups.items()))
 
 
 @dataclass(frozen=True)
 class ChatAnswerer:
     service: str = 'chat'
-    max_tokens: int = 512
+    max_tokens: int | None = None
     prompt_builder: object = QAPrompt()
     spec=spec('reader.chat_answer','answerer')
     async def answer(self,question,memory_context,context):
         prompt=self.prompt_builder.build(question,memory_context)
-        answer=await resolve(context.services.require(self.service).complete(ChatRequest(role='memory_qa',prompt=prompt,max_tokens=self.max_tokens)))
+        answer=await resolve(context.services.require(self.service).complete(ChatRequest(role='memory_qa',
+            prompt=prompt,max_tokens=self.max_tokens,message_role='system',prompt_id=self.prompt_builder.spec.plugin_id)))
         require(type(answer) is str and bool(answer.strip()),'Reader returned empty/nontext answer')
-        return (ContentPart(modality='text',text=answer),),FrozenMap({'chat_calls':1})
+        return (ContentPart(modality='text',text=answer),),FrozenMap({'chat_calls':1,
+            'prompt_id':self.prompt_builder.spec.plugin_id,'prompt_sha256':prompt_hash(prompt),
+            'protocol_id':getattr(self.prompt_builder,'protocol_id','external')})
 
 
 @dataclass(frozen=True)
@@ -77,7 +86,8 @@ class RetrievalReader:
             except ValueError:store=None
             if store is not None:
                 ref=store.put('reader/'+fingerprint((question.sample.identity,question.question_id))[:24]+'.json',
-                    {'text':built.text,'parts':to_data(built.parts),'node_ids':built.node_ids},schema_id='memfolder.reader_context')
+                    {'text':built.text,'parts':to_data(built.parts),'node_ids':built.node_ids,
+                     'speaker_memories':getattr(built,'speaker_memories',())},schema_id='memfolder.reader_context')
             prediction=Prediction(question_id=question.question_id,sample=question.sample,answer=tuple(answer),retrieval=found,reader_context=ref,usage=usage)
             predictions.append(prediction)
             emit(context,self.spec.plugin_id,'memfolder.reader.prediction',nodes=[h.node_id for h in found],

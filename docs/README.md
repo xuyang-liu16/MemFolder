@@ -13,6 +13,7 @@ MemFolder compresses an agent's stored memories and evaluates how well the agent
 | Configure chronological ToMe and LLMLingua-2 after Record compression | [ToMe contract](TOME_TEMPORAL_CONTRACT.md) · [LLMLingua-2](LLMLINGUA2.md) |
 | Import a Mem0, MemOS, or M3 memory store | [Loading memories](LOADING.md) |
 | Load a benchmark and choose its scoring method | [Benchmarks and evaluation](BENCHMARKS.md) |
+| Use the shared merge, QA and judge templates | [MemForest prompt protocol](PROMPT_PROTOCOL.md) |
 | Save compressed memories in a framework's format | [Framework integration](WRAPPERS.md) |
 | Inspect grouping decisions, retrieved memories, and answers | [Inspecting a run](ANALYSIS.md) |
 

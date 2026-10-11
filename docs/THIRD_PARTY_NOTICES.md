@@ -22,6 +22,10 @@ RecordFolder and ContextFolder come from the project authors' standardized `MemF
 
 The MemForest tree-based routines and pair prompt come from `11318_MemForest_Efficient_Agen_Supplementary_Material`. Release permission for that archive still needs confirmation from the source. Licensing for the historical contributions remains under review, and their existing terms continue to apply.
 
+The shared merge, QA and judge literals are archived MemForest templates.
+Source-file and literal SHA-256 hashes are recorded in
+`src/memfolder/prompt_templates.py` and [METHOD_PROVENANCE.json](METHOD_PROVENANCE.json).
+
 The KMeans stages are implemented in this project and call scikit-learn through an optional dependency.
 
 ## Dataset and framework sources

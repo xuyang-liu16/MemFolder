@@ -1,4 +1,8 @@
-"""Ported from the user-designated standard release; see docs/METHOD_PROVENANCE.json."""
+"""ContextFolder's internal encoding and fact-recovery loop only.
+
+These instructions consume source-derived facts, never benchmark QA or labels.
+Record merge and benchmark QA/judge use the shared MemForest prompt protocol.
+"""
 FACT_EXTRACT = """From the memory entries below, extract the KEY facts as a numbered list, and for each fact write a short verification question with its expected answer. A reader should be able to answer the question IF AND ONLY IF the fact is recoverable from a compressed encoding.
 
 Scale the fact count to the input size: about 1 atomic fact per 10 source tokens (min 2, max 12), one question per atomic fact. A short single memory deserves only 2-4 questions about its ONE core fact (e.g. who/what/when), not a decomposition into trivia. For each fact also provide:
@@ -47,7 +51,7 @@ VERIFIER FEEDBACK on your previous attempt ({prev_tokens} tokens, budget {target
 {issues}
 Re-encode by EDITING the previous encoding. Restore ONLY the facts listed as MUST-FIX; do not spend tokens on optional facts unless you are well under budget; if over budget, tighten wording or drop optional facts. Output ONLY the new encoding."""
 
-ANSWER = """You see ONLY a compact memory encoding and a list of questions. The encoding uses this grammar: `@YYYY-MM-DD` = the fact happened on that date; `A -> B` = A changed into / transferred to B; `E: x` = entity E has attribute/state x; `~` = negation; `?` = uncertain/rumored; `;` and newlines separate facts; filler words are dropped but entity names, numbers, dates and relation directions are preserved. First silently decode each line into plain facts, then answer each question using ONLY what can be inferred from the decoded facts. If a question cannot be answered from the encoding, answer exactly "UNKNOWN". Do not guess.
+BLIND_FACT_ANSWER = """You see ONLY a compact memory encoding and a list of questions. The encoding uses this grammar: `@YYYY-MM-DD` = the fact happened on that date; `A -> B` = A changed into / transferred to B; `E: x` = entity E has attribute/state x; `~` = negation; `?` = uncertain/rumored; `;` and newlines separate facts; filler words are dropped but entity names, numbers, dates and relation directions are preserved. First silently decode each line into plain facts, then answer each question using ONLY what can be inferred from the decoded facts. If a question cannot be answered from the encoding, answer exactly "UNKNOWN". Do not guess.
 
 Encoding:
 {enc}
@@ -57,7 +61,7 @@ Questions:
 
 Answer with JSON only: {{"answers": ["...", "..."]}} with exactly {k} entries."""
 
-JUDGE = """Reference key facts with expected answers:
+FACT_RECOVERY_JUDGE = """Reference key facts with expected answers:
 {facts}
 
 A blind reader who saw only the compressed encoding answered the verification questions as follows:
@@ -65,8 +69,3 @@ A blind reader who saw only the compressed encoding answered the verification qu
 
 For each item, decide whether the fact is recoverable from the encoding. Be LENIENT: accept semantically close or partial answers, accept answers that are reasonably inferable from the encoding even if wording differs; only exact numbers/dates/names must match. Mark false only when the answer is missing, "UNKNOWN", or contradicts the fact.
 Answer with JSON only: {{"ok": [true, false, ...]}} with exactly {k} entries."""
-
-ONESHOT = """
-You are an intelligent memory summarization assistant. Please extract the core information from the following {n} memory entries and their timestamps, and generate a concise and coherent summary paragraph. If the memories contain relative time expressions, convert them into specific dates based on the corresponding timestamps. The summary length should be kept within the combined length of the original memories as much as possible. Output only the final summarized result, without any explanations.
-{lines}
-"""

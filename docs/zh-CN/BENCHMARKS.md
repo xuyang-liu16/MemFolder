@@ -9,10 +9,10 @@
 | 数据集 | 加载器 | 输入 | 评测 |
 | --- | --- | --- | --- |
 | LoCoMo | `locomo-dataset` | 对话 session、日期、说话人和问答标注 | `locomo-f1`，可加 `evidence-recall` |
-| LongMemEval | `longmemeval-dataset` | session 历史、日期、问题时间和答案 | `official-judge` 配合 `longmemeval-judge-prompt` |
+| LongMemEval | `longmemeval-dataset` | session 历史、日期、问题时间和答案 | `memforest-judge`（统一 MemForest 协议） |
 | PersonaMem v1 | `personamem-dataset` | 问题 CSV 和上下文 JSONL | `personamem-accuracy` |
-| M3 robot | `m3-dataset`，`variant: "robot"` | 标注及视频到记忆加载器的映射 | `official-judge` 配合 `m3-judge-prompt` |
-| M3 web | `m3-dataset`，`variant: "web"` | 标注及视频到记忆加载器的映射 | `official-judge` 配合 `m3-judge-prompt` |
+| M3 robot | `m3-dataset`，`variant: "robot"` | 标注及视频到记忆加载器的映射 | `memforest-judge`（统一 MemForest 协议） |
+| M3 web | `m3-dataset`，`variant: "web"` | 标注及视频到记忆加载器的映射 | `memforest-judge`（统一 MemForest 协议） |
 
 从 [dataset-components.json](../../examples/experiments/dataset-components.json) 选择组件，填入实验的 `dataset`，再设置实际路径和样本范围。例如：
 
@@ -41,31 +41,28 @@
 
 **M3 robot** 读取 `before_clip` 之前的记忆节点，**M3 web** 使用所选视频的完整图。每个视频都应明确配置 `memory_loaders`，并提供包含所需截断节点的图。两类任务均采用开放问答。
 
-## 配置模型评分
+## 配置统一的 MemForest judge
 
-LongMemEval 和 M3 评分需要 `judge` 服务和固定版本的上游提示词文件。例如：
+内置 LLM QA 和 judge 统一使用 MemForest 协议，不随 benchmark 或压缩方法切换。
+在 services.chat、services.judge 中配置模型，评测器使用：
 
 ```json
 {
   "plugin": "metric-evaluator",
   "parameters": {
-    "metrics": [{
-      "plugin": "official-judge",
-      "parameters": {
-        "service": "judge",
-        "prompt": {
-          "plugin": "longmemeval-judge-prompt",
-          "parameters": {"path": "upstream/evaluate_qa.py", "sha256": "REPLACE_PINNED_FILE_SHA256"}
-        }
-      }
-    }]
+    "metrics": [{"plugin": "memforest-judge", "parameters": {"service": "judge"}}]
   }
 }
 ```
 
-使用 [BENCHMARK_SOURCES.json](../BENCHMARK_SOURCES.json) 中记录的源文件和哈希，再在 `services.judge` 配置模型。加载器从源文件提取需要的提示词函数或字符串。指标版本会记录文件哈希和上游的 YES 子串判断规则。
+兼容名称 chat-judge 指向同一个实现。请求 JSON 输出，只接受
+{"label":"CORRECT"} 或 {"label":"WRONG"}，指标版本记录公共模板 SHA-256。
+这属于使用数据集标准答案的 MemForest 自动判分协议；不能据此宣称采用了
+LongMemEval 或 M3 的官方评分协议。旧的 official-judge 和 benchmark 专属
+judge-prompt 内置选择器已删除。独立研究评分协议通过显式外部插件注册。
 
-通用 `chat-judge` 使用自己的 YES/NO 判断方式。实验要求采用固定版本的 LongMemEval 或 M3 规则时，请选择 `official-judge`。
+公共 merge、QA、judge、压缩方法例外和迁移规则见
+[提示词协议](PROMPT_PROTOCOL.md)。下列确定性 benchmark 指标继续保留各自身份。
 
 ## 一致地解读分数
 

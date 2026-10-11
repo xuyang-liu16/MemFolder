@@ -56,7 +56,7 @@
         "plugin": "chat-answerer",
         "parameters": {
           "prompt_builder": {
-            "plugin": "contextfolder-qa-prompt"
+            "plugin": "memforest-qa-prompt"
           }
         }
       }
@@ -67,10 +67,7 @@
     "parameters": {
       "metrics": [
         {
-          "plugin": "locomo-f1"
-        },
-        {
-          "plugin": "evidence-recall"
+          "plugin": "memforest-judge"
         }
       ]
     }
@@ -133,6 +130,15 @@
     },
     "tokenizer": {
       "plugin": "tiktoken-counter"
+    },
+    "judge": {
+      "plugin": "compatible-http",
+      "parameters": {
+        "base_url": "https://api.example.invalid/v1",
+        "model": "REPLACE_CHAT_MODEL",
+        "api_key_env": "MEMFOLDER_PROVIDER_KEY",
+        "revision": "REPLACE_MODEL_REVISION"
+      }
     }
   }
 }

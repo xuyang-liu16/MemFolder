@@ -11,6 +11,13 @@ class ChatRequest:
     prompt: str
     max_tokens: int | None = None
     temperature: float = 0.0
+    message_role: str = 'user'
+    response_format: str | None = None
+    prompt_id: str | None = None
+
+    def __post_init__(self):
+        require(self.message_role in ('system', 'user', 'assistant'), 'Invalid chat message role')
+        require(self.response_format in (None, 'json_object'), 'Unsupported chat response format')
 
 
 class Chat(Protocol):

@@ -18,6 +18,7 @@ from .observation import TraceRecorder,ObservedComponent,Subscription
 from .evaluation.evaluator import aggregate
 from .wrappers import run_wrapped,verify_materialization
 from .services import MeteredService
+from .prompt_protocol import protocol_manifest
 
 
 def file_hash(path):
@@ -120,7 +121,8 @@ class ExperimentAssembly:
         if resume:
             require(all(value is not None for value in supplied_identities.values()),'Resuming injected services requires explicit cache_identity for each service')
             require(bool(getattr(self.dataset,'source_paths',())) or getattr(self.dataset,'input_fingerprint',None) is not None,'Dynamic datasets require input_fingerprint for resume')
-        execution=fingerprint((self.config_fingerprint,self.compression.source_manifest,inputs,to_data(self.bindings),supplied_identities))
+        shared_prompts=protocol_manifest()
+        execution=fingerprint((self.config_fingerprint,self.compression.source_manifest,inputs,to_data(self.bindings),supplied_identities,shared_prompts))
         if resume and root.exists():
             return verify_experiment(root,expected_execution=execution)
         require(not root.exists(),'Experiment output exists; use a fresh directory or verified resume')
@@ -133,7 +135,8 @@ class ExperimentAssembly:
         async def observed(component,name,*args):return await getattr(ObservedComponent(component,trace,name),{'initialize':'initialize','reader':'predict','evaluator':'evaluate'}[name])(*args)
         try:
             await trace.open()
-            artifacts.append(store.put('sources.json',{'runtime':to_data(self.compression.source_manifest),'inputs':to_data(inputs),'bindings':to_data(self.bindings),'execution_fingerprint':execution}))
+            artifacts.append(store.put('sources.json',{'runtime':to_data(self.compression.source_manifest),'inputs':to_data(inputs),
+                'bindings':to_data(self.bindings),'execution_fingerprint':execution,'shared_prompt_protocol':shared_prompts}))
             async for item in samples(self.dataset):
                 stage='load';require(type(item) is DatasetSample,'Dataset plugin must yield DatasetSample')
                 sample=item.memory.sample;require(sample.identity not in seen,'Duplicate benchmark sample identity');seen.add(sample.identity);sample_refs.append(sample)
@@ -228,7 +231,8 @@ class ExperimentAssembly:
         manifest=RunManifest(run_id=trace.run_id,config_fingerprint=self.config_fingerprint,samples=tuple(sample_refs),bindings=self.bindings,
             seed=self.settings['seed'],mode=self.settings['mode'],compression_status=compression_status,evaluation_status=evaluation_status,
             observation_status='off' if self.capture.profile=='off' else 'complete' if coverage.complete_for_capture else 'incomplete',coverage=coverage,
-            artifacts=tuple(artifacts),extensions=FrozenMap({'memfolder.execution_fingerprint':execution,'memfolder.failed_stage':stage if error else None,'memfolder.protocols':protocols}))
+            artifacts=tuple(artifacts),extensions=FrozenMap({'memfolder.execution_fingerprint':execution,'memfolder.failed_stage':stage if error else None,
+                'memfolder.protocols':protocols,'memfolder.shared_prompt_protocol':shared_prompts}))
         manifest_ref=store.put('run.manifest.json',manifest)
         if error is not None:raise error
         result=ExperimentResult(manifest=manifest,samples=tuple(completed),aggregate=FrozenMap({

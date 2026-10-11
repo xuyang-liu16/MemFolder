@@ -17,7 +17,7 @@ from memfolder.compression import ServiceMap
 from memfolder.artifacts import ArtifactStore,PublicArtifacts,FileReportWriter
 from memfolder.observation import TraceRecorder,Subscription,RegexRedactor
 from memfolder.evaluation import *
-from memfolder.evaluation.official import PersonaMemAccuracy,LongMemEvalPrompt,M3Prompt,OfficialJudge
+from memfolder.evaluation.official import PersonaMemAccuracy
 from memfolder.services import CachedService,CompatibleHTTP
 from memfolder.benchmarks.raw import LoCoMoLoader,LongMemEvalLoader,PersonaMemLoader
 from memfolder.matrix import configurations,run_matrix
@@ -294,18 +294,14 @@ class ReaderMetricTests(unittest.TestCase):
         class Judge:
             def complete(self,request):return 'maybe'
         with self.assertRaises(ContractError):run(ChatJudge().score(sample().evaluation.cases[0],self.prediction('tea'),replace(CTX,services=ServiceMap({'judge':Judge()}))))
-    def test_official_longmemeval_prompt_does_not_import_upstream(self):
-        path=ROOT/'build/upstream/benchmarks/longmemeval/src/evaluation/evaluate_qa.py'
-        if not path.is_file():self.skipTest('optional downloaded upstream prompt')
-        case=replace(sample().evaluation.cases[0],ground_truth=FrozenMap({'answer':'18 days','question_type':'temporal-reasoning'}))
-        prompt=LongMemEvalPrompt(path,sha256(path.read_bytes()).hexdigest())
-        self.assertIn('off-by-one',prompt.build(case,self.prediction('19 days')))
-        with self.assertRaises(ContractError):LongMemEvalPrompt(path,'0'*64).build(case,self.prediction('x'))
-    def test_official_m3_prompt_loads_literal_only(self):
-        path=ROOT/'build/upstream/benchmarks/m3/mmagent/prompts.py'
-        if not path.is_file():self.skipTest('optional downloaded upstream prompt')
-        prompt=M3Prompt(path,sha256(path.read_bytes()).hexdigest());text=prompt.build(sample().evaluation.cases[0],self.prediction('tea'))
-        self.assertIn('tea',text)
+    def test_builtin_catalog_has_one_llm_judge_protocol(self):
+        registry=default_registry();context=BuildContext(registry=registry,base_path=ROOT)
+        for name in ('chat-judge','memforest-judge'):
+            judge=registry.create(PluginRequest(plugin=name),role='metric',context=context).instance
+            self.assertEqual(judge.spec.plugin_id,'memfolder.metric.memforest_judge.v1')
+        for name in ('official-judge','longmemeval-judge-prompt','m3-judge-prompt'):
+            with self.subTest(name=name),self.assertRaises(ContractError):
+                registry.create(PluginRequest(plugin=name),role='metric',context=context)
 
 
 class ExperimentTests(unittest.TestCase):
@@ -509,11 +505,12 @@ class MainlineExperimentTests(unittest.TestCase):
         features=run(ChatGroundingFeatures(aliases=FrozenMap({'ali':'alice'}),require_time=True).extract(snapshot,ctx))
         self.assertEqual(features.rows[0].values['entities'],('alice',));self.assertEqual(features.rows[1].values['event_time'],1.)
         self.assertNotIn('QUESTION',chat.assert_text)
-    def test_contextfolder_reader_prompt_is_independent_and_public(self):
-        from memfolder.evaluation.prompts import ContextFolderPrompt
+    def test_contextfolder_reader_prompt_is_shared_and_public(self):
+        from memfolder.evaluation.prompts import ContextFolderPrompt,QAPrompt
         question=sample().evaluation.reader_input().questions[0]
         prompt=ContextFolderPrompt().build(question,ReaderContext(text='@2023-01-01 Alice -> tea',parts=(),node_ids=()))
-        self.assertIn('DECODE LEGEND',prompt);self.assertIn('relation directions',prompt)
+        self.assertEqual(prompt,QAPrompt().build(question,ReaderContext(text='@2023-01-01 Alice -> tea',parts=(),node_ids=())))
+        self.assertNotIn('DECODE LEGEND',prompt)
         self.assertNotIn('ground_truth',prompt)
     def test_composite_datasets_and_protocol_routing_without_runner_dispatch(self):
         with tempfile.TemporaryDirectory() as folder:

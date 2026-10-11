@@ -7,6 +7,9 @@ from ..core import MetricResult,FrozenMap
 from ..core.values import require
 from ..planning.common import spec,resolve
 from ..operators.types import ChatRequest
+from ..artifacts import parse_json
+from ..prompt_protocol import PROTOCOL_ID, render_judge, prompt_hash, question_text
+from ..prompt_templates import MEMFOREST_JUDGE_PROMPT
 
 
 def answer_text(prediction):return '\n'.join(p.text or '' for p in prediction.answer)
@@ -89,15 +92,24 @@ class LoCoMoF1:
 @dataclass(frozen=True)
 class ChatJudge:
     service: str = 'judge'
-    spec=spec('metric.chat_judge','metric')
+    spec=spec('metric.memforest_judge.v1','metric')
     async def score(self,case,prediction,context):
-        task=str(case.ground_truth.get('question_type','general'))
-        prompt='Judge correctness. Return exactly YES or NO. Require all essential facts, allow equivalent wording.\n'
-        if case.ground_truth.get('abstention'):prompt+='This is unanswerable from the available history; a correct response must abstain.\n'
-        elif task=='temporal-reasoning':prompt+='Accept equivalent dates or durations.\n'
-        elif task=='knowledge-update':prompt+='Use the latest preference or corrected fact.\n'
-        elif task=='single-session-preference':prompt+='The response should fit the user preference even if it does not quote it.\n'
-        prompt+='TASK '+task+'\nQUESTION '+ '\n'.join(p.text or '' for p in case.question)+'\nGOLD '+ '\n'.join(golds(case))+'\nRESPONSE '+answer_text(prediction)
-        label=await resolve(context.services.require(self.service).complete(ChatRequest(role='qa_judge',prompt=prompt,max_tokens=8)))
-        require(type(label) is str and label.strip().upper() in ('YES','NO'),'Judge returned an invalid label')
-        return (result(case,'judge_accuracy','memfolder-task-aware-judge.v1',label.strip().upper()=='YES',{'task':task,'chat_calls':1}),)
+        if 'choice' in case.ground_truth:
+            choice=str(case.ground_truth['choice']).strip('() ').upper()
+            require(choice in case.options,'Judge received an unknown gold choice')
+            gold=str(case.options[choice])
+        else:
+            gold='\n'.join(golds(case))
+        prompt=render_judge(question_text(case.question,case.options,case.as_of),gold,answer_text(prediction))
+        raw=await resolve(context.services.require(self.service).complete(ChatRequest(role='memforest_judge',
+            prompt=prompt,response_format='json_object',prompt_id=PROTOCOL_ID+'.judge')))
+        try:
+            label=parse_json(raw)
+        except (ValueError,TypeError):
+            require(False,'Judge returned an invalid JSON label')
+        require(type(label) is dict and label.get('label') in ('CORRECT','WRONG'),
+                'Judge must return a JSON CORRECT/WRONG label')
+        version=PROTOCOL_ID+'.judge:'+prompt_hash(MEMFOREST_JUDGE_PROMPT)+':strict-json-label.v1'
+        return (result(case,'judge_accuracy',version,label['label']=='CORRECT',
+            {'label':label['label'],'chat_calls':1,'protocol_id':PROTOCOL_ID,
+             'prompt_id':PROTOCOL_ID+'.judge','prompt_sha256':prompt_hash(prompt)}),)

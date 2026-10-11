@@ -9,10 +9,10 @@ The benchmark loader reads histories, questions, and reference answers. The init
 | Dataset | Loader | Input | Evaluation |
 | --- | --- | --- | --- |
 | LoCoMo | `locomo-dataset` | Conversation sessions, dates, speakers, and QA annotations | `locomo-f1`, optionally `evidence-recall` |
-| LongMemEval | `longmemeval-dataset` | Session histories, dates, query times, and answers | `official-judge` with `longmemeval-judge-prompt` |
+| LongMemEval | `longmemeval-dataset` | Session histories, dates, query times, and answers | `memforest-judge` (shared MemForest protocol) |
 | PersonaMem v1 | `personamem-dataset` | Question CSV and context JSONL | `personamem-accuracy` |
-| M3 robot | `m3-dataset`, `variant: "robot"` | Annotations and a video-to-memory-loader mapping | `official-judge` with `m3-judge-prompt` |
-| M3 web | `m3-dataset`, `variant: "web"` | Annotations and a video-to-memory-loader mapping | `official-judge` with `m3-judge-prompt` |
+| M3 robot | `m3-dataset`, `variant: "robot"` | Annotations and a video-to-memory-loader mapping | `memforest-judge` (shared MemForest protocol) |
+| M3 web | `m3-dataset`, `variant: "web"` | Annotations and a video-to-memory-loader mapping | `memforest-judge` (shared MemForest protocol) |
 
 Copy the relevant component from [dataset-components.json](../examples/experiments/dataset-components.json) into your experiment's `dataset` section. Set the file paths and sample selection for your data.
 
@@ -43,31 +43,32 @@ Use the source timezone for `utc_offset_minutes`. Add the reader, initializer, c
 
 **M3 robot** limits memory to nodes available before the annotated `before_clip` cutoff. **M3 web** uses the supplied video's full graph. Configure `memory_loaders` explicitly for each selected video, and provide a graph containing the required cutoff. Both variants use open-ended question answering.
 
-## Configure a model judge
+## Configure the shared MemForest judge
 
-LongMemEval and M3 scoring use a caller-supplied `judge` service and a pinned upstream prompt source. Example evaluator configuration:
+All built-in LLM answerers and judges use the shared MemForest protocol,
+regardless of benchmark or compression method. Configure the model under
+services.chat and services.judge and use:
 
 ```json
 {
   "plugin": "metric-evaluator",
   "parameters": {
-    "metrics": [{
-      "plugin": "official-judge",
-      "parameters": {
-        "service": "judge",
-        "prompt": {
-          "plugin": "longmemeval-judge-prompt",
-          "parameters": {"path": "upstream/evaluate_qa.py", "sha256": "REPLACE_PINNED_FILE_SHA256"}
-        }
-      }
-    }]
+    "metrics": [{"plugin": "memforest-judge", "parameters": {"service": "judge"}}]
   }
 }
 ```
 
-Use the source file and hash listed in [BENCHMARK_SOURCES.json](BENCHMARK_SOURCES.json), then configure the model under `services.judge`. The loader extracts the required prompt function or string from that file. Metric versions record its hash and the upstream YES-substring parsing rule.
+The compatibility name chat-judge selects exactly the same implementation.
+It requests JSON and accepts only {"label":"CORRECT"} or {"label":"WRONG"}.
+The metric version records the shared template SHA-256. This is the MemForest
+automated judge using dataset ground truth; it is not the official LongMemEval
+or M3 scoring protocol. Built-in official-judge and benchmark-specific judge
+prompt selectors have been removed. A distinct research scoring protocol must
+be registered as an explicit external plugin.
 
-The generic `chat-judge` has its own YES/NO policy. Choose `official-judge` when the experiment requires the pinned LongMemEval or M3 scoring behavior.
+See [Shared prompt protocol](PROMPT_PROTOCOL.md) for merge, QA, exceptions,
+template provenance, and migration. Deterministic benchmark metrics below
+remain available and have their own metric identities.
 
 ## Read scores consistently
 
