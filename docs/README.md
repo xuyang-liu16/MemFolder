@@ -14,6 +14,7 @@ MemFolder compresses an agent's stored memories and evaluates how well the agent
 | Import a Mem0, MemOS, or M3 memory store | [Loading memories](LOADING.md) |
 | Load a benchmark and choose its scoring method | [Benchmarks and evaluation](BENCHMARKS.md) |
 | Save compressed memories in a framework's format | [Framework integration](WRAPPERS.md) |
+| Run native MemOS 2.0.33 LoCoMo evaluation | [MemOS](MEMOS_REPRODUCTION.md) |
 | Inspect grouping decisions, retrieved memories, and answers | [Inspecting a run](ANALYSIS.md) |
 
 For a first experiment, follow [Experiments](EXPERIMENTS.md). For an existing memory store, continue with [Loading memories](LOADING.md). The [supported configurations](COMPATIBILITY.md) page explains the requirements of each method and framework.

@@ -1,0 +1,48 @@
+{
+  "name": "MemOS native LoCoMo uncompressed evaluation",
+  "framework": {
+    "version": "2.0.33",
+    "upstream_revision": "78a372a4fc853a24d2a78efa3b4bbbd27ab9f7ad"
+  },
+  "memory": {
+    "backend": "postgres",
+    "compressed": false,
+    "reader_mode": "fast",
+    "turns_per_chunk": 2
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "dimension": 1024,
+    "observed_endpoint": "https://dapi.aivue.cn/v1"
+  },
+  "reranker": {
+    "backend": "http_bge",
+    "model": "BAAI/bge-reranker-v2-m3",
+    "dtype": "float32",
+    "max_length": 1024,
+    "batch_size": 2,
+    "tf32": false
+  },
+  "search": {
+    "mode": "fast",
+    "top_k_per_speaker": 20,
+    "include_preference": true,
+    "pref_top_k": 6,
+    "relativity": 0.0,
+    "dedup": "no",
+    "agpr": false,
+    "reranker_boost_weights": {}
+  },
+  "evaluation": {
+    "conversations": 10,
+    "qa_count": 1540,
+    "exclude_categories": [
+      5
+    ],
+    "model": "gpt-4o-mini-2024-07-18",
+    "qa_temperature": 0,
+    "qa_generations_per_question": 1,
+    "judge_runs": 1,
+    "aggregation": "question weighted correct/1540"
+  }
+}

@@ -33,3 +33,12 @@ The following records identify the upstream versions used for parsing, scoring, 
 - [WRAPPER_SOURCES.json](WRAPPER_SOURCES.json): native output and readback implementations.
 
 Dataset downloads, model access, and upstream libraries remain subject to their own terms. The repository's test-source fetcher uses the recorded revisions and verifies the downloaded file hashes.
+
+## Native MemOS integration
+
+The optional native runner uses [MemTensor/MemOS](https://github.com/MemTensor/MemOS)
+2.0.33, commit `78a372a4fc853a24d2a78efa3b4bbbd27ab9f7ad`. Official LoCoMo QA
+and judge prompts are extracted into the package. The upstream
+[Apache 2.0 license](../src/memfolder/licenses/MemOS-Apache-2.0.txt) is included.
+The SDK, benchmark data, PostgreSQL/pgvector and BGE model weights are downloaded
+separately and retain their original terms.

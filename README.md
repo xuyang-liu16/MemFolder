@@ -101,6 +101,8 @@ alternating BSM variant is available as `tome-bsm`. The independent
 default rate **0.55**. Paper tables below retain their reported settings;
 experiments with corrected configurations have separate results and identities.
 
+For native MemOS 2.0.33 LoCoMo evaluation, see the [MemOS guide](docs/MEMOS_REPRODUCTION.md).
+
 ### Compare and inspect runs
 
 ```bash

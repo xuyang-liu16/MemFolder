@@ -18,9 +18,10 @@ llmlingua2 = ["llmlingua==0.2.2"]
 
 [project.scripts]
 memfolder = "memfolder.__main__:main"
+memfolder-memos-locomo = "memfolder.reproduction.memos_locomo.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-memfolder = ["py.typed", "licenses/*.txt"]
+memfolder = ["py.typed", "licenses/*.txt", "reproduction/memos_locomo/*.json"]
