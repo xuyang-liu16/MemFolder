@@ -19,13 +19,20 @@ input contains a newline. It loads the pinned checkpoint using the original
 constructor defaults, without a dtype or internal batch-size override. Both
 the normalized input and the original writer input have recorded hashes; cache
 identities distinguish this profile from the rate-only adapter. Empty output
-is an explicit source-preserving fallback; other model failures propagate.
+is an explicit fallback to the stripped current Record; other model failures propagate.
 
 For historical Mem0 export, configure the wrapper's codec as
 `{"plugin": "llmlingua2-historical-mem0-codec"}`. Supply the original native
 source archive: each output inherits its latest original contributor's point
 ID and payload; tied timestamps use the original point ID. Text embeddings
-must be refreshed before retrieval. This does not alter other framework codecs.
+must be refreshed before retrieval. Configure the wrapper's embedding provider
+as `llmlingua2-historical-all-embeddings` with the declared embedding space and
+service. It encodes every final text, including unchanged singleton text;
+verified provider-cache reuse is permitted, original source-vector reuse is not.
+This codec preserves original native timestamp and payload fields and changes
+`data`; canonical lineage is recorded in the package sidecar. Original plan's
+`compression_*` annotations require that plan and are not reconstructed here.
+This does not alter other framework codecs.
 
 Matching compression calls is only one part of reproducing Figure 3. The
 Record parent store, grouping/merged text, native metadata, retrieval, QA,
@@ -37,6 +44,8 @@ adjust its rate, retrieval, or judge based on the resulting accuracy.
 The local LongMemEval seed-7 check on the current Record parents completed
 500 questions and scored 259/500 (51.8%). It is a current-parent result, not a
 claim that Figure 3's three-run result has been reproduced.
+That check predates this release's all-text embedding refresh and exact native
+payload preservation; those differences have not been assessed with paid QA.
 
 ## Rate-only variant
 

@@ -17,7 +17,7 @@ from .operators.llmlingua2 import validate_rate
 from .planning.common import spec
 
 
-PROFILE = 'llmlingua2.longmemeval.historical55.constructor_defaults.v2'
+PROFILE = 'llmlingua2.longmemeval.historical55.normalized_fallback.v3'
 
 
 class _HistoricalCounter:
@@ -78,24 +78,27 @@ class HistoricalLLMLingua2Service:
         output = (result.get('compressed_prompt') or '').strip()
         # The existing writer explicitly retains its source on empty output.
         # Other model failures propagate; no failed inference becomes a score.
-        return {'text': output, 'rate': rate, 'profile': PROFILE,
+        response = {'text': output, 'rate': rate, 'profile': PROFILE,
                 'input_view': 'current_record',
                 'input_text_sha256': sha256(text.encode('utf-8')).hexdigest(),
                 'normalized_input_sha256': sha256(source.encode('utf-8')).hexdigest(),
-                'output_text_sha256': sha256((output or text).encode('utf-8')).hexdigest(),
+                'output_text_sha256': sha256((output or source).encode('utf-8')).hexdigest(),
                 'use_llmlingua2': True,
                 # A single string has no context-level filtering in the
                 # upstream algorithm; this flag describes effective behavior.
                 'use_context_level_filter': False,
                 'effective_kwargs': kwargs, 'budget_tokenizer': 'cl100k_base',
                 'original_tokens': source_tokens,
-                'compressed_tokens': self._counter.count(output or text),
+                'compressed_tokens': self._counter.count(output or source),
                 'implementation': 'llmlingua==0.2.2',
                 'model_name': self.model_name, 'model_revision': self.revision,
                 'device_map': self.device_map, 'constructor_policy': 'defaults',
                 'fallback_reason': None if output else 'empty_classifier_output',
                 'source_preserved': not bool(output),
                 'request_fingerprint': fingerprint((self.cache_identity, text, rate, kwargs))}
+        if not output:
+            response['fallback_text'] = source
+        return response
 
     async def compress(self, text, *, rate):
         validate_rate(rate)

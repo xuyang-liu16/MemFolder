@@ -39,13 +39,19 @@ class LLMLingua2Writer:
         text = result.get('text')
         require(type(text) is str, 'LLMLingua-2 returned a non-text result')
         reason = None if text.strip() else 'empty_classifier_output'
+        fallback = source
+        if reason and 'fallback_text' in result:
+            fallback = result['fallback_text']
+            require(type(fallback) is str and bool(fallback) and fallback == source.strip() and
+                    result.get('normalized_input_sha256') == sha256(fallback.encode()).hexdigest(),
+                    'Normalized fallback must bind the stripped current Record')
         metadata = FrozenMap({k: v for k, v in result.items() if k != 'text'})
         emit(context, self.spec.plugin_id, 'memfolder.operator.llmlingua2',
              nodes=(members[0].node_id,), rate=self.rate, input_view='current_record',
-             input_text_sha256=digest, output_text_sha256=sha256((source if reason else text).encode()).hexdigest(),
+             input_text_sha256=digest, output_text_sha256=sha256((fallback if reason else text).encode()).hexdigest(),
              fallback_reason=reason, original_tokens=result.get('original_tokens'),
              compressed_tokens=result.get('compressed_tokens'))
-        return TextWriteResult(text=source if reason else text,
+        return TextWriteResult(text=fallback if reason else text,
             status='fallback' if reason else 'success', reason_code=reason,
             usage=FrozenMap({'local_classifier_calls': 1}), metadata=metadata)
 

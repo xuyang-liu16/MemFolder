@@ -14,7 +14,8 @@ from memfolder.compression import ServiceMap
 from memfolder.lingua_historical import HistoricalLLMLingua2Service, PROFILE
 from memfolder.lingua_service import LLMLingua2Service
 from memfolder.plugins import BuildContext, PluginRequest
-from memfolder.wrappers.lingua_historical import HistoricalLLMLinguaMem0Codec
+from memfolder.operators.llmlingua2 import LLMLingua2Writer
+from memfolder.wrappers.lingua_historical import HistoricalLLMLinguaMem0Codec, HistoricalAllTextEmbeddings
 from memfolder.wrappers.types import NativeArchive
 from test_temporal_tome import fixture, SPACE
 
@@ -88,6 +89,29 @@ class HistoricalTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError,'CUDA out of memory'):
             asyncio.run(provider(error=RuntimeError('CUDA out of memory')).compress('text',rate=.55))
 
+    def test_empty_fallback_retains_normalized_record_and_explicit_status(self):
+        raw='  final Record\n '
+        member=SimpleNamespace(text=raw,node_id='test-node')
+        action=SimpleNamespace(kind='rewrite',input_view='current')
+        context=AlgorithmContext(services=ServiceMap({'llmlingua2':provider(output='')}),
+                                 diagnostics=NullDiagnostics())
+        written=asyncio.run(LLMLingua2Writer().write((member,),action,context))
+        self.assertEqual(written.text,'final Record')
+        self.assertEqual(written.status,'fallback')
+        self.assertEqual(written.reason_code,'empty_classifier_output')
+        self.assertEqual(written.metadata['output_text_sha256'],sha256(written.text.encode()).hexdigest())
+
+    def test_normalized_fallback_cannot_replace_input_with_unrelated_text(self):
+        service=provider(output='')
+        value=asyncio.run(service.compress('  final Record  ',rate=.55))
+        value['fallback_text']='unrelated text'
+        class Wrong:
+            async def compress(self,*args,**kwargs):return value
+        context=AlgorithmContext(services=ServiceMap({'llmlingua2':Wrong()}),diagnostics=NullDiagnostics())
+        with self.assertRaises(ContractError):
+            asyncio.run(LLMLingua2Writer().write((SimpleNamespace(text='  final Record  ',node_id='test-node'),),
+                                                SimpleNamespace(kind='rewrite',input_view='current'),context))
+
     def test_invalid_input_never_calls_classifier(self):
         service=provider()
         for rate in (0,1.1,True,float('nan')):
@@ -120,6 +144,22 @@ class HistoricalTests(unittest.TestCase):
         payload=next(p['payload'] for p in package.data['points'] if p['id']==last.native['id'])
         self.assertEqual(payload['data'],'merged compressed text')
         self.assertEqual(payload['user_id'],'owner0')
+        self.assertEqual(payload['timestamp'],'old-native-time')
+        self.assertNotIn('memfolder',payload)
+
+    def test_all_text_embeddings_reencode_unchanged_singletons(self):
+        source=fixture(n=3).snapshot
+        calls=[]
+        class Encoder:
+            async def encode(self,texts):
+                calls.append(texts)
+                return ((0.,1.),)*len(texts)
+        context=AlgorithmContext(services=ServiceMap({'embeddings':Encoder()}),diagnostics=NullDiagnostics())
+        result=asyncio.run(HistoricalAllTextEmbeddings(SPACE).refresh(source,context))
+        self.assertEqual(calls,[tuple(n.text for n in source.records)])
+        self.assertEqual([n.embeddings[0].values for n in result.records],[(0.,1.)]*3)
+        for before,after in zip(source.records,result.records):
+            self.assertEqual(replace(after,embeddings=before.embeddings),before)
 
 
 if __name__=='__main__':unittest.main()

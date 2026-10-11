@@ -128,9 +128,10 @@
     "source": "Recovered pre-refactor tmp/mf_textzip_20260924/run_textzip_encode_lme.py and run_materialize_v12_lme.py",
     "sha256": "8dd326be6c11e702431c0c95f1df9547e5d9320a72f21a6d271c89565b1c2e2d",
     "target": "lingua_historical.py; wrappers/lingua_historical.py",
-    "symbols": ["HistoricalLLMLingua2Service", "HistoricalLLMLinguaMem0Codec"],
-    "changes": "Opt-in current Record text strip, cl100k max(6, python_round(rate*tokens)), force digits and conditional newline, pinned checkpoint with original constructor defaults, latest-contributor native Mem0 projection. Empty output is explicitly retained; other inference failures propagate.",
-    "reproduction_scope": "Successful compression calls and projection recipe; original Record parents, historical package/runtime and complete numerical paper reproduction remain unverified.",
+    "symbols": ["HistoricalLLMLingua2Service", "HistoricalLLMLinguaMem0Codec", "HistoricalAllTextEmbeddings"],
+    "changes": "Opt-in current Record text strip, cl100k max(6, python_round(rate*tokens)), force digits and conditional newline, pinned checkpoint with original constructor defaults, latest-contributor point ID/native payload and all-text embedding refresh. Empty output explicitly retains normalized input; other inference failures propagate.",
+    "materializer_sha256": "54d5b8e38fa09ed089a195eb7d56db32630aa3c72405348f47fc912543978677",
+    "reproduction_scope": "Recovered compression calls and QA-visible projection policy; original plan-specific compression_* annotations, Record parents, historical package/runtime and complete numerical paper reproduction remain unverified. The completed 51.8% local check predates the all-text embedding/native-payload follow-up.",
     "model": "microsoft/llmlingua-2-xlm-roberta-large-meetingbank",
     "model_revision": "ebaba9b0e874dadd3003ffcff828e4397e568089"
   }
