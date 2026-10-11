@@ -1,11 +1,11 @@
-"""Checksum-verified upstream assets and self-contained recorded-run evidence."""
+"""Checksum-verified upstream SDK, benchmark inputs and model weights."""
 import hashlib
 import json
 from pathlib import Path
 import shutil
 import urllib.request
 import zipfile
-from .runtime import ROOT,PACKAGE,UPSTREAM,REVISION,MODEL_DIR
+from .runtime import ROOT,PACKAGE,UPSTREAM,REVISION,MODEL_DIR,EMBEDDING_MODEL_DIR
 from .io import save
 
 
@@ -60,6 +60,8 @@ def prepare(weights=False):
     if weights:
         model=json.loads((PACKAGE/'model.json').read_text(encoding='utf-8'))
         for name,meta in model['files'].items():download(f"https://huggingface.co/BAAI/bge-reranker-v2-m3/resolve/{model['revision']}/{name}?download=true",MODEL_DIR/name,meta['sha256'])
+        embedding=json.loads((PACKAGE/'embedding_model.json').read_text(encoding='utf-8'))
+        for name,meta in embedding['files'].items():download(f"https://huggingface.co/BAAI/bge-m3/resolve/{embedding['revision']}/{name}?download=true",EMBEDDING_MODEL_DIR/name,meta['sha256'])
     report={'status':'prepared','memos_revision':REVISION,'verified_revision':verified,'dataset':str(data),'weights_prepared':weights}
     save(ROOT/'reports/memos_locomo/preparation.json',report)
     return report

@@ -11,7 +11,9 @@ compression package.
 The configuration is in
 [protocol.json](../src/memfolder/reproduction/memos_locomo/protocol.json):
 raw two-turn memory with timestamps and separate speaker tenants; BGE-M3
-**1024** dimensions; PostgreSQL **16.10** + pgvector **0.8.1**; native fast search
+**1024** dimensions, local FP32 CLS pooling and normalized vectors; official
+ISO timestamps with the `+00:00` offset preserved; PostgreSQL **16.10** +
+pgvector **0.8.1**; native fast search
 with **Top20 per speaker**, preference Top6 and no similarity cutoff; fixed
 BGE-reranker-v2-m3 weights, **CUDA FP32**, length **1024**, batch **2**, TF32 off;
 o compression or AGPR. QA and judge use the pinned official prompts,
@@ -34,11 +36,9 @@ python -m pip install -r requirements/memos-reranker.txt
 python -m pip install -e .
 ```
 
-Set `MEMFOLDER_CHAT_KEY` and `MEMFOLDER_EMBEDDING_KEY` in the CPU shell.
-Provider URLs can be changed with `MEMFOLDER_CHAT_BASE_URL` and
-`MEMFOLDER_EMBEDDING_BASE_URL`; defaults match the configured OpenAI-compatible
-chat service and BGE-M3 service. Credentials are never part of the configuration.
-Prepare downloads the pinned SDK, its LoCoMo dataset and the pinned weights:
+Set `MEMFOLDER_CHAT_KEY` in the CPU shell. The chat URL can be changed with
+`MEMFOLDER_CHAT_BASE_URL`. Credentials are never part of the configuration.
+Prepare downloads the pinned SDK, its LoCoMo dataset and both pinned BGE models:
 
 ```bash
 python -m memfolder.reproduction.memos_locomo prepare --run-dir build/memos-locomo --weights
@@ -60,3 +60,10 @@ operational resources. All generated data, caches, QA checkpoints, retrieval
 traces and scores stay under `--run-dir`. Repeating the same command resumes
 compatible checkpoints. Install-time pip and temporary paths are controlled by
 your shell separately. API reruns can vary even at temperature zero.
+
+The runner precomputes local BGE-M3 memory and query vectors in the GPU
+environment, releases that process, then starts the reranker. The two models
+therefore do not occupy GPU memory together. `--embedding-model-dir` selects
+prepared BGE-M3 weights; `--embedding-python` defaults to `--reranker-python`.
+Missing local vectors cause an error; the runner never silently substitutes a
+remote model. Use a fresh run directory when changing the scientific protocol.

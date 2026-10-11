@@ -42,12 +42,12 @@ def file_hash(path):
 def profile():
     code_names=[p.name for p in sorted(PACKAGE.glob('*.py'))]
     code={name:file_hash(PACKAGE/name) for name in code_names}
-    protocol={**PROTOCOL,'actual_execution':{'embedding_endpoint_model':EMBED_URL+' / bge-m3', 'chat_endpoint':CHAT_URL, 'execution_mode':'native_live',
+    protocol={**PROTOCOL,'actual_execution':{'embedding_provider':PROTOCOL['embedding']['backend'], 'chat_endpoint':CHAT_URL, 'execution_mode':'native_live',
         'native_components':['SimpleStructMemReader.fast','TreeTextMemory.add','AdvancedSearcher.search','PostgresGraphDB','HTTPBGEReranker','native API formatters'],
         'memory_read_mode':'fast raw, two messages per official ingestion request',
-        'chat_window_max_tokens':8192,'reorganize':False,'scheduler':False,'internet':False,'bm25':False,'cot':False,
+        'chat_window_max_tokens':PROTOCOL['memory']['chat_window_max_tokens'],'reorganize':False,'scheduler':False,'internet':False,'bm25':False,'cot':False,
         'reranker_boost_weights':{},'strict_provider_failure':True,'qa_uses_only_retrieved_context':True},
-        'code_sha256':code,'packaged_resource_sha256':{name:file_hash(PACKAGE/name) for name in ['protocol.json','prompts.json','judge_parts.json','upstream.json','model.json']},'dataset_sha256':file_hash(ROOT/'inputs/locomo10.json'),
+        'code_sha256':code,'packaged_resource_sha256':{name:file_hash(PACKAGE/name) for name in ['protocol.json','prompts.json','judge_parts.json','upstream.json','model.json','embedding_model.json']},'dataset_sha256':file_hash(ROOT/'inputs/locomo10.json'),
         'official_prompt_sha256':file_hash(UPSTREAM/'evaluation/scripts/locomo/prompts.py'),
         'official_judge_sha256':file_hash(UPSTREAM/'evaluation/scripts/locomo/locomo_eval.py')}
     identity=digest(protocol)

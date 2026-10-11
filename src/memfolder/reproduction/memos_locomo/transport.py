@@ -6,7 +6,7 @@ import os
 import sqlite3
 import threading
 from .providers import Transport, digest
-from .runtime import ROOT, CHAT_URL, EMBED_URL
+from .runtime import ROOT, CHAT_URL, EMBED_URL, PROTOCOL
 
 class MemOSTransport(Transport):
     def __init__(self,concurrency=24):
@@ -16,7 +16,9 @@ class MemOSTransport(Transport):
         self.path.parent.mkdir(parents=True,exist_ok=True)
         from openai import OpenAI
         self.chat_client=OpenAI(api_key=os.environ['MEMFOLDER_CHAT_KEY'],base_url=CHAT_URL,timeout=120,max_retries=0)
-        self.embedding_client=OpenAI(api_key=os.environ['MEMFOLDER_EMBEDDING_KEY'],base_url=EMBED_URL,timeout=120,max_retries=0)
+        self.embedding_client=None
+        if PROTOCOL['embedding']['backend']=='api':
+            self.embedding_client=OpenAI(api_key=os.environ['MEMFOLDER_EMBEDDING_KEY'],base_url=EMBED_URL,timeout=120,max_retries=0)
         with closing(sqlite3.connect(self.path)) as db:
             db.execute('PRAGMA journal_mode=WAL')
             db.execute('CREATE TABLE IF NOT EXISTS responses(key TEXT PRIMARY KEY,kind TEXT,body TEXT,sha TEXT)')
@@ -25,6 +27,9 @@ class MemOSTransport(Transport):
     def embed(self,texts):
         if isinstance(texts,str):texts=[texts]
         texts=list(texts)
+        if PROTOCOL['embedding']['backend']=='local':
+            from .embedding import get_vectors
+            return get_vectors(texts)
         keys=[digest(('embedding',EMBED_URL,'bge-m3',text)) for text in texts]
         vectors=[self.get(key) for key in keys]
         missing=[i for i,x in enumerate(vectors) if x is None]

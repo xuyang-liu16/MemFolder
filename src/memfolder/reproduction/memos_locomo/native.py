@@ -66,7 +66,7 @@ def new_native(transport):
     llm={'backend':'openai','config':{'model_name_or_path':MODEL,'api_key':os.environ['MEMFOLDER_CHAT_KEY'],'api_base':CHAT_URL,'temperature':0.0,'max_tokens':2048,'top_p':1.0}}
     embedding={'backend':'memos_bge_api','config':{'model_name_or_path':'bge-m3','embedding_dims':1024}}
     reader=SimpleStructMemReader(SimpleStructMemReaderConfig(llm=llm,embedder=embedding,
-        chunker={'backend':'sentence','config':{'tokenizer_or_token_counter':'character','chunk_size':512,'chunk_overlap':0,'save_rawfile':False}},chat_window_max_tokens=8192))
+        chunker={'backend':'sentence','config':{'tokenizer_or_token_counter':'character','chunk_size':512,'chunk_overlap':0,'save_rawfile':False}},chat_window_max_tokens=PROTOCOL['memory']['chat_window_max_tokens']))
     tree=TreeTextMemory(TreeTextMemoryConfig(extractor_llm=llm,dispatcher_llm=llm,embedder=embedding,
         graph_db={'backend':'postgres','config':{'host':'127.0.0.1','port':PORT,'user':USER,'password':'','db_name':DATABASE,'schema_name':'memos','user_name':'memfolder_locomo','embedding_dimension':1024,'use_multi_db':False,'maxconn':40}},
         reranker={'backend':'http_bge','config':{'url':f'http://127.0.0.1:{RERANKER_PORT}/rerank','model':'bge-reranker-v2-m3','timeout':120}},

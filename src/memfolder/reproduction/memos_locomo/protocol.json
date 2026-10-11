@@ -8,12 +8,21 @@
     "backend": "postgres",
     "compressed": false,
     "reader_mode": "fast",
+    "chat_window_max_tokens": 1024,
     "turns_per_chunk": 2
   },
   "embedding": {
+    "backend": "local",
     "model": "BAAI/bge-m3",
     "dimension": 1024,
-    "observed_endpoint": "https://dapi.aivue.cn/v1"
+    "dtype": "float32",
+    "pooling": "cls",
+    "normalize": true,
+    "query_instruction": null,
+    "max_length": 8192,
+    "batch_size": 32,
+    "attention": "eager",
+    "tf32": false
   },
   "reranker": {
     "backend": "http_bge",

@@ -18,6 +18,7 @@ DATABASE='memfolder_locomo'
 BIN=Path(os.environ.get('MEMFOLDER_POSTGRES_BIN',str(ROOT/'environment/postgres/pgsql/bin'))).resolve()
 DATA=ROOT/'runs/memos_locomo/postgres_data'
 MODEL_DIR=Path(os.environ.get('MEMFOLDER_MEMOS_MODEL_DIR',str(ROOT/'cache/models/bge-reranker-v2-m3'))).resolve()
+EMBEDDING_MODEL_DIR=Path(os.environ.get('MEMFOLDER_MEMOS_EMBEDDING_MODEL_DIR',str(ROOT/'cache/models/bge-m3'))).resolve()
 OWNER=os.environ.get('MEMFOLDER_MEMOS_OWNER','')
 
 def initialize():
