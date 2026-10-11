@@ -15,7 +15,7 @@ raw two-turn memory with timestamps and separate speaker tenants; BGE-M3
 ISO timestamps with the `+00:00` offset preserved; PostgreSQL **16.10** +
 pgvector **0.8.1**; native fast search
 with **Top20 per speaker**, preference Top6 and no similarity cutoff; fixed
-BGE-reranker-v2-m3 weights, **CUDA FP32**, length **1024**, batch **2**, TF32 off;
+BGE-reranker-v2-m3 weights, **CUDA FP32**, length **1024**, batch **32**, TF32 off;
 o compression or AGPR. QA and judge use the pinned official prompts,
 `gpt-4o-mini-2024-07-18`, temperature 0, once each. Category 5 is excluded.
 Gold answers are available only to the judge.

@@ -29,7 +29,7 @@
     "model": "BAAI/bge-reranker-v2-m3",
     "dtype": "float32",
     "max_length": 1024,
-    "batch_size": 2,
+    "batch_size": 32,
     "tf32": false
   },
   "search": {

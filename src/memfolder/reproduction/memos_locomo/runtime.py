@@ -25,6 +25,8 @@ def initialize():
     for folder in ['cache','tmp','logs','reports/memos_locomo','runs/memos_locomo']:(ROOT/folder).mkdir(parents=True,exist_ok=True)
     for name in ['TEMP','TMP','TMPDIR']:os.environ[name]=str(ROOT/'tmp')
     os.environ['HF_HOME']=str(ROOT/'cache/huggingface')
+    os.environ['TORCH_HOME']=str(ROOT/'cache/torch')
+    os.environ['CUDA_CACHE_PATH']=str(ROOT/'cache/cuda')
     os.environ['TIKTOKEN_CACHE_DIR']=str(ROOT/'cache/tiktoken')
     os.environ['MEMOS_BASE_PATH']=str(ROOT/'runs/memos_locomo')
     os.environ['PYTHONDONTWRITEBYTECODE']='1'

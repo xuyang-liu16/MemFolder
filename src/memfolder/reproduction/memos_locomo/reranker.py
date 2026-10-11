@@ -25,7 +25,7 @@ def save():
     save_json(REPORT,STATE,telemetry=True)
 
 def cache_key(query,document):
-    return hashlib.sha256(json.dumps([CONFIG['revision'],'float32',CONFIG['max_length'],query,document],ensure_ascii=False).encode()).hexdigest()
+    return hashlib.sha256(json.dumps([CONFIG['revision'],'float32',CONFIG['max_length'],CONFIG['batch_size'],False,query,document],ensure_ascii=False).encode()).hexdigest()
 
 def score(query,documents,use_cache=True):
     # One bounded GPU worker; callers may overlap HTTP/QA without model duplicates.
