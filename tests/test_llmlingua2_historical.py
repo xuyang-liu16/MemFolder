@@ -74,6 +74,48 @@ class HistoricalTests(unittest.TestCase):
         asyncio.run(service.close())
         self.assertNotIn('_compressor',service.__dict__)
 
+    def test_owner_schema_plugin_configuration_and_validation(self):
+        registry=default_registry(discover=False)
+        context=BuildContext(base_path=Path(__file__).parent,registry=registry)
+        codec=registry.create(PluginRequest.from_mapping({
+            'plugin':'llmlingua2-historical-mem0-codec','parameters':{'sample_index':7}}),
+            role='native_codec',context=context,available=()).instance
+        self.assertEqual(codec.owner_ids(('user_qid_0','assistant_qid_12')),('User_7','Assistant_7'))
+        self.assertEqual(codec.owner_ids(('User_7','Assistant_7')),('User_7','Assistant_7'))
+        for index in (True,-1,1.0,'7'):
+            with self.subTest(index=index),self.assertRaises(ContractError):
+                HistoricalLLMLinguaMem0Codec(sample_index=index)
+        for owners in (('User_8','Assistant_8'),('owner0','owner1'),
+                       ('user_qid_0','user_qid_1'),()):
+            with self.subTest(owners=owners),self.assertRaises(ContractError):
+                codec.owner_ids(owners)
+
+    def test_owner_schema_projects_native_payload_and_filters_without_mutating_sources(self):
+        source=fixture(n=2,scopes=2).snapshot
+        records=[]
+        for node in source.records:
+            native=dict(node.native)
+            payload=dict(native['record']['payload'])
+            payload['user_id']='user_qid_0' if node.scope.partition_id=='owner0' else 'assistant_qid_0'
+            native['record']={**dict(native['record']),'payload':payload}
+            records.append(replace(node,native=FrozenMap(native)))
+        source=replace(source,records=tuple(records))
+        context=AlgorithmContext(services=ServiceMap(),diagnostics=NullDiagnostics())
+        codec=HistoricalLLMLinguaMem0Codec(SPACE,sample_index=7)
+        projected=codec.encode(source,NativeArchive(source),context)
+        owners=codec.owner_ids(('user_qid_0','assistant_qid_0'))
+        self.assertEqual(set(owners),{p['payload']['user_id'] for p in projected.data['points']})
+        unchanged=HistoricalLLMLinguaMem0Codec(SPACE).encode(source,NativeArchive(source),context)
+        self.assertEqual({p['payload']['user_id'] for p in unchanged.data['points']},
+                         {'user_qid_0','assistant_qid_0'})
+        self.assertEqual(projected.node_id_map,unchanged.node_id_map)
+        self.assertEqual(projected.lineage,unchanged.lineage)
+        self.assertEqual({n.native['record']['payload']['user_id'] for n in source.records},
+                         {'user_qid_0','assistant_qid_0'})
+        for point in projected.data['points']:
+            self.assertEqual(point['payload']['timestamp'],'old-native-time')
+            self.assertEqual(point['vector'],(1.,0.))
+
     def test_profiles_rates_and_text_cannot_share_cache_identity(self):
         service=provider()
         self.assertNotEqual(service.cache_identity,LLMLingua2Service(device_map='cpu').cache_identity)

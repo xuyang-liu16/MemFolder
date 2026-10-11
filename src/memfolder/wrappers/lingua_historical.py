@@ -1,6 +1,7 @@
 """Opt-in latest-contributor materialization for historical LLMLingua Mem0 QA."""
 from dataclasses import dataclass, replace
 from copy import deepcopy
+import re
 
 from ..core import to_data, validate_embedding_refresh
 from ..core.values import require
@@ -29,8 +30,32 @@ class LatestContributorArchive(NativeArchive):
 @dataclass(frozen=True)
 class HistoricalLLMLinguaMem0Codec:
     space: object = None
+    sample_index: int | None = None
     framework_id = 'mem0'
     spec = spec('wrapper.llmlingua2_historical_mem0', 'native_codec')
+
+    def __post_init__(self):
+        require(self.sample_index is None or
+                (type(self.sample_index) is int and self.sample_index >= 0),
+                'Declare a nonnegative historical LongMemEval sample index')
+
+    def owner_id(self, raw):
+        """Explicit common.py owner projection; no canonical scope is changed."""
+        require(type(raw) is str and bool(raw), 'Supply a native owner ID')
+        if self.sample_index is None:
+            return raw
+        if raw in (f'User_{self.sample_index}', f'Assistant_{self.sample_index}'):
+            return raw
+        match = re.match(r'^(user|assistant)_(.+)_(\d+)$', raw)
+        require(match is not None, 'Owner does not match the recovered LongMemEval schema')
+        return f"{'User' if match.group(1) == 'user' else 'Assistant'}_{self.sample_index}"
+
+    def owner_ids(self, owners):
+        """Apply the same projection to retrieval filters and QA speaker IDs."""
+        require(type(owners) in (tuple, list) and bool(owners), 'Supply ordered QA owner IDs')
+        mapped = tuple(self.owner_id(owner) for owner in owners)
+        require(len(set(mapped)) == len(mapped), 'Historical QA owner projection is ambiguous')
+        return mapped
 
     def encode(self, snapshot, archive, context):
         require(not snapshot.edges, 'Historical Mem0 projection requires a text vector store')
@@ -46,8 +71,11 @@ class HistoricalLLMLinguaMem0Codec:
                     all(p.modality=='text' for p in node.parts), 'Supply normalized final Record text')
             payload=deepcopy(raw['payload'])
             payload['data']=node.text
+            if self.sample_index is not None:
+                payload['user_id']=self.owner_id(payload.get('user_id'))
             # Preserve source timestamps, owners, hashes and native payload
-            # fields exactly; generic export normalizations belong to its codec.
+            # fields. Only explicitly declared historical owner conversion
+            # differs; generic export normalizations belong to its codec.
             value=vectors(node,original,self.space)
             require(len(value)==1, 'Historical materialization needs one dense vector')
             points.append({'id':ids[node.node_id],'payload':payload,'vector':value[0]})

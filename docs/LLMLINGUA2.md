@@ -34,10 +34,36 @@ This codec preserves original native timestamp and payload fields and changes
 `compression_*` annotations require that plan and are not reconstructed here.
 This does not alter other framework codecs.
 
+The recovered LongMemEval common.py also maps original
+user_qid_turn / assistant_qid_turn IDs to User_i / Assistant_i, where i is
+the dataset sample index, before materialization. When supplying an unconverted
+native source archive, declare that index explicitly in the historical codec:
+
+```json
+{"plugin": "llmlingua2-historical-mem0-codec", "parameters": {"sample_index": 7}}
+```
+
+Bind `sample_index` to the selected dataset row, not to a filename, owner turn
+suffix, or worker number. The generic codec does not validate dataset length;
+a LongMemEval harness must check the index against its loaded QA rows.
+Pass `codec.owner_ids(raw_owners)` to the retriever and QA context builder so
+their filters agree with the exported payloads. The upstream answer renderer
+then uses the User / Assistant speaker labels. Already mapped IDs for this
+sample are accepted; IDs mapped to another sample are rejected. With no
+sample_index, native owner IDs are preserved. This opt-in projection preserves
+canonical origins/scopes, timestamps and vectors; it never rewrites a source
+bank. Its effect on accuracy has not been measured and old QA artifacts must
+not be renamed or reported as this corrected schema's results.
+
 Matching compression calls is only one part of reproducing Figure 3. The
 Record parent store, grouping/merged text, native metadata, retrieval, QA,
 judge, and repeated-run protocol also need recorded provenance. At present,
 historical parent stores and the complete historical runtime are not verified.
+The common.py source snapshot and its MemForest timestamp-parser dependency
+have been recovered; the original NPZ dump and converted QA schema remain
+unverified. In the current local all-500 source index, all 310,120 event times
+agree with that recovered parsing rule. All original owner IDs require the
+explicit projection above; the existing scored run retained their raw form.
 Do not interpret this plugin as a guarantee of the paper's numerical score or
 adjust its rate, retrieval, or judge based on the resulting accuracy.
 

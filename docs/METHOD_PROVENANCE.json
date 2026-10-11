@@ -131,8 +131,16 @@
     "symbols": ["HistoricalLLMLingua2Service", "HistoricalLLMLinguaMem0Codec", "HistoricalAllTextEmbeddings"],
     "changes": "Opt-in current Record text strip, cl100k max(6, python_round(rate*tokens)), force digits and conditional newline, pinned checkpoint with original constructor defaults, latest-contributor point ID/native payload and all-text embedding refresh. Empty output explicitly retains normalized input; other inference failures propagate.",
     "materializer_sha256": "54d5b8e38fa09ed089a195eb7d56db32630aa3c72405348f47fc912543978677",
-    "reproduction_scope": "Recovered compression calls and QA-visible projection policy; original plan-specific compression_* annotations, Record parents, historical package/runtime and complete numerical paper reproduction remain unverified. The completed 51.8% local check predates the all-text embedding/native-payload follow-up.",
+    "reproduction_scope": "Recovered compression calls and QA-visible projection policy. The original common.py snapshot and its parser dependency are now recovered; the explicit sample_index option restores its owner projection. Original plan-specific compression_* annotations, Record parents, converted QA schema, historical package/runtime and complete numerical paper reproduction remain unverified. The completed 51.8% local check predates the all-text embedding/native-payload and owner-schema follow-ups.",
     "model": "microsoft/llmlingua-2-xlm-roberta-large-meetingbank",
     "model_revision": "ebaba9b0e874dadd3003ffcff828e4397e568089"
+  },
+  {
+    "source": "Recovered tmp/lme_g1s_20260917/common.py, archived agent-6 Write at wire.jsonl:118 with successful result at :119; complete later reads in agent-7:59 and agent-8:62 agree",
+    "sha256": "bad245057ab515586b5b57f0e3e32df2227f3ea4ffc9a55f65bbe4879d01fabb",
+    "target": "wrappers/lingua_historical.py",
+    "symbols": ["HistoricalLLMLinguaMem0Codec.owner_id", "HistoricalLLMLinguaMem0Codec.owner_ids"],
+    "changes": "Explicit sample_index enables the recovered user_qid_turn/assistant_qid_turn to User_i/Assistant_i projection. Already converted IDs for this sample are accepted, unrelated IDs rejected. Callers must use the same mapped owners for native retrieval filters and QA speaker labels. Default native-owner preservation and all other codecs remain unchanged.",
+    "reproduction_scope": "Byte-backed schema recovery and offline all-500 current-source comparison; original grouping/NPZ/converted QA artifacts and causal accuracy effects remain unverified. No corrected-schema score is reported."
   }
 ]
