@@ -86,10 +86,17 @@ def new_native(transport):
 from .dataset import batches
 
 def build_batch(reader,tree,batch):
+    if PROTOCOL['embedding']['backend']=='local':
+        from .embedding import cache_key
+        embedding_identity=cache_key('')
+    else:
+        from .runtime import EMBED_URL
+        embedding_identity=digest({'method':PROTOCOL['embedding'],'endpoint':EMBED_URL})
     path=ROOT/'runs/memos_locomo/reader_receipts'/(batch['identity']+'.json')
     if path.exists():
         saved=json.loads(path.read_text(encoding='utf-8'))
         if saved['identity']!=batch['identity']:raise RuntimeError('Reader receipt identity mismatch')
+        if saved.get('embedding_identity')!=embedding_identity:raise RuntimeError('Memory vectors use another embedding configuration; use a fresh run directory')
         items=[TextualMemoryItem(**row) for row in saved['nodes']]
     else:
         groups=reader.get_memory([batch['messages']],type='chat',info={'user_id':batch['uid'],'session_id':batch['session']},mode='fast',user_name=batch['uid'])
@@ -101,7 +108,7 @@ def build_batch(reader,tree,batch):
         if len(items)!=1:raise RuntimeError('Unexpected multiple windows in a two-turn batch; protocol review needed')
         for message in batch['messages']:
             if message['content'] not in items[0].memory or message['chat_time'] not in items[0].memory:raise RuntimeError('Raw two-turn input/timestamp not preserved')
-        save(path,{'identity':batch['identity'],'messages':batch['messages'],'user_name':batch['uid'],'nodes':[i.model_dump(mode='json') for i in items]})
+        save(path,{'identity':batch['identity'],'embedding_identity':embedding_identity,'messages':batch['messages'],'user_name':batch['uid'],'nodes':[i.model_dump(mode='json') for i in items]})
     existing=tree.graph_store.get_nodes([i.id for i in items],user_name=batch['uid'])
     if existing:
         if {r['id'] for r in existing}!={i.id for i in items} or {r['id']:r['memory'] for r in existing}!={i.id:i.memory for i in items}:raise RuntimeError('Existing memory differs from durable reader receipt')

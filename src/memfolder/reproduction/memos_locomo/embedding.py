@@ -40,7 +40,7 @@ def get_vectors(texts):
 
 
 def precompute():
-    expected={'backend':'local','dtype':'float32','pooling':'cls','normalize':True,'query_instruction':None,'attention':'eager','tf32':False,'dimension':1024,'max_length':8192}
+    expected={'backend':'local','dtype':'float32','pooling':'cls','normalize':True,'normalization_passes':2,'strip_text':True,'query_instruction':None,'attention':'eager','tf32':False,'dimension':1024,'max_length':8192}
     if any(PROTOCOL['embedding'].get(k)!=v for k,v in expected.items()):
         raise RuntimeError('Unsupported local BGE-M3 configuration')
     # This fast reader preserves both turns verbatim. Native reader coverage
@@ -75,12 +75,19 @@ def precompute():
             pending.sort(key=len,reverse=True)
             for start in range(0,len(pending),size):
                 batch=pending[start:start+size]
+                # SentenceTransformer's Transformer.tokenize strips each text.
+                model_texts=[text.strip() for text in batch]
                 # Fail on unsupported input rather than silently truncating.
-                if max(len(ids) for ids in tokenizer(batch)['input_ids'])>PROTOCOL['embedding']['max_length']:
+                if max(len(ids) for ids in tokenizer(model_texts)['input_ids'])>PROTOCOL['embedding']['max_length']:
                     raise RuntimeError('Memory exceeds the configured BGE-M3 input length')
-                tokens=tokenizer(batch,padding=True,truncation=False,return_tensors='pt').to('cuda')
+                tokens=tokenizer(model_texts,padding=True,truncation=False,return_tensors='pt').to('cuda')
                 with torch.inference_mode():
-                    vectors=torch.nn.functional.normalize(model(**tokens).last_hidden_state[:,0].float(),p=2,dim=1).cpu().tolist()
+                    vectors=model(**tokens).last_hidden_state[:,0].float()
+                    # The checkpoint includes a Normalize module; encode(...,
+                    # normalize_embeddings=True) applies normalization again.
+                    for _ in range(PROTOCOL['embedding']['normalization_passes']):
+                        vectors=torch.nn.functional.normalize(vectors,p=2,dim=1)
+                    vectors=vectors.cpu().tolist()
                 for text,vector in zip(batch,vectors,strict=True):
                     validate(vector)
                     db.execute('INSERT OR IGNORE INTO vectors VALUES(?,?,?)',(cache_key(text),json.dumps(vector),digest(vector)))

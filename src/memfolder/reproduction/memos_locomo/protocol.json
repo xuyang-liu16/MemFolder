@@ -18,6 +18,8 @@
     "dtype": "float32",
     "pooling": "cls",
     "normalize": true,
+    "normalization_passes": 2,
+    "strip_text": true,
     "query_instruction": null,
     "max_length": 8192,
     "batch_size": 32,

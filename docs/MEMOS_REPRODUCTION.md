@@ -67,3 +67,6 @@ therefore do not occupy GPU memory together. `--embedding-model-dir` selects
 prepared BGE-M3 weights; `--embedding-python` defaults to `--reranker-python`.
 Missing local vectors cause an error; the runner never silently substitutes a
 remote model. Use a fresh run directory when changing the scientific protocol.
+Local embedding inputs follow `SentenceTransformer.encode`: strip surrounding
+whitespace, CLS pooling, checkpoint normalization, then output normalization.
+Reader receipts record the embedding configuration to reject incompatible banks.
