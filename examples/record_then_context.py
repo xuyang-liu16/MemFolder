@@ -8,7 +8,7 @@ from dataclasses import replace
 from pathlib import Path
 import json
 from memfolder.assembly import assemble
-from memfolder.lingua_service import LLMLingua2Service
+from memfolder.lingua_historical import HistoricalLLMLingua2Service
 
 RECIPES = Path(__file__).parent / 'recipes'
 
@@ -31,4 +31,4 @@ async def record_then_context(request, *, services, context_method='llmlingua2')
 
 def local_lingua_service():
     """Optional service for caller-provided ServiceMap; loading is lazy."""
-    return LLMLingua2Service()
+    return HistoricalLLMLingua2Service()

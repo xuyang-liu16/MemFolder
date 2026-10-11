@@ -120,7 +120,17 @@
     "symbols": [
       "LLMLingua2Service"
     ],
-    "changes": "Adapter calling the optional official package, with default writer retention rate 0.55, explicit use_llmlingua2=True, use_context_level_filter=False, current Record input and no target_token override.",
+    "changes": "Explicit rate-only variant calling the optional official package; distinct from the recovered historical target-token recipe provided by llmlingua2-historical-service.",
+    "model": "microsoft/llmlingua-2-xlm-roberta-large-meetingbank",
+    "model_revision": "ebaba9b0e874dadd3003ffcff828e4397e568089"
+  },
+  {
+    "source": "Recovered pre-refactor tmp/mf_textzip_20260924/run_textzip_encode_lme.py and run_materialize_v12_lme.py",
+    "sha256": "8dd326be6c11e702431c0c95f1df9547e5d9320a72f21a6d271c89565b1c2e2d",
+    "target": "lingua_historical.py; wrappers/lingua_historical.py",
+    "symbols": ["HistoricalLLMLingua2Service", "HistoricalLLMLinguaMem0Codec"],
+    "changes": "Opt-in current Record text strip, cl100k max(6, python_round(rate*tokens)), force digits and conditional newline, pinned checkpoint with original constructor defaults, latest-contributor native Mem0 projection. Empty output is explicitly retained; other inference failures propagate.",
+    "reproduction_scope": "Successful compression calls and projection recipe; original Record parents, historical package/runtime and complete numerical paper reproduction remain unverified.",
     "model": "microsoft/llmlingua-2-xlm-roberta-large-meetingbank",
     "model_revision": "ebaba9b0e874dadd3003ffcff828e4397e568089"
   }

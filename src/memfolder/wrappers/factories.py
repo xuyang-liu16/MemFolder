@@ -5,6 +5,7 @@ from ..plugins import PluginRequest
 from ..method_plugins import Factory
 from .base import FrameworkWrapper
 from .codecs import Mem0Codec, MemOSCodec, M3Codec
+from .lingua_historical import HistoricalLLMLinguaMem0Codec
 from .embedding import ChangedTextEmbeddings
 from .topology import RedirectEdges
 from .writers import Mem0PointsWriter, QdrantWriter, MemOSWriter, M3JsonWriter, M3PickleWriter
@@ -38,6 +39,7 @@ def register_wrappers(registry):
     for framework,codec,writer in (('mem0','mem0-codec','mem0-points-writer'),('memos','memos-codec','memos-writer'),('m3','m3-codec','m3-json-writer')):
         registry.register(framework+'-wrapper', WrapperFactory({'codec':{'plugin':codec},'writer':{'plugin':writer}}))
     for name,cls in {'mem0-codec':Mem0Codec,'memos-codec':MemOSCodec,'m3-codec':M3Codec,
+        'llmlingua2-historical-mem0-codec':HistoricalLLMLinguaMem0Codec,
         'content-embeddings':ChangedTextEmbeddings,'redirect-edges':RedirectEdges,'mem0-points-writer':Mem0PointsWriter,
         'qdrant-writer':QdrantWriter,'memos-writer':MemOSWriter,'m3-json-writer':M3JsonWriter,'m3-pickle-writer':M3PickleWriter}.items():
         registry.register(name, Factory(cls))
