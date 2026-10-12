@@ -29,7 +29,7 @@ Honggang Chen<sup>1,&dagger;</sup>
 </div>
 
 <p align="center">
-<img src="docs/assets/paper-intro.png" alt="记忆增长带来检索和上下文开销，RecordFolder 减少节点数量，ContextFolder 缩短每个检索单元的文本。" width="1000">
+<img src="assets/paper-intro.png" alt="记忆增长带来检索和上下文开销，RecordFolder 减少节点数量，ContextFolder 缩短每个检索单元的文本。" width="1000">
 </p>
 
 > **TLDR:** 随着智能体记忆不断积累，节点检索和上下文处理的开销持续增加。
@@ -54,7 +54,7 @@ Honggang Chen<sup>1,&dagger;</sup>
 ## ✨ 方法概览
 
 <p align="center">
-<img src="docs/assets/paper-overview.png" alt="RecordFolder 通过渐进式锚点选择、实体感知亲和度和时间链完成分组。ContextFolder 规划事实、生成编码并验证盲恢复结果。" width="1000">
+<img src="assets/paper-overview.png" alt="RecordFolder 通过渐进式锚点选择、实体感知亲和度和时间链完成分组。ContextFolder 规划事实、生成编码并验证盲恢复结果。" width="1000">
 </p>
 
 MemFolder 包含两个模块：**RecordFolder** 选择互补锚点，结合实体感知亲和度与时间链整合相关节点，减少检索单元。**ContextFolder** 使用规划器确定事实优先级、压缩器生成紧凑编码，再通过盲验证器检查事实恢复并指导迭代修订。
@@ -400,7 +400,7 @@ python tools/export_schemas.py --output-dir build/schemas
 ### ContextFolder：上下文压缩
 
 <p align="center">
-<img src="docs/assets/paper-context-results.png" alt="在缩减 50% 节点后，比较 LoCoMo、LongMemEval 和 M3-Bench-robot 的准确率与每个节点的 token 数。" width="1000">
+<img src="assets/paper-context-results.png" alt="在缩减 50% 节点后，比较 LoCoMo、LongMemEval 和 M3-Bench-robot 的准确率与每个节点的 token 数。" width="1000">
 </p>
 
 缩减 50% 节点后，ContextFolder 相比单独使用 RecordFolder，进一步将 LoCoMo 和 LongMemEval 的每个节点的 token 数降低 **40.3%** 和 **37.9%**，最终准确率分别为 **56.6%** 和 **51.8%**。越靠左上越好，颜色表示节点压缩方法，标记表示上下文压缩方法。
@@ -408,7 +408,7 @@ python tools/export_schemas.py --output-dir build/schemas
 ### 检索效率
 
 <p align="center">
-<img src="docs/assets/paper-retrieval-efficiency.png" alt="五个设置下的平均检索时延与 P95 时延，横轴依次为保留 100%、50%、30% 节点。" width="1000">
+<img src="assets/paper-retrieval-efficiency.png" alt="五个设置下的平均检索时延与 P95 时延，横轴依次为保留 100%、50%、30% 节点。" width="1000">
 </p>
 
 保留 30% 节点时，五个设置的平均检索加速比为 **1.88–5.34×**。实线表示平均时延，虚线表示 P95 时延。横轴表示节点**保留比例**，上面的表格表示节点**缩减比例**。

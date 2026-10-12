@@ -29,7 +29,7 @@ Honggang Chen<sup>1,&dagger;</sup>
 </div>
 
 <p align="center">
-<img src="docs/assets/paper-intro.png" alt="Memory growth increases retrieval and context costs. RecordFolder reduces record count, and ContextFolder shortens each retrieval unit." width="1000">
+<img src="assets/paper-intro.png" alt="Memory growth increases retrieval and context costs. RecordFolder reduces record count, and ContextFolder shortens each retrieval unit." width="1000">
 </p>
 
 > **TLDR:** As agent memory grows, retrieving records and processing the resulting context become increasingly costly.
@@ -54,7 +54,7 @@ Honggang Chen<sup>1,&dagger;</sup>
 ## ✨ Overview
 
 <p align="center">
-<img src="docs/assets/paper-overview.png" alt="RecordFolder uses progressive anchor selection, entity-aware affinity and temporal chaining. ContextFolder plans facts, generates encodings and checks blind recovery." width="1000">
+<img src="assets/paper-overview.png" alt="RecordFolder uses progressive anchor selection, entity-aware affinity and temporal chaining. ContextFolder plans facts, generates encodings and checks blind recovery." width="1000">
 </p>
 
 MemFolder has two modules: **RecordFolder** selects complementary anchors and consolidates related records through entity-aware affinity and temporal chains, reducing the number of retrieval units. **ContextFolder** uses a planner to prioritize facts, a compressor to generate compact encodings, and a blind verifier to check recovery and guide revision.
@@ -401,7 +401,7 @@ and protocol manifests; updated prompts or methods do not relabel these numbers.
 ### ContextFolder: context compression
 
 <p align="center">
-<img src="docs/assets/paper-context-results.png" alt="Accuracy versus tokens per record at 50% record reduction on LoCoMo, LongMemEval and M3-Bench-robot." width="1000">
+<img src="assets/paper-context-results.png" alt="Accuracy versus tokens per record at 50% record reduction on LoCoMo, LongMemEval and M3-Bench-robot." width="1000">
 </p>
 
 At 50% record reduction, ContextFolder further reduces tokens per record by **40.3% on LoCoMo** and **37.9% on LongMemEval** relative to RecordFolder alone, with final accuracy of **56.6%** and **51.8%**, respectively. Upper left is better. Colors identify record compressors, and markers identify context compressors.
@@ -409,7 +409,7 @@ At 50% record reduction, ContextFolder further reduces tokens per record by **40
 ### Retrieval efficiency
 
 <p align="center">
-<img src="docs/assets/paper-retrieval-efficiency.png" alt="Mean and P95 retrieval latency across five settings at 100%, 50% and 30% of records retained." width="1000">
+<img src="assets/paper-retrieval-efficiency.png" alt="Mean and P95 retrieval latency across five settings at 100%, 50% and 30% of records retained." width="1000">
 </p>
 
 Keeping 30% of records yields **1.88–5.34×** mean retrieval speedups across five settings. Solid lines show mean latency, and dashed lines show P95 latency. The horizontal axis shows records **retained**, while the tables above show records **removed**.
