@@ -61,9 +61,9 @@ end-to-end clustering or retrieval behavior.
 ### Import and inspect a bank
 
 Run `python -m memfolder.loading --help` for the supported input formats.
-The Python entry points are in `src/memfolder/loading/__init__.py`, with loader
-parameters in `src/memfolder/loading/factories.py` and `LoadOptions` in
-`src/memfolder/loading/types.py`.
+The Python entry points are in `src/loading/__init__.py`, with loader
+parameters in `src/loading/factories.py` and `LoadOptions` in
+`src/loading/types.py`.
 
 | Input | Loader function | Additional setup |
 | --- | --- | --- |
@@ -143,8 +143,8 @@ Use the actual dimension and matching declarations in the semantic feature
 provider and `services.embeddings` too. The default embedding service name is
 `embeddings`. Rewritten text needs fresh content-bound embeddings.
 `top_k: 10` is an example, not a claim about the paper's setting.
-For framework-native retrieval, inspect `src/memfolder/evaluation/native.py`
-and the selected wrapper in `src/memfolder/wrappers/`.
+For framework-native retrieval, inspect `src/evaluation/native.py`
+and the selected wrapper in `src/wrappers/`.
 
 The Mem0 Qdrant writer requires one unnamed dense-vector space. MemOS tree output
 uses `backend: "tree_text"` even when no edges remain. Native M3 pickle output
@@ -219,8 +219,8 @@ endpoint and credentials alongside chat/grounding/embeddings. The template
 copies the chat settings for judge, so keep both synchronized or explicitly
 record a different judge model consistently across every comparison arm.
 
-The single source is `src/memfolder/prompt_templates.py`.
-The [prompt protocol](../../src/memfolder/prompt_protocol.py) records source/template
+The single source is `src/prompt_templates.py`.
+The [prompt protocol](../../src/prompt_protocol.py) records source/template
 hashes, message roles and JSON output. The judge accepts only
 `{"label":"CORRECT"}` or `{"label":"WRONG"}`; invalid labels fail evaluation.
 `chat-judge` selects that same implementation. All final QA aliases are identical
@@ -345,18 +345,18 @@ these text-compression templates.
 
 | Decision | Source |
 | --- | --- |
-| CLI arguments and config-relative paths | `src/memfolder/__main__.py` |
-| Assembly, output isolation, verification, resume | `src/memfolder/experiment.py` |
-| Matrix axes, seeds, and limits | `src/memfolder/matrix.py` |
-| Registered parameters and plugin names | `src/memfolder/experiment_plugins.py`, `src/memfolder/method_plugins.py` |
-| History records versus imported banks | `src/memfolder/initialization.py` |
-| Anchor selection, affinity, temporal matching | `src/memfolder/planning/recordfolder.py` |
-| Fact planning, blind checks, fallback selection | `src/memfolder/operators/contextfolder.py` |
-| Node budgets and enforcement | `src/memfolder/core/budgets.py`, `src/memfolder/compression.py` |
-| Reader defaults and content limits | `src/memfolder/evaluation/reader.py`, `src/memfolder/evaluation/retrieval.py` |
-| Metric and judge protocols | `src/memfolder/evaluation/metrics.py`, `src/memfolder/evaluation/official.py` |
-| HTTP payloads, cache identity, token counting | `src/memfolder/services.py` |
-| Post-rewrite embeddings | `src/memfolder/wrappers/embedding.py` |
+| CLI arguments and config-relative paths | `src/__main__.py` |
+| Assembly, output isolation, verification, resume | `src/experiment.py` |
+| Matrix axes, seeds, and limits | `src/matrix.py` |
+| Registered parameters and plugin names | `src/experiment_plugins.py`, `src/method_plugins.py` |
+| History records versus imported banks | `src/initialization.py` |
+| Anchor selection, affinity, temporal matching | `src/planning/recordfolder.py` |
+| Fact planning, blind checks, fallback selection | `src/operators/contextfolder.py` |
+| Node budgets and enforcement | `src/core/budgets.py`, `src/compression.py` |
+| Reader defaults and content limits | `src/evaluation/reader.py`, `src/evaluation/retrieval.py` |
+| Metric and judge protocols | `src/evaluation/metrics.py`, `src/evaluation/official.py` |
+| HTTP payloads, cache identity, token counting | `src/services.py` |
+| Post-rewrite embeddings | `src/wrappers/embedding.py` |
 
 The built-in context builder limits characters, not tokens. Record that setting
 when comparing reader budgets. The supplied chat answerer consumes text.

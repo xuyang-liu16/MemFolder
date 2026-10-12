@@ -19,9 +19,8 @@ llmlingua2 = ["llmlingua==0.2.2"]
 [project.scripts]
 memfolder = "memfolder.__main__:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-exclude = ["tests", "tests.*", "*.tests", "*.tests.*"]
+[tool.setuptools.package-dir]
+memfolder = "src"
 
 [tool.setuptools.package-data]
 memfolder = ["py.typed", "licenses/*.txt"]

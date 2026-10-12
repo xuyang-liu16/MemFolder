@@ -1,11 +1,16 @@
 """Export public structural JSON Schemas from the implementation."""
 from pathlib import Path
 import argparse
+import importlib.util
 import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'src'))
+package_spec = importlib.util.spec_from_file_location('memfolder', ROOT / 'src' / '__init__.py',
+    submodule_search_locations=[str(ROOT / 'src')])
+package = importlib.util.module_from_spec(package_spec)
+sys.modules['memfolder'] = package
+package_spec.loader.exec_module(package)
 import memfolder.core as core
 import memfolder.loading as loading
 import memfolder.wrappers as wrappers
