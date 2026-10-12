@@ -244,8 +244,10 @@ PersonaMem and M3 fixtures without `time_ranges` fail that feature's contract.
 Setting an epoch timestamp or copying availability into event time hides the
 missing semantics. Supply a separate feature provider, or use a documented
 order-based method variant; keep its clock and variant identity explicit.
-The temporal ToMe planner supports all-ordinal input when parsed times are absent,
-but still requires content-bound embeddings. Mixed or incomparable clocks fail.
+The temporal ToMe planner supports all-ordinal input when parsed times are absent.
+It consumes shared semantic features in a declared cosine space; the common
+`semantic-encoder` obtains them from current text before each match. No stored
+node vectors are required by this composition. Mixed or incomparable clocks fail.
 
 The generic answerer consumes text. Loading media and writing a native graph
 does not execute M3's multimodal controller. A controller-backed reader remains

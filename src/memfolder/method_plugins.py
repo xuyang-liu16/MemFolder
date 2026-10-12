@@ -86,9 +86,9 @@ def factories():
         'native-summary':Factory(tx.NativeSummaryWriter),'concat-writer':Factory(tx.ConcatWriter),
         'tome-pair-writer':Factory(TomePairWriter),
         'tome-embedding-builder':Factory(TomeEmbeddingBuilder,roles={'builder':'record_builder'}),
+        # Compatibility selector for the ordinary text executor. The common
+        # feature-provider lifecycle refreshes semantics before each match.
         'tome-operator':Factory(tx.TextOperator,
-            defaults={'writer':{'plugin':'tome-pair-writer'},
-                      'record_builder':{'plugin':'tome-embedding-builder'}},
             roles={'writer':'text_writer','record_builder':'record_builder','member_resolver':'member_resolver'}),
         'record-builder':Factory(tx.ConservativeRecordBuilder),
         'llmlingua2-writer':Factory(LLMLingua2Writer),

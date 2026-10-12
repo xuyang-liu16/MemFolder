@@ -140,8 +140,11 @@ and return the same result contract.
 
 [record_then_context.py](../../../examples/record_then_context.py) demonstrates
 temporal ToMe followed by LLMLingua-2 or ContextFolder as independent stages.
-Callers inject `chat`, `embeddings`, and the selected context services. Record
-pairing uses fresh merged-text embeddings before choosing the next pair;
+Callers inject `chat`, `embeddings`, and the selected context services. Pass
+`embedding_space` explicitly for raw text input; an existing semantic batch or
+unambiguous declared content-bound vectors can supply that space instead.
+Record pairing uses the shared semantic provider and common text operator,
+with fresh merged-text features before choosing the next pair;
 context compression runs only after Record compression finishes. Final QA and
 judge use the [shared MemForest protocol](../../../docs/PROMPT_PROTOCOL.md),
 with the same retrieval and scoring configuration across comparison arms.

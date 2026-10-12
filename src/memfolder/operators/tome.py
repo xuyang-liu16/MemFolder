@@ -1,4 +1,9 @@
-"""Pair writer and refreshed-record builder, independently replaceable plugins."""
+"""Optional compatibility components; default ToMe uses the shared text executor.
+
+Select these explicitly for a pipeline that stores content embeddings during
+record construction. The default shared feature-provider path does not require
+initial node embeddings or this builder.
+"""
 from dataclasses import dataclass, replace
 import math
 from ..core import Embedding, FrozenMap, to_data

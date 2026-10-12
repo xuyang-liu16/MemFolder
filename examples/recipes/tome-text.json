@@ -3,7 +3,6 @@
     "plugin": "tome"
   },
   "operator": {
-    "plugin": "tome-operator"
-  },
-  "features": [{"plugin": "current-embeddings"}]
+    "plugin": "text-operator"
+  }
 }

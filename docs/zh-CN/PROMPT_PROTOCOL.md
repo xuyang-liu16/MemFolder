@@ -15,8 +15,9 @@
 
 RecordFolder、MemForest、ToMe 收到相同的两条记忆时，会发送完全一致的 merge
 请求。RecordFolder 仍按 planner 给出的分组做一次多条合并；多条输入只替换
-MemForest 模板中的条数及 Memory/Timestamp 槽位。ToMe 的时间二分、重复吸收、
-保留较新时间戳及每次合并后重新 embedding 的逻辑继续由其 planner/operator 实现。
+MemForest 模板中的条数及 Memory/Timestamp 槽位。ToMe 默认复用公共 `TextOperator`；
+时间二分和重复吸收由 planner 选择，较新时间戳和目的节点 ID 由公共构建器保留，
+下一次匹配前由引擎的公共语义特征提供器重新编码当前文本。
 
 所有 context 压缩方法和未压缩对照使用同一套最终 QA、judge。
 最终 benchmark QA 不启用 AGPR，也不追加压缩方法专属的解码指令。

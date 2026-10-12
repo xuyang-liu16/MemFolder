@@ -91,9 +91,11 @@ the shared MemForest judge differs from native benchmark scoring protocols.
 - The main RecordFolder template needs semantic and entity features plus parsed
   event times. PersonaMem turn order and M3 clip visibility require explicit
   order/time adapters; replacing only `dataset` is insufficient.
-- Temporal ToMe needs `repeat` mode and initial vectors bound to current text in
-  one declared cosine space. `semantic-encoder` supplies planning features,
-  not initial node embeddings. Read the ToMe reference before substituting it.
+- Temporal ToMe uses `repeat` mode, the shared `semantic-encoder` in one declared
+  cosine space, and the common `text-operator`. Raw history works without stored
+  vectors: the engine refreshes current-text features before each match. Use
+  `examples/experiments/tome-template.json`; configure final content embeddings
+  separately for native vector output or dense retrieval. Read the ToMe reference.
 - MemForest scope-capacity and per-cluster ceilings have different budgets.
   The latter uses the Python API's `resolve_memforest_budget`; the full run
   schema has no dynamic budget-resolver field.

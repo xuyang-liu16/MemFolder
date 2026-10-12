@@ -15,9 +15,10 @@ source-file and prompt SHA-256 hashes recorded beside them.
 | Benchmark judge | MemForest `ACCURACY_PROMPT`; user message, temperature 0, JSON response |
 
 `NativeSummaryWriter`, `MemForestPairWriter` and `TomePairWriter` send identical
-requests for identical pairs. ToMe still chooses chronological pairs and
-refreshes the destination embedding after each merge. RecordFolder still
-selects groups. An N-way group uses one call with the same instructions:
+requests for identical pairs. The default ToMe composition uses the common
+`TextOperator`. Its planner still chooses chronological pairs; the engine's
+shared semantic provider refreshes current-text features before the next match.
+RecordFolder still selects groups. An N-way group uses one call with the same instructions:
 only the count and numbered memory/timestamp slots change. Singletons kept
 by record compression remain unchanged.
 

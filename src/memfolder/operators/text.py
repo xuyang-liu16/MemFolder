@@ -2,7 +2,7 @@
 from __future__ import annotations
 from ..planning.common import resolve
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from ..core import (ActionOutcome, OperatorResult, MemoryRecord, ContentPart, RetentionPolicy,
     FrozenMap, fingerprint, validate_plan, validate_result)
@@ -95,6 +95,13 @@ class ConservativeRecordBuilder:
             available_at=bound('available_at',max),expires_at=bound('expires_at',min),
             extensions=FrozenMap({'memfolder.writer':written.metadata,'memfolder.action_id':action.action_id,
                 'memfolder.member_ids':action.member_ids,'memfolder.content_embedding':'refresh_required'}))
+        # Execute generic action policies while retaining the full time lineage.
+        policy=action.parameters.get('timestamp_policy')
+        if policy is not None:
+            require(policy in ('earliest','latest'),'Unknown output timestamp policy')
+            output=replace(output,extensions=FrozenMap({**output.extensions,
+                'memfolder.timestamp_policy':policy,
+                'memfolder.event_timestamp':timestamp(output,policy)}))
         # Native payloads are source records in the archive, rather than masquerading as
         # updated backend payloads. Wrapper performs the actual native projection.
         return output
