@@ -92,4 +92,4 @@ Libraries produced with a different ToMe variant or merge prompt retain those
 identities. New record grouping, text or embeddings require new record banks.
 QA/judge-only changes can reuse a verified bank with a new evaluation identity.
 All final QA and judge use the
-[shared MemForest protocol](../../../docs/PROMPT_PROTOCOL.md).
+[shared MemForest protocol](../../../src/memfolder/prompt_protocol.py).

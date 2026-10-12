@@ -248,7 +248,7 @@ export MEMFOLDER_PROVIDER_KEY="YOUR_API_KEY"
 ```
 两处 `space` 与语义特征提供器保持一致，并填写模型实际维度。两个 reader 均使用 `memforest-qa-prompt`；`contextfolder-qa-prompt` 只是行为相同的兼容别名。
 
-所有内置普通摘要合并使用同一份 MemForest merge 模板。各方法、各基准的最终 QA 和 judge 均使用 `memforest-qa-prompt`、`memforest-judge`，judge 返回 JSON `CORRECT`／`WRONG`。LLMLingua-2 和 BabelTele 保留各自的压缩逻辑；ContextFolder 内部的事实提取、编码与恢复检查独立于最终评测。[提示词协议](docs/zh-CN/PROMPT_PROTOCOL.md)记录具体模板、哈希和缓存身份。
+所有内置普通摘要合并使用同一份 MemForest merge 模板。各方法、各基准的最终 QA 和 judge 均使用 `memforest-qa-prompt`、`memforest-judge`，judge 返回 JSON `CORRECT`／`WRONG`。LLMLingua-2 和 BabelTele 保留各自的压缩逻辑；ContextFolder 内部的事实提取、编码与恢复检查独立于最终评测。[提示词协议](src/memfolder/prompt_protocol.py)记录具体模板、哈希和缓存身份。
 
 复现论文表格还需匹配原始记忆快照、模型版本、检索设置和评分覆盖。LoCoMo F1 可作为单独指标配置；MemForest judge 与各基准原始评分协议具有不同身份。使用 Mem0 原生评测流程时，应为导入的记忆库显式配置相应检索器。
 

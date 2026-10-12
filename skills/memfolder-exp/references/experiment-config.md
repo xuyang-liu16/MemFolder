@@ -220,7 +220,7 @@ copies the chat settings for judge, so keep both synchronized or explicitly
 record a different judge model consistently across every comparison arm.
 
 The single source is `src/memfolder/prompt_templates.py`.
-The [prompt protocol](../../../docs/PROMPT_PROTOCOL.md) records source/template
+The [prompt protocol](../../../src/memfolder/prompt_protocol.py) records source/template
 hashes, message roles and JSON output. The judge accepts only
 `{"label":"CORRECT"}` or `{"label":"WRONG"}`; invalid labels fail evaluation.
 `chat-judge` selects that same implementation. All final QA aliases are identical

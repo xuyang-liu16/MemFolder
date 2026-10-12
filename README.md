@@ -248,7 +248,7 @@ Also add `embedding_provider` under `compression.wrapper.parameters`, so rewritt
 ```
 Use the same `space` in both blocks and in the semantic feature provider, with your model's actual dimension. Both readers select `memforest-qa-prompt`; `contextfolder-qa-prompt` remains an identical compatibility alias.
 
-All built-in record summaries use the same MemForest merge template. Final QA and judge are shared across methods and benchmarks: `memforest-qa-prompt` and `memforest-judge`, with JSON `CORRECT`/`WRONG` labels. LLMLingua-2 and BabelTele retain their compression logic; ContextFolder's internal fact/encoding checks remain separate from final evaluation. The [prompt protocol](docs/PROMPT_PROTOCOL.md) records the exact templates, hashes and cache identities.
+All built-in record summaries use the same MemForest merge template. Final QA and judge are shared across methods and benchmarks: `memforest-qa-prompt` and `memforest-judge`, with JSON `CORRECT`/`WRONG` labels. LLMLingua-2 and BabelTele retain their compression logic; ContextFolder's internal fact/encoding checks remain separate from final evaluation. The [prompt protocol](src/memfolder/prompt_protocol.py) records the exact templates, hashes and cache identities.
 
 To reproduce a paper table, also match its memory snapshot, model versions, retrieval settings and scoring coverage. LoCoMo F1 is an optional distinct metric; the MemForest judge is distinct from the benchmarks' original scoring protocols. For Mem0-native evaluation, configure its retriever explicitly alongside the imported memory store.
 

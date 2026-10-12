@@ -68,7 +68,7 @@ and service parameters as the single-run configuration.
 ## Preserve the comparison protocol
 
 All built-in ordinary summaries, final QA and final judges use
-[`memforest.shared.v1`](../../docs/PROMPT_PROTOCOL.md). Keep
+[`memforest.shared.v1`](../../src/memfolder/prompt_protocol.py). Keep
 `memforest-qa-prompt` and `memforest-judge` across every arm, including the
 uncompressed control, LLMLingua-2 and BabelTele. The judge accepts JSON
 `CORRECT`/`WRONG`. `qa-prompt` and `contextfolder-qa-prompt` are identical aliases;

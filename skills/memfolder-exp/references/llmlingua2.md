@@ -146,7 +146,7 @@ unambiguous declared content-bound vectors can supply that space instead.
 Record pairing uses the shared semantic provider and common text operator,
 with fresh merged-text features before choosing the next pair;
 context compression runs only after Record compression finishes. Final QA and
-judge use the [shared MemForest protocol](../../../docs/PROMPT_PROTOCOL.md),
+judge use the [shared MemForest protocol](../../../src/memfolder/prompt_protocol.py),
 with the same retrieval and scoring configuration across comparison arms.
 
 Historical results using another rate or the old ToMe recipe retain their
