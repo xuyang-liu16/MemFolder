@@ -1,15 +1,6 @@
 """Contributor modules using public protocols; no framework/runner imports."""
 from dataclasses import dataclass
-from memfolder.core import ContentPart,FrozenMap,MetricResult,PluginSpec,ContractError
-
-
-@dataclass(frozen=True)
-class FixtureAnswerer:
-    """Synthetic answer only: useful for extension tests, never a QA model."""
-    text: str = 'fixture answer'
-    spec=PluginSpec(plugin_id='example.fixture_answerer',role='answerer')
-    def answer(self,question,memory_context,context):
-        return (ContentPart(modality='text',text=self.text),),FrozenMap({'test_only':True,'chat_calls':0})
+from memfolder.core import FrozenMap,MetricResult,PluginSpec,ContractError
 
 
 @dataclass(frozen=True)
@@ -31,11 +22,6 @@ class TraceObserver:
             self._state['verified_public_artifacts']+=1
     def close(self,context):context.reports.write_json('external-observer.json',FrozenMap(self._state))
 
-
-def answerer_factory(parameters,*,context):
-    if set(parameters)-{'text'}:raise ContractError('Unknown answerer parameter')
-    return FixtureAnswerer(**dict(parameters))
-answerer_factory.spec=FixtureAnswerer.spec
 
 def metric_factory(parameters,*,context):
     if parameters:raise ContractError('AnswerLength has no parameters')

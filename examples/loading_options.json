@@ -1,15 +1,20 @@
 {
-  "dataset_id": "locomo",
+  "dataset_id": "YOUR_DATASET_ID",
   "split": "test",
-  "sample_id": "locomo-1",
-  "selectors": {"user_id": ["Alice_1", "Bob_1"]},
+  "sample_id": "YOUR_SAMPLE_ID",
+  "selectors": {
+    "user_id": [
+      "YOUR_OWNER_A",
+      "YOUR_OWNER_B"
+    ]
+  },
   "naive_timezone": "UTC",
   "embedding_spaces": {
     "default": {
-      "provider": "synthetic",
-      "model": "fixture-2d",
-      "revision": "1",
-      "dimension": 2,
+      "provider": "caller-declared",
+      "model": "REPLACE_EMBEDDING_MODEL",
+      "revision": "REPLACE_MODEL_REVISION",
+      "dimension": 1536,
       "metric": "cosine"
     }
   }

@@ -21,6 +21,7 @@ memfolder = "memfolder.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+exclude = ["tests", "tests.*", "*.tests", "*.tests.*"]
 
 [tool.setuptools.package-data]
 memfolder = ["py.typed", "licenses/*.txt"]

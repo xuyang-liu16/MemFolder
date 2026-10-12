@@ -2,8 +2,11 @@
   "dataset": {
     "plugin": "personamem-dataset",
     "parameters": {
-      "path": "tiny_temporal/questions.csv",
-      "contexts_path": "tiny_temporal/contexts.jsonl"
+      "path": "data/personamem/questions.csv",
+      "contexts_path": "data/personamem/contexts.jsonl",
+      "sample_ids": [
+        "YOUR_QUESTION_ID"
+      ]
     }
   },
   "initializer": {
@@ -11,13 +14,13 @@
     "parameters": {
       "prefix_end_field": "metadata.history_end_index",
       "loaders": {
-        "q0": {
+        "YOUR_QUESTION_ID": {
           "plugin": "memos",
           "parameters": {
-            "path": "tiny_temporal/memos.json",
+            "path": "data/personamem/memos-memory.json",
             "options": {
               "dataset_id": "personamem",
-              "sample_id": "q0",
+              "sample_id": "YOUR_QUESTION_ID",
               "order_by": "time_id",
               "naive_timezone": "UTC",
               "timestamp_fields": [

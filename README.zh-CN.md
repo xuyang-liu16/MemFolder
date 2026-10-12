@@ -83,10 +83,8 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
 python -m memfolder --help
-python -m memfolder run examples/experiments/offline-demo.json
-python -m memfolder verify build/experiments/offline-demo
 ```
-离线示例使用合成对话在本地检查流程，指标标记为 `test_only`。运行 RecordFolder 和 ContextFolder 还需安装：
+运行 RecordFolder 和 ContextFolder 还需安装：
 
 ```bash
 python -m pip install -e ".[algorithms,contextfolder,evaluation]"
@@ -269,9 +267,9 @@ python -m memfolder case build/experiments/recordfolder-001 \
 ```
 这些实验会调用配置的模型 API。输出目录中的 `result.json` 包含原始/压缩后分数及逐样本统计，`run.manifest.json` 保存执行状态，样本子目录保存记忆快照和预测。`verify` 校验结果文件的完整性，`case` 导出一道问题用于检查。
 
-方法与随机种子的批量对比可参照 [offline-matrix.json](examples/experiments/offline-matrix.json)，执行 `python -m memfolder matrix CONFIG.json`。`--resume` 复用校验通过的**已完成**实验。运行失败后，保留已有文件并使用新输出目录重试。
+预算与随机种子的批量对比可参照 [matrix-template.json](examples/experiments/matrix-template.json)，填入与单组实验相同的数据和服务配置后，执行 `python -m memfolder matrix CONFIG.json`。`--resume` 复用校验通过的**已完成**实验。运行失败后，保留已有文件并使用新输出目录重试。
 
-[PersonaMem Mem0](examples/experiments/personamem-mem0-template.json)、[PersonaMem MemOS](examples/experiments/personamem-memos-template.json) 和 [M3](examples/experiments/m3-recordfolder-template.json) 模板使用旧实验的排序规则：Mem0 的 `created_at`、MemOS 的 `(ts, id)`，以及 M3 每个 clip 内的数字节点 ID。模板包含合成数据，采用公共 QA/judge；实际运行时配置模型服务并替换数据与记忆库映射。前缀库需要明确的源历史位置，M3 的预算仍按 clip 分配。[时间与前缀配置说明](skills/memfolder-exp/references/experiment-config.md#legacy-time-and-order-profiles) 包含字段映射、ContextFolder 组合方式和 reader 范围。
+[PersonaMem Mem0](examples/experiments/personamem-mem0-template.json)、[PersonaMem MemOS](examples/experiments/personamem-memos-template.json) 和 [M3](examples/experiments/m3-recordfolder-template.json) 模板使用旧实验的排序规则：Mem0 的 `created_at`、MemOS 的 `(ts, id)`，以及 M3 每个 clip 内的数字节点 ID。填入自己的数据路径、问题或视频 ID、记忆库映射及模型服务后运行。前缀库需要明确的源历史位置，M3 的预算仍按 clip 分配。[时间与前缀配置说明](skills/memfolder-exp/references/experiment-config.md#legacy-time-and-order-profiles) 包含字段映射、ContextFolder 组合方式和 reader 范围。
 
 <details>
 <summary><b>基线配置</b></summary>

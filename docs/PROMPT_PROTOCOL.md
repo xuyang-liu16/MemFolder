@@ -85,7 +85,3 @@ Existing results and compression banks keep their original identities.
 Changed merge prompts require new banks and content embeddings for a fresh
 comparison. A change only to QA or judge can reuse the same verified bank
 under a new evaluation identity. Existing frozen result files are preserved.
-
-The offline tests verify literal hashes, pair parity, N-way input coverage,
-speaker attribution, absence of method-specific QA legends, strict JSON
-labels, provider envelopes and cache isolation. They make no paid model calls.

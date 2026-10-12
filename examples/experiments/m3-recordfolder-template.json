@@ -2,23 +2,23 @@
   "dataset": {
     "plugin": "m3-dataset",
     "parameters": {
-      "path": "tiny_temporal/annotations.json",
+      "path": "data/m3/robot.json",
       "variant": "robot",
-      "question_ids": [
-        "robot-prefix"
-      ],
       "memory_loaders": {
-        "synthetic-video": {
+        "YOUR_VIDEO_ID": {
           "plugin": "m3",
           "parameters": {
-            "path": "tiny_temporal/m3.json",
+            "path": "data/m3/YOUR_VIDEO_ID.pkl",
             "options": {
               "dataset_id": "m3.robot",
               "order_by": "numeric_native_id"
             }
           }
         }
-      }
+      },
+      "sample_ids": [
+        "YOUR_VIDEO_ID"
+      ]
     }
   },
   "initializer": {

@@ -1,6 +1,6 @@
 ---
 name: memfolder-exp
-description: Configure, run, compare, and inspect MemFolder memory-compression experiments using its loaders, plugins and CLI. Use for offline checks, existing memory banks, benchmark evaluation and method comparisons.
+description: Configure, run, compare, and inspect MemFolder memory-compression experiments using its loaders, plugins and CLI. Use for real memory banks, benchmark evaluation, case analysis and method comparisons.
 ---
 
 # MemFolder experiments
@@ -22,7 +22,7 @@ steps; setup or inspection alone does not authorize paid inference.
 
 ## Prepare the run
 
-- Establish whether this is an offline wiring check, a new comparison, or
+- Establish whether this is an input inspection, a new comparison, or
   reproduction of a particular paper result.
 - Record benchmark version, sample IDs, bank-to-sample/owner mapping and hashes.
   `history-initializer` creates one node per turn; framework-generated memory
@@ -48,12 +48,10 @@ extras. Classifier weights are loaded lazily; a model-backed run may need them.
 ```bash
 python -m pip install -e .
 python -m memfolder --help
-python -m memfolder run examples/experiments/offline-demo.json
-python -m memfolder verify build/experiments/offline-demo
 ```
 
-The offline example uses synthetic history and test-only answers/metrics.
-For a prepared model-backed config:
+Prepare a functional template with the user's real data, memory mapping and
+model services. For the configured experiment:
 
 ```bash
 python -m memfolder run /path/to/experiment.json
@@ -64,7 +62,8 @@ python -m memfolder run /path/to/experiment.json --resume
 `--resume` validates and reuses a completed run; it does not continue partial
 samples. Preserve failed runs and retry in a fresh directory. There are no
 `--dry-run`, `--limit` or `--max-requests` options; select sample IDs in the config.
-For sweeps, use the structure in `examples/experiments/offline-matrix.json`.
+For sweeps, use `examples/experiments/matrix-template.json` with the same data
+and service parameters as the single-run configuration.
 
 ## Preserve the comparison protocol
 
@@ -133,8 +132,8 @@ use the Python API for detail before retrying. Stop expansion on unresolved
 authentication, quota, schema or input-contract failures. Call counts are not
 a billing total, and trace redaction does not redact all private run files.
 
-`tools/check_contracts.py` reports failures and skips separately. Eight historical
-parity tests and the standalone method/wrapper source checkers still need author
-archives outside the checkout. `tools/fetch_test_sources.py` verifies pinned
-public references but does not supply those private archives. Report this scope
-accurately; a successful wiring check does not establish paper-score reproduction.
+Development validation is maintained outside the published repository. Inspect
+real inputs through the loader CLI, verify completed experiment artifacts with
+`memfolder verify`, and use case export to assess behavior. State the data/model
+coverage accurately; artifact verification does not establish paper-score
+reproduction.

@@ -260,10 +260,10 @@ an explicit plugin; its retrieval and scoring scope must be recorded.
 The full [PersonaMem Mem0](../../../examples/experiments/personamem-mem0-template.json),
 [PersonaMem MemOS](../../../examples/experiments/personamem-memos-template.json), and
 [M3](../../../examples/experiments/m3-recordfolder-template.json) templates include
-small synthetic fixtures, source and compressed evaluation, shared MemForest
-QA/judge, and native output. Fill service placeholders and replace dataset paths
-and bank mappings before a real experiment. The defaults use lexical retrieval;
-these fixtures establish wiring and cutoff behavior, not paper scores.
+source and compressed evaluation, shared MemForest QA/judge, and native output.
+Supply actual dataset and bank paths, question/video IDs and model services.
+The defaults use lexical retrieval; choose matching native or dense retrieval
+explicitly for the desired experimental protocol.
 
 Declare temporal fields under each memory loader's `options`. Paths can refer
 to top-level fields or nested metadata. The first parseable field wins; clocks
@@ -315,8 +315,9 @@ and node budgets local to each clip. Use node-budget `minimum: 1`, matching the
 archived per-clip `max(1, round(keep * N))`. The 50-node predecessor window counts
 earlier nodes within a clip. Clip numbers remain visibility/display coordinates,
 with empty event time ranges. Native writeback keeps clip indexes and protected
-media/equivalence nodes. The template selects one robot `before_clip` question;
-set `variant: "web"` and matching question/video mappings for the web subset.
+media/equivalence nodes. The template selects a caller-supplied robot video;
+question annotations determine `before_clip` cutoffs. Set `variant: "web"` and
+matching question/video mappings for the web subset.
 
 For PersonaMem, the template's `bank-initializer.prefix_end_field` points to a
 record's **exclusive source-history end index**. A record with end index 5 needs

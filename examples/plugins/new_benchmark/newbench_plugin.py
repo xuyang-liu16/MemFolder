@@ -1,4 +1,4 @@
-"""Contributor-owned synthetic benchmark; imports public APIs only."""
+"""Contributor-owned benchmark format adapter; imports public APIs only."""
 from dataclasses import dataclass
 from pathlib import Path
 

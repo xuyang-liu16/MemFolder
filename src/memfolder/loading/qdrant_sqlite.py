@@ -62,7 +62,7 @@ def _unpickle(raw: bytes):
 def _fields(model):
     state = vars(model)
     if '__dict__' not in state:
-        return state  # plain value fixtures / older serialization
+        return state  # plain values / older serialization
     require(type(state['__dict__']) is dict, 'Invalid Qdrant model state')
     fields = dict(state['__dict__'])
     extras = state.get('__pydantic_extra__')

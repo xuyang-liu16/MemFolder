@@ -2,7 +2,7 @@
   "dataset": {
     "plugin": "locomo-dataset",
     "parameters": {
-      "path": "tiny_locomo.json"
+      "path": "data/locomo.json"
     }
   },
   "initializer": {

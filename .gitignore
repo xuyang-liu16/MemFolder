@@ -22,3 +22,22 @@ data/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Local validation stays outside the published functional repository.
+/tests/
+**/test_*.py
+**/*_test.py
+**/conftest.py
+/local_tests/
+/local_validation/
+/test_assets/
+/validation/
+/tools/check_*.py
+/tools/fetch_test_sources.py
+/tools/verify_delivery.py
+/examples/*_demo.py
+/examples/experiments/tiny*/
+/examples/experiments/tiny_*.json
+/examples/experiments/offline-*.json
+/examples/recipes/offline-*.json
+/examples/plugins/new_benchmark/tiny-*.json

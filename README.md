@@ -83,10 +83,8 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
 python -m memfolder --help
-python -m memfolder run examples/experiments/offline-demo.json
-python -m memfolder verify build/experiments/offline-demo
 ```
-The offline example checks the pipeline locally with a synthetic conversation and `test_only` metrics. For RecordFolder and ContextFolder, install:
+For RecordFolder and ContextFolder, install:
 
 ```bash
 python -m pip install -e ".[algorithms,contextfolder,evaluation]"
@@ -269,9 +267,9 @@ python -m memfolder case build/experiments/recordfolder-001 \
 ```
 These runs call the configured model APIs. Each output directory contains `result.json` with original/compressed scores and per-sample statistics, `run.manifest.json` with execution status, and per-sample memory snapshots and predictions. `verify` checks artifact integrity. `case` exports one question for inspection.
 
-For method/seed sweeps, follow [offline-matrix.json](examples/experiments/offline-matrix.json) and run `python -m memfolder matrix CONFIG.json`. `--resume` reuses a validated **completed** run. After a failed run, preserve its files and retry in a fresh output directory.
+For budget/seed sweeps, configure [matrix-template.json](examples/experiments/matrix-template.json) with the same data and services as your experiment, then run `python -m memfolder matrix CONFIG.json`. `--resume` reuses a validated **completed** run. After a failed run, preserve its files and retry in a fresh output directory.
 
-The [PersonaMem Mem0](examples/experiments/personamem-mem0-template.json), [PersonaMem MemOS](examples/experiments/personamem-memos-template.json) and [M3](examples/experiments/m3-recordfolder-template.json) templates use the archived experiment's ordering rules: Mem0 `created_at`, MemOS `(ts, id)`, and numeric node IDs within each M3 clip. They include synthetic fixtures and use the shared QA/judge. Configure services and replace the fixture/bank mappings for a real run. Prefix banks require explicit source history positions; M3 budgets remain per clip. See the [time and prefix configuration](skills/memfolder-exp/references/experiment-config.md#legacy-time-and-order-profiles) for field mapping, ContextFolder composition and reader scope.
+The [PersonaMem Mem0](examples/experiments/personamem-mem0-template.json), [PersonaMem MemOS](examples/experiments/personamem-memos-template.json) and [M3](examples/experiments/m3-recordfolder-template.json) templates use the archived experiment's ordering rules: Mem0 `created_at`, MemOS `(ts, id)`, and numeric node IDs within each M3 clip. Supply your dataset paths, question/video IDs, memory mappings and model services. Prefix banks require explicit source history positions; M3 budgets remain per clip. See the [time and prefix configuration](skills/memfolder-exp/references/experiment-config.md#legacy-time-and-order-profiles) for field mapping, ContextFolder composition and reader scope.
 
 <details>
 <summary><b>Baseline recipes</b></summary>

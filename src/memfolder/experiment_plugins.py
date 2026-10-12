@@ -54,7 +54,6 @@ def register_experiment_plugins(registry):
         'context-builder':StageFactory(rd.ContextBuilder),'chat-answerer':StageFactory(rd.ChatAnswerer,roles={'prompt_builder':'reader_prompt'}),
         'qa-prompt':StageFactory(QAPrompt),'memforest-qa-prompt':StageFactory(QAPrompt),
         'contextfolder-qa-prompt':StageFactory(ContextFolderPrompt),
-        'context-echo-answerer':StageFactory(rd.ContextAnswerer),
         'retrieval-reader':StageFactory(rd.RetrievalReader,roles={'retriever':'retriever','context_builder':'context_builder','answerer':'answerer'}),
         'metric-evaluator':StageFactory(MetricEvaluator,lists={'metrics':'metric'}),
         'protocol-evaluator':StageFactory(ProtocolEvaluator,maps={'routes':'evaluator'},roles={'fallback':'evaluator'}),

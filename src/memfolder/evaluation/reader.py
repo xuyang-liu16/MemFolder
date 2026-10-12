@@ -53,14 +53,6 @@ class ChatAnswerer:
 
 
 @dataclass(frozen=True)
-class ContextAnswerer:
-    """Deterministic context echo for offline infrastructure tests, not a QA model."""
-    spec=spec('reader.context_echo','answerer')
-    def answer(self,question,memory_context,context):
-        return (ContentPart(modality='text',text=memory_context.text or 'I do not know'),),FrozenMap({'chat_calls':0,'test_only':True})
-
-
-@dataclass(frozen=True)
 class RetrievalReader:
     retriever: object = LexicalRetriever()
     context_builder: object = ContextBuilder()

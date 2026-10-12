@@ -1,0 +1,6 @@
+prune tests
+prune local_tests
+prune local_validation
+prune test_assets
+prune validation
+global-exclude test_*.py *_test.py conftest.py

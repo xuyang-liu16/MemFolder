@@ -7,10 +7,9 @@ name = "memfolder-example-experiment-components"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = ["memfolder>=0.1.0.dev0"]
-description = "Independently installable answerer, metric and observer examples"
+description = "Independently installable metric and observer components"
 
 [project.entry-points."memfolder.plugins"]
-"example.fixture-answerer" = "experiment_plugin:answerer_factory"
 "example.answer-length" = "experiment_plugin:metric_factory"
 "example.trace-observer" = "experiment_plugin:observer_factory"
 
