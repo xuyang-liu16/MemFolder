@@ -6,7 +6,6 @@ dist/
 .venv/
 .env
 .env.*
-!.env.example
 .private/
 .aris/
 *.dpapi
@@ -23,31 +22,17 @@ data/
 .coverage
 htmlcov/
 
-# Local validation stays outside the published functional repository.
+# Keep local development materials outside the functional package repository.
+/docs/
+/examples/
+/skills/
+/tools/
+/schemas/
 /tests/
-**/test_*.py
-**/*_test.py
-**/conftest.py
 /local_tests/
 /local_validation/
 /test_assets/
 /validation/
-/tools/check_*.py
-/tools/fetch_test_sources.py
-/tools/verify_delivery.py
-/examples/*_demo.py
-/examples/experiments/tiny*/
-/examples/experiments/tiny_*.json
-/examples/experiments/offline-*.json
-/examples/recipes/offline-*.json
-/examples/plugins/new_benchmark/tiny-*.json
-
-# Generated schemas and authoring/audit records are not runtime configuration.
-/schemas/
-/docs/*_SOURCES.json
-/docs/METHOD_PROVENANCE.json
-/docs/TEMPORAL_PROFILES.json
-/docs/assets/hero-data.json
-/docs/assets/hero-prompt.txt
-/docs/assets/paper-results-data.json
-/docs/assets/paper-intro-source.json
+**/test_*.py
+**/*_test.py
+**/conftest.py

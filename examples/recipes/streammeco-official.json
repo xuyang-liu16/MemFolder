@@ -1,8 +1,0 @@
-{
-  "planner": {
-    "plugin": "streammeco"
-  },
-  "operator": {
-    "plugin": "rule-operator"
-  }
-}

@@ -1,3 +1,8 @@
+include README.md THIRD_PARTY_NOTICES
+prune docs
+prune examples
+prune skills
+prune tools
 prune tests
 prune local_tests
 prune local_validation

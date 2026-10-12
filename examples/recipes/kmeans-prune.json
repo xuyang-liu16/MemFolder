@@ -1,8 +1,0 @@
-{
-  "planner": {
-    "plugin": "kmeans-prune"
-  },
-  "operator": {
-    "plugin": "rule-operator"
-  }
-}
