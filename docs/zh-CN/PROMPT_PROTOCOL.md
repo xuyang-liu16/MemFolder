@@ -1,5 +1,7 @@
 # 统一的 MemForest 提示词协议
 
+[项目 README](../../README.zh-CN.md) · [实验 skill](../../skills/memfolder-exp/SKILL.md)
+
 记录合并、最终 benchmark QA 和最终 judge 统一采用 `memforest.shared.v1`。
 唯一模板源是 `src/memfolder/prompt_templates.py`，填入输入数据和记录版本的逻辑
 在 `src/memfolder/prompt_protocol.py`。三份模板从已存档的 MemForest 代码中按
@@ -17,6 +19,7 @@ MemForest 模板中的条数及 Memory/Timestamp 槽位。ToMe 的时间二分�
 保留较新时间戳及每次合并后重新 embedding 的逻辑继续由其 planner/operator 实现。
 
 所有 context 压缩方法和未压缩对照使用同一套最终 QA、judge。
+最终 benchmark QA 不启用 AGPR，也不追加压缩方法专属的解码指令。
 `contextfolder-qa-prompt` 保留为兼容别名，行为与 `qa-prompt`、
 `memforest-qa-prompt` 相同，取消了专属解码说明。
 `chat-judge` 与 `memforest-judge` 使用同一份 JSON CORRECT/WRONG 判分模板。

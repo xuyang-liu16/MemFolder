@@ -65,7 +65,7 @@ class MethodParityTests(unittest.TestCase):
             anchors=density.density_peaks(node_ids=geometry.node_ids,distance=distance,target=target)
             pi0=density.baseline_partition(node_ids=geometry.node_ids,distance=distance,anchors=anchors)
             groups=[make_group(None,geometry.node_ids[a],[geometry.node_ids[i] for i in ids]) for a,ids in sorted(pi0.items())]
-            base=Plan(groups=groups,method='g1s',sample_id=0,scope_id='s',source_store='',keep_ratio=target/n,
+            base=Plan(groups=groups,method='recordfolder',sample_id=0,scope_id='s',source_store='',keep_ratio=target/n,
                 generator_model='',num_nodes_before=n,config_id='',metadata={})
             features={r.node_id:r.values for r in req.features[1].rows}
             sets={i:set(v['entities']) for i,v in features.items()};frequency=defaultdict(int)

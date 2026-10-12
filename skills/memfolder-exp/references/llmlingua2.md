@@ -1,12 +1,12 @@
 # LLMLingua-2 after Record compression
 
-[Documentation](README.md) · [Compression methods](COMPRESSION.md)
+[Experiment skill](../SKILL.md) · [Configuration](experiment-config.md)
 
 ## Recovered LongMemEval recipe
 
 For the recovered LongMemEval compression recipe, use the
 `llmlingua2-historical-service` plugin. The service configuration is supplied in
-[llmlingua2-historical-services.json](../examples/recipes/llmlingua2-historical-services.json).
+[llmlingua2-historical-services.json](../../../examples/recipes/llmlingua2-historical-services.json).
 Keep the existing current-Record planner/writer recipe, with writer rate 0.55.
 The two service plugins implement the same writer contract; the rate-only
 adapter described below remains available as an explicitly different variant.
@@ -80,7 +80,7 @@ retained text proportion, distinct from Record `keep_ratio: 0.5`. The official
 classifier may produce a slightly different measured token proportion. This
 setting does not change ContextFolder's independent default rate of 0.8.
 
-Use [llmlingua2-post-record.json](../examples/recipes/llmlingua2-post-record.json)
+Use [llmlingua2-post-record.json](../../../examples/recipes/llmlingua2-post-record.json)
 with `mode: "once"` on the **final current Record snapshot**. The planner emits
 one current-text rewrite per eligible record and keeps protected records. It
 does not reconstruct original source texts or perform additional Record merges.
@@ -138,12 +138,13 @@ path can replace `model_name`. For CPU execution declare `device_map: "cpu"`
 and `dtype: "float32"`. Another service can implement `compress(text, rate=...)`
 and return the same result contract.
 
-[record_then_context.py](../examples/record_then_context.py) demonstrates
+[record_then_context.py](../../../examples/record_then_context.py) demonstrates
 temporal ToMe followed by LLMLingua-2 or ContextFolder as independent stages.
 Callers inject `chat`, `embeddings`, and the selected context services. Record
 pairing uses fresh merged-text embeddings before choosing the next pair;
-context compression runs only after Record compression finishes. QA remains a
-later reader/evaluator stage, with its own retrieval and evaluation protocol.
+context compression runs only after Record compression finishes. Final QA and
+judge use the [shared MemForest protocol](../../../docs/PROMPT_PROTOCOL.md),
+with the same retrieval and scoring configuration across comparison arms.
 
 Historical results using another rate or the old ToMe recipe retain their
 original identities. A corrected configuration requires new context/QA

@@ -303,7 +303,7 @@ class BoundaryTests(unittest.TestCase):
         snap = sample().memory.initial_snapshot
         original = snap.records[0]
         action = Action(action_id='rewrite', kind='rewrite', member_ids=('n0',), output_ids=('encoded',), input_view='original')
-        plan = ActionPlan(plan_id='v12.single', input_fingerprint=snap.fingerprint, target_ids=('n0',), actions=(action,))
+        plan = ActionPlan(plan_id='contextfolder.single', input_fingerprint=snap.fingerprint, target_ids=('n0',), actions=(action,))
         node = replace(original, node_id='encoded', parts=(ContentPart(modality='text', text='Synthetic codec result'),), embeddings=())
         result = OperatorResult(plan_fingerprint=plan.fingerprint, outcomes=(ActionOutcome(action_id='rewrite', status='success', outputs=(node,)),))
         validate_result(snap, plan, result)

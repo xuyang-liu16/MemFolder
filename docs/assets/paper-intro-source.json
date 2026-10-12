@@ -1,18 +1,14 @@
 {
-  "source_file": "7707_MemFolder_Structure_Guide (2).pdf",
-  "source_sha256": "d8e053b7ed4105cb51d96be155d691728299455a3644b7ea24be2d3c2e9dfbbe",
-  "page": 2,
+  "source_file": "teaser.pdf",
+  "repository_pdf": "paper-intro.pdf",
+  "source_sha256": "435d73af847075460d499d8ac4875fee7b2bde2c380cb3fe5c5afd87bfc616cf",
+  "page": 1,
   "figure": 1,
-  "extraction": "Poppler pdftoppm: 500 dpi; crop x=750, y=568, width=2750, height=1170 pixels. Figure content is unchanged; manuscript header, line numbers, caption and body are outside the crop.",
-  "figure_bounds_pdf_points_top_origin": [
-    108.0,
-    81.86,
-    504.0,
-    250.23
-  ],
-  "png_sha256": "27f4385f21c9588404591ceb82eb486c5e3765f482e44d255e0dff985ae884c9",
+  "extraction": "PyMuPDF 1.27.2.3: full-page RGB render with scale 4000 / page.rect.width and alpha=False. No cropping, redrawing, or content changes.",
+  "rendered_on": "2026-10-10",
+  "png_sha256": "e6740428fbc7e3e64b30fe20cd736250a98581e99e7e9d93bd05542ace5f4d78",
   "dimensions": [
-    2750,
-    1170
+    4000,
+    1687
   ]
 }

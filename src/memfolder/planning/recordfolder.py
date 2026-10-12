@@ -1,4 +1,4 @@
-"""RecordFolder (formerly G1S): independently replaceable planning stages."""
+"""RecordFolder: independently replaceable planning stages."""
 from __future__ import annotations
 from .common import resolve
 

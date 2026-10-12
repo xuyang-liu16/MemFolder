@@ -1,5 +1,7 @@
 # Shared MemForest prompt protocol
 
+[Project README](../README.md) · [Experiment skill](../skills/memfolder-exp/SKILL.md)
+
 Record merge, benchmark QA and benchmark judge use `memforest.shared.v1`.
 The single template source is `src/memfolder/prompt_templates.py`; rendering
 and the protocol manifest live in `src/memfolder/prompt_protocol.py`.
@@ -24,6 +26,7 @@ and judge. `contextfolder-qa-prompt` is a compatibility alias for the shared
 QA. It adds no decoder legend. `qa-prompt` / `memforest-qa-prompt` and
 `chat-judge` / `memforest-judge` are equivalent aliases. A built-in QA prompt
 rejects method-specific instruction or legend parameters.
+Benchmark QA does not enable AGPR or append compression-specific decoding instructions.
 
 Public multiple-choice options and query time remain input data in the
 question slot. Memory adapters preserve timestamps and speaker attribution.

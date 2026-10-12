@@ -1,4 +1,4 @@
-"""ContextFolder (formerly V12): source-fact triage and blind verification.
+"""ContextFolder: source-fact triage and blind verification.
 
 Fact questions are generated from compression inputs. Benchmark questions and
 ground truth are absent from this API. All five loop stages can be replaced.
