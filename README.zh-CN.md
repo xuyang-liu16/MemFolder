@@ -283,6 +283,14 @@ python -m memfolder case build/experiments/recordfolder-001 \
 
 </details>
 
+`examples/` 中的 JSON 用于配置实验、压缩组件和数据加载器。
+[src/memfolder/core/](src/memfolder/core/) 中的 Python 契约定义数据接口。
+需要 JSON Schema 的集成可以按需导出：
+
+```bash
+python tools/export_schemas.py --output-dir build/schemas
+```
+
 <a id="main-results"></a>
 <a id="full-results"></a>
 

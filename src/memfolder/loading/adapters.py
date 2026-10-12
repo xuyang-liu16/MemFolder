@@ -1,4 +1,4 @@
-"""Native formats verified against pinned upstream code (see docs/LOADING_SOURCES.json)."""
+"""Convert framework-native memory formats to the public data contracts."""
 from __future__ import annotations
 
 from memfolder.core import ContentPart, FrozenMap, RetentionPolicy, TimePoint

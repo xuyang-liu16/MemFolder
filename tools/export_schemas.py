@@ -1,5 +1,6 @@
 """Export public structural JSON Schemas from the implementation."""
 from pathlib import Path
+import argparse
 import json
 import sys
 
@@ -9,8 +10,11 @@ import memfolder.core as core
 import memfolder.loading as loading
 import memfolder.wrappers as wrappers
 
-folder = ROOT / 'schemas'
-folder.mkdir(exist_ok=True)
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--output-dir', type=Path, default=ROOT / 'build' / 'schemas',
+                    help='Output directory (default: build/schemas in the checkout)')
+folder = parser.parse_args().output_dir.resolve()
+folder.mkdir(parents=True, exist_ok=True)
 records = {v.schema_id: v for module in (core, loading, wrappers) for name in module.__all__ if isinstance(v := getattr(module, name), type)
            and issubclass(v, core.Contract) and v is not core.Contract}
 for schema_id, cls in sorted(records.items()):

@@ -3,4 +3,5 @@ prune local_tests
 prune local_validation
 prune test_assets
 prune validation
+prune schemas
 global-exclude test_*.py *_test.py conftest.py

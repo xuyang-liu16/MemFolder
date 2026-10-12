@@ -337,12 +337,9 @@ archived framework-built banks. ToMe can reuse shared semantic features and the
 declared order. MemForest order-based components need both `joint-clusters`
 and `mst-pair` to select `time_order: "order"`.
 
-Archived paths, hashes and recovery limits are recorded in
-[TEMPORAL_PROFILES.json](../../../docs/TEMPORAL_PROFILES.json). The Mem0-specific
-planner wrappers and MemOS `pm_merge_lib.py` are incomplete in the backup; the
-recovered consumers/order contracts and available shared helpers are the
-verified scope. Full M3 multimodal control and paper-score reproduction remain
-separate from these text-compression templates.
+These profiles define text-memory ordering, visibility and native writeback.
+Full M3 multimodal control and paper-score reproduction remain separate from
+these text-compression templates.
 
 ## Inspect the implementation
 

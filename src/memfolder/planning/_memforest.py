@@ -1,4 +1,4 @@
-"""Pure algorithms from the local MemForest vendor; see METHOD_PROVENANCE.json."""
+"""MemForest clustering and tree-based merge-selection primitives."""
 from __future__ import annotations
 import math
 import heapq

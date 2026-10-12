@@ -283,6 +283,14 @@ The [PersonaMem Mem0](examples/experiments/personamem-mem0-template.json), [Pers
 
 </details>
 
+JSON files under `examples/` configure experiments, compression components and
+data loaders. The Python contracts in [src/memfolder/core/](src/memfolder/core/)
+define the data interface. Export JSON Schema when an integration needs it:
+
+```bash
+python tools/export_schemas.py --output-dir build/schemas
+```
+
 <a id="main-results"></a>
 <a id="full-results"></a>
 

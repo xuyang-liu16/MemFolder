@@ -2,8 +2,7 @@ Third-party sources and attribution
 ===================================
 
 MemFolder combines project methods with selected routines and prompts from the
-sources below. docs/METHOD_PROVENANCE.json records source revisions, file hashes,
-and implementation locations.
+sources below.
 
 StreamMeCo
 ----------
@@ -32,19 +31,26 @@ contributions remains under review, and their existing terms continue to apply.
 
 The shared merge, final QA and judge literals are archived MemForest templates.
 Their source-file and prompt SHA-256 hashes are recorded in
-src/memfolder/prompt_templates.py and docs/METHOD_PROVENANCE.json.
-Public method names are RecordFolder and ContextFolder; historical source
-filenames, identifiers and hashes retain their exact archival values for attribution.
+src/memfolder/prompt_templates.py.
 
 The KMeans stages are implemented in this project and call scikit-learn through an optional dependency.
 
 Dataset and framework sources
 -----------------------------
 
-The following records identify the upstream versions used for parsing, scoring, and framework integration:
+The following upstream versions informed parsing, scoring, and framework integration:
 
-- docs/BENCHMARK_SOURCES.json: benchmark formats and evaluation code.
-- docs/LOADING_SOURCES.json: memory-store formats and readers.
-- docs/WRAPPER_SOURCES.json: native output and readback implementations.
+- Mem0: https://github.com/mem0ai/mem0
+  Revision: abb81c88e1f738a8117d8293530fbc31a5ef8fd9
+- MemOS: https://github.com/MemTensor/MemOS
+  Revision: a7367d07e55db61099f7b4e2c1108bc5831a24f3
+- M3: https://github.com/ByteDance-Seed/m3-agent
+  Revision: 0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c
+- LoCoMo: https://github.com/snap-research/locomo
+  Revision: 3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376
+- LongMemEval: https://github.com/xiaowu0162/LongMemEval
+  Revision: 9e0b455f4ef0e2ab8f2e582289761153549043fc
+- PersonaMem: https://github.com/bowen-upenn/PersonaMem
+  Revision: d07e6ade22e85e0e5d562247323a9c3e07553226
 
-Dataset downloads, model access, and upstream libraries remain subject to their own terms. The repository's test-source fetcher uses the recorded revisions and verifies the downloaded file hashes.
+Dataset downloads, model access, and upstream libraries remain subject to their own terms.

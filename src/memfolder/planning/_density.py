@@ -1,4 +1,4 @@
-"""Ported from the user-designated standard release; see docs/METHOD_PROVENANCE.json."""
+"""Density-peaks clustering primitives for RecordFolder anchor selection."""
 from __future__ import annotations
 from .common import numpy
 NEIGHBOR_K = 5

@@ -1,4 +1,4 @@
-"""MIT licensed upstream StreamMeCo selection routines; see METHOD_PROVENANCE.json."""
+"""StreamMeCo selection routines; MIT attribution is in THIRD_PARTY_NOTICES."""
 from __future__ import annotations
 import math
 from collections import defaultdict
