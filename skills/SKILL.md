@@ -6,7 +6,7 @@ description: Configure, run, compare, and inspect MemFolder memory-compression e
 # MemFolder experiments
 
 Locate the checkout containing `pyproject.toml`, `src/memfolder/__main__.py` and
-`examples/experiments/`. Read its [README](../../README.md) and inspect the actual
+`examples/experiments/`. Read its [README](../README.md) and inspect the actual
 configuration before running. Paths below are relative to that checkout; an
 installed skill may live elsewhere. If the user requests this repository and no
 checkout is available, clone `https://github.com/xuyang-liu16/MemFolder.git` into
@@ -68,7 +68,7 @@ and service parameters as the single-run configuration.
 ## Preserve the comparison protocol
 
 All built-in ordinary summaries, final QA and final judges use
-[`memforest.shared.v1`](../../src/memfolder/prompt_protocol.py). Keep
+[`memforest.shared.v1`](../src/memfolder/prompt_protocol.py). Keep
 `memforest-qa-prompt` and `memforest-judge` across every arm, including the
 uncompressed control, LLMLingua-2 and BabelTele. The judge accepts JSON
 `CORRECT`/`WRONG`. `qa-prompt` and `contextfolder-qa-prompt` are identical aliases;

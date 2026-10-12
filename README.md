@@ -64,9 +64,9 @@ MemFolder has two modules: **RecordFolder** selects complementary anchors and co
 
 ## Usage
 
-As for Coding Agent users, use the following prompt to start an experiment with the bundled [memfolder-exp skill](skills/memfolder-exp/SKILL.md):
+As for Coding Agent users, use the following prompt to start an experiment with the bundled [memfolder-exp skill](skills/SKILL.md):
 
-> Follow `skills/memfolder-exp/SKILL.md` in `https://github.com/xuyang-liu16/MemFolder` to run a LoCoMo pilot comparing RecordFolder and ContextFolder at 50% node retention with my configured model services.
+> Follow `skills/SKILL.md` in `https://github.com/xuyang-liu16/MemFolder` to run a LoCoMo pilot comparing RecordFolder and ContextFolder at 50% node retention with my configured model services.
 
 The agent checks the environment, downloads the required data and prepares the configuration. After confirming model services and the run budget, it runs evaluation, verifies the outputs and summarizes the results.
 
@@ -127,7 +127,7 @@ curl -fL https://raw.githubusercontent.com/ByteDance-Seed/m3-agent/0e3e41939bd8a
 curl -fL https://raw.githubusercontent.com/ByteDance-Seed/m3-agent/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/data/annotations/web.json \
   -o data/m3/web.json
 ```
-Use the corresponding entry in [dataset-components.json](examples/experiments/dataset-components.json) as the experiment's `dataset` section. PersonaMem provides turn order, and M3 clip indices express visibility; the LoCoMo templates' default `event-time-features` requires explicit parsed event times. Configure a declared order/time adapter for those inputs before compression; replacing only the dataset section is insufficient. See [benchmark configuration](skills/memfolder-exp/references/experiment-config.md#benchmark-time-and-reader-scope). Set `contexts_path` for PersonaMem, and `memory_loaders` plus `variant` for M3. Download both M3 annotations and memory graphs, preserving media paths and clip cutoffs. Full multimodal evaluation also requires the [M3-Agent controller setup](https://github.com/ByteDance-Seed/m3-agent#control).
+Use the corresponding entry in [dataset-components.json](examples/experiments/dataset-components.json) as the experiment's `dataset` section. PersonaMem provides turn order, and M3 clip indices express visibility; the LoCoMo templates' default `event-time-features` requires explicit parsed event times. Configure a declared order/time adapter for those inputs before compression; replacing only the dataset section is insufficient. See [benchmark configuration](skills/references/experiment-config.md#benchmark-time-and-reader-scope). Set `contexts_path` for PersonaMem, and `memory_loaders` plus `variant` for M3. Download both M3 annotations and memory graphs, preserving media paths and clip cutoffs. Full multimodal evaluation also requires the [M3-Agent controller setup](https://github.com/ByteDance-Seed/m3-agent#control).
 
 Use the original benchmark formats with these loaders. MemForest's `dataset/longmemeval.json` and `dataset/personamem_32k.json` use a converted LoCoMo-style schema and require a matching adapter. Keep the dataset version, memory snapshot and scoring protocol matched.
 
@@ -269,7 +269,7 @@ These runs call the configured model APIs. Each output directory contains `resul
 
 For budget/seed sweeps, configure [matrix-template.json](examples/experiments/matrix-template.json) with the same data and services as your experiment, then run `python -m memfolder matrix CONFIG.json`. `--resume` reuses a validated **completed** run. After a failed run, preserve its files and retry in a fresh output directory.
 
-The [PersonaMem Mem0](examples/experiments/personamem-mem0-template.json), [PersonaMem MemOS](examples/experiments/personamem-memos-template.json) and [M3](examples/experiments/m3-recordfolder-template.json) templates use the archived experiment's ordering rules: Mem0 `created_at`, MemOS `(ts, id)`, and numeric node IDs within each M3 clip. Supply your dataset paths, question/video IDs, memory mappings and model services. Prefix banks require explicit source history positions; M3 budgets remain per clip. See the [time and prefix configuration](skills/memfolder-exp/references/experiment-config.md#legacy-time-and-order-profiles) for field mapping, ContextFolder composition and reader scope.
+The [PersonaMem Mem0](examples/experiments/personamem-mem0-template.json), [PersonaMem MemOS](examples/experiments/personamem-memos-template.json) and [M3](examples/experiments/m3-recordfolder-template.json) templates use the archived experiment's ordering rules: Mem0 `created_at`, MemOS `(ts, id)`, and numeric node IDs within each M3 clip. Supply your dataset paths, question/video IDs, memory mappings and model services. Prefix banks require explicit source history positions; M3 budgets remain per clip. See the [time and prefix configuration](skills/references/experiment-config.md#legacy-time-and-order-profiles) for field mapping, ContextFolder composition and reader scope.
 
 <details>
 <summary><b>Baseline recipes</b></summary>
@@ -277,8 +277,8 @@ The [PersonaMem Mem0](examples/experiments/personamem-mem0-template.json), [Pers
 [examples/recipes/](examples/recipes/) provides compression configurations for each method. Copy your configured RecordFolder experiment, then replace its `compression.planner` and `compression.operator` with the selected recipe's components. Configure each required feature once, keep the wrapper and services, and retain the shared QA/judge. A compression recipe is a component fragment, not a complete experiment config.
 
 - For [MemForest scope-capacity](examples/recipes/memforest-mst-capacity.json), set `run.mode` to `"repeat"` and use `event-time-features` with `aggregation: "latest"`, alongside the semantic encoder. Run the historical [per-cluster ceiling](examples/recipes/memforest-mst-cluster-ceil.json) variant through the Python API with `resolve_memforest_budget`. The M3 average-linkage proxy is a separately named adaptation.
-- [Text ToMe](skills/memfolder-exp/references/tome.md) uses a chronological-halves planner with the common `text-operator` and `semantic-encoder`, in `run.mode: "repeat"`. The shared feature provider encodes current text before each match, so raw history needs no precomputed node vectors. Start from [tome-template.json](examples/experiments/tome-template.json), declare the embedding space and configure each feature name once. The cached embedding service reuses unchanged text. Native vector output and dense retrieval still need the wrapper's content-embedding provider. The historical alternating-partition variant is `tome-bsm`.
-- [LLMLingua-2](skills/memfolder-exp/references/llmlingua2.md) compresses final record text with a default retention rate of `0.55`. The recovered LongMemEval service, all-text embedding refresh and explicit Mem0 owner mapping remain separately configurable.
+- [Text ToMe](skills/references/tome.md) uses a chronological-halves planner with the common `text-operator` and `semantic-encoder`, in `run.mode: "repeat"`. The shared feature provider encodes current text before each match, so raw history needs no precomputed node vectors. Start from [tome-template.json](examples/experiments/tome-template.json), declare the embedding space and configure each feature name once. The cached embedding service reuses unchanged text. Native vector output and dense retrieval still need the wrapper's content-embedding provider. The historical alternating-partition variant is `tome-bsm`.
+- [LLMLingua-2](skills/references/llmlingua2.md) compresses final record text with a default retention rate of `0.55`. The recovered LongMemEval service, all-text embedding refresh and explicit Mem0 owner mapping remain separately configurable.
 - [record_then_context.py](examples/record_then_context.py) applies ContextFolder to another compressor's final records, preserving their count while rewriting the text.
 
 </details>

@@ -64,9 +64,9 @@ MemFolder 包含两个模块：**RecordFolder** 选择互补锚点，结合实�
 
 ## 使用说明
 
-对于 Coding Agent 用户，可以发送以下指令，按仓库内的 [memfolder-exp skill](skills/memfolder-exp/SKILL.md) 开始实验：
+对于 Coding Agent 用户，可以发送以下指令，按仓库内的 [memfolder-exp skill](skills/SKILL.md) 开始实验：
 
-> 请按 `https://github.com/xuyang-liu16/MemFolder` 中的 `skills/memfolder-exp/SKILL.md`，使用我配置的模型服务运行 LoCoMo 小规模实验，对比保留 50% 节点的 RecordFolder 和 ContextFolder。
+> 请按 `https://github.com/xuyang-liu16/MemFolder` 中的 `skills/SKILL.md`，使用我配置的模型服务运行 LoCoMo 小规模实验，对比保留 50% 节点的 RecordFolder 和 ContextFolder。
 
 Agent 会检查环境、下载所需数据并生成配置，确认模型服务与运行预算后启动评测，最后校验并汇总结果。
 
@@ -127,7 +127,7 @@ curl -fL https://raw.githubusercontent.com/ByteDance-Seed/m3-agent/0e3e41939bd8a
 curl -fL https://raw.githubusercontent.com/ByteDance-Seed/m3-agent/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/data/annotations/web.json \
   -o data/m3/web.json
 ```
-将 [dataset-components.json](examples/experiments/dataset-components.json) 中对应条目作为实验的 `dataset` 配置。PersonaMem 提供对话顺序，M3 的 clip 序号表示可见性；LoCoMo 模板默认的 `event-time-features` 需要已解析的事件时间。这两类输入须先配置语义明确的顺序／时间适配器，仅替换数据集配置还不够，见[基准配置](skills/memfolder-exp/references/experiment-config.md#benchmark-time-and-reader-scope)。PersonaMem 还需填写 `contexts_path`，M3 还需填写 `memory_loaders` 和 `variant`。下载 M3 问答标注及对应记忆图，并保留媒体路径与 clip 截止范围。完整多模态评测还需配置 [M3-Agent 控制器](https://github.com/ByteDance-Seed/m3-agent#control)。
+将 [dataset-components.json](examples/experiments/dataset-components.json) 中对应条目作为实验的 `dataset` 配置。PersonaMem 提供对话顺序，M3 的 clip 序号表示可见性；LoCoMo 模板默认的 `event-time-features` 需要已解析的事件时间。这两类输入须先配置语义明确的顺序／时间适配器，仅替换数据集配置还不够，见[基准配置](skills/references/experiment-config.md#benchmark-time-and-reader-scope)。PersonaMem 还需填写 `contexts_path`，M3 还需填写 `memory_loaders` 和 `variant`。下载 M3 问答标注及对应记忆图，并保留媒体路径与 clip 截止范围。完整多模态评测还需配置 [M3-Agent 控制器](https://github.com/ByteDance-Seed/m3-agent#control)。
 
 这些加载器使用基准原始格式。MemForest 的 `dataset/longmemeval.json` 和 `dataset/personamem_32k.json` 使用转换后的 LoCoMo 风格格式，需要匹配的适配器。数据版本、记忆快照和评分协议需配套使用。
 
@@ -269,7 +269,7 @@ python -m memfolder case build/experiments/recordfolder-001 \
 
 预算与随机种子的批量对比可参照 [matrix-template.json](examples/experiments/matrix-template.json)，填入与单组实验相同的数据和服务配置后，执行 `python -m memfolder matrix CONFIG.json`。`--resume` 复用校验通过的**已完成**实验。运行失败后，保留已有文件并使用新输出目录重试。
 
-[PersonaMem Mem0](examples/experiments/personamem-mem0-template.json)、[PersonaMem MemOS](examples/experiments/personamem-memos-template.json) 和 [M3](examples/experiments/m3-recordfolder-template.json) 模板使用旧实验的排序规则：Mem0 的 `created_at`、MemOS 的 `(ts, id)`，以及 M3 每个 clip 内的数字节点 ID。填入自己的数据路径、问题或视频 ID、记忆库映射及模型服务后运行。前缀库需要明确的源历史位置，M3 的预算仍按 clip 分配。[时间与前缀配置说明](skills/memfolder-exp/references/experiment-config.md#legacy-time-and-order-profiles) 包含字段映射、ContextFolder 组合方式和 reader 范围。
+[PersonaMem Mem0](examples/experiments/personamem-mem0-template.json)、[PersonaMem MemOS](examples/experiments/personamem-memos-template.json) 和 [M3](examples/experiments/m3-recordfolder-template.json) 模板使用旧实验的排序规则：Mem0 的 `created_at`、MemOS 的 `(ts, id)`，以及 M3 每个 clip 内的数字节点 ID。填入自己的数据路径、问题或视频 ID、记忆库映射及模型服务后运行。前缀库需要明确的源历史位置，M3 的预算仍按 clip 分配。[时间与前缀配置说明](skills/references/experiment-config.md#legacy-time-and-order-profiles) 包含字段映射、ContextFolder 组合方式和 reader 范围。
 
 <details>
 <summary><b>基线配置</b></summary>
@@ -277,8 +277,8 @@ python -m memfolder case build/experiments/recordfolder-001 \
 [examples/recipes/](examples/recipes/) 提供各方法的压缩配置。复制已配置好的 RecordFolder 实验，将其中的 `compression.planner` 和 `compression.operator` 替换为所选方法的组件。每个所需特征只配置一次，保留 wrapper、模型服务及公共 QA/judge。recipe 是组件片段，不能直接作为完整实验配置运行。
 
 - [MemForest 范围预算分配](examples/recipes/memforest-mst-capacity.json)版本需设置 `run.mode: "repeat"`，并在语义编码器之外使用 `aggregation: "latest"` 的 `event-time-features`。[逐簇向上取整](examples/recipes/memforest-mst-cluster-ceil.json)版本通过 Python API 配合 `resolve_memforest_budget` 运行。M3 的 average-linkage proxy 是单独命名的适配版本。
-- [文本 ToMe](skills/memfolder-exp/references/tome.md)将时间连续二分 planner 与公共 `text-operator`、`semantic-encoder` 组合，采用 `run.mode: "repeat"`。公共特征提供器在每次匹配前编码当前文本，原始 history 无须预存节点向量。可从 [tome-template.json](examples/experiments/tome-template.json) 开始，声明向量空间，每个特征名只配置一次。带缓存的向量服务会复用未变化文本的向量。原生向量输出和向量检索仍需配置 wrapper 的内容向量提供器。历史交错分区版本名为 `tome-bsm`。
-- [LLMLingua-2](skills/memfolder-exp/references/llmlingua2.md)压缩最终节点文本，默认保留比例为 `0.55`。已恢复的 LongMemEval service、全量文本向量刷新及显式 Mem0 owner 映射仍可分别配置。
+- [文本 ToMe](skills/references/tome.md)将时间连续二分 planner 与公共 `text-operator`、`semantic-encoder` 组合，采用 `run.mode: "repeat"`。公共特征提供器在每次匹配前编码当前文本，原始 history 无须预存节点向量。可从 [tome-template.json](examples/experiments/tome-template.json) 开始，声明向量空间，每个特征名只配置一次。带缓存的向量服务会复用未变化文本的向量。原生向量输出和向量检索仍需配置 wrapper 的内容向量提供器。历史交错分区版本名为 `tome-bsm`。
+- [LLMLingua-2](skills/references/llmlingua2.md)压缩最终节点文本，默认保留比例为 `0.55`。已恢复的 LongMemEval service、全量文本向量刷新及显式 Mem0 owner 映射仍可分别配置。
 - [record_then_context.py](examples/record_then_context.py) 将 ContextFolder 应用于其他压缩方法输出的最终节点，保持节点数量并改写文本。
 
 </details>

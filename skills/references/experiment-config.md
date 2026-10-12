@@ -220,7 +220,7 @@ copies the chat settings for judge, so keep both synchronized or explicitly
 record a different judge model consistently across every comparison arm.
 
 The single source is `src/memfolder/prompt_templates.py`.
-The [prompt protocol](../../../src/memfolder/prompt_protocol.py) records source/template
+The [prompt protocol](../../src/memfolder/prompt_protocol.py) records source/template
 hashes, message roles and JSON output. The judge accepts only
 `{"label":"CORRECT"}` or `{"label":"WRONG"}`; invalid labels fail evaluation.
 `chat-judge` selects that same implementation. All final QA aliases are identical
@@ -257,9 +257,9 @@ an explicit plugin; its retrieval and scoring scope must be recorded.
 
 ## Legacy time and order profiles
 
-The full [PersonaMem Mem0](../../../examples/experiments/personamem-mem0-template.json),
-[PersonaMem MemOS](../../../examples/experiments/personamem-memos-template.json), and
-[M3](../../../examples/experiments/m3-recordfolder-template.json) templates include
+The full [PersonaMem Mem0](../../examples/experiments/personamem-mem0-template.json),
+[PersonaMem MemOS](../../examples/experiments/personamem-memos-template.json), and
+[M3](../../examples/experiments/m3-recordfolder-template.json) templates include
 source and compressed evaluation, shared MemForest QA/judge, and native output.
 Supply actual dataset and bank paths, question/video IDs and model services.
 The defaults use lexical retrieval; choose matching native or dense retrieval

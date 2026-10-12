@@ -42,7 +42,7 @@ from `history-initializer`; precomputed node vectors are not a prerequisite.
 Configure `cached-service` around the encoder to reuse unchanged text across
 rounds. Only new text needs a new encoder call, including final materialization.
 
-The full [tome-template.json](../../../examples/experiments/tome-template.json)
+The full [tome-template.json](../../examples/experiments/tome-template.json)
 loads raw LoCoMo history, runs temporal ToMe and evaluates both source and result
 with the shared QA/judge protocol. Fill in chat/embedding/judge endpoints,
 models, revisions, credentials and the actual embedding dimension as described
@@ -50,7 +50,7 @@ in [experiment-config.md](experiment-config.md). It defaults to lexical retrieva
 and MemOS output. Use its `run.mode: "repeat"`; the automatic iteration cap grows
 with input size, while explicit `max_rounds` still enforces a user-selected cap.
 
-For Python assembly, [tome-text.json](../../../examples/recipes/tome-text.json)
+For Python assembly, [tome-text.json](../../examples/recipes/tome-text.json)
 is a planner/operator fragment. Supply the common semantic provider, services
 and a resolved node budget in the caller's full composition. The `tome-operator`
 selector is a compatibility alias of the common text operator, with replaceable
@@ -83,7 +83,7 @@ the default raw-text pipeline.
 
 Context compression after record compression is a separate pipeline stage that
 consumes the final record snapshot. See
-[record_then_context.py](../../../examples/record_then_context.py); declare
+[record_then_context.py](../../examples/record_then_context.py); declare
 `embedding_space` for raw input and inject the selected context services. The
 older `tome-with-contextfolder.json` example is explicitly a legacy BSM/group
 composition, rather than temporal ToMe followed by a separate context stage.
@@ -92,4 +92,4 @@ Libraries produced with a different ToMe variant or merge prompt retain those
 identities. New record grouping, text or embeddings require new record banks.
 QA/judge-only changes can reuse a verified bank with a new evaluation identity.
 All final QA and judge use the
-[shared MemForest protocol](../../../src/memfolder/prompt_protocol.py).
+[shared MemForest protocol](../../src/memfolder/prompt_protocol.py).

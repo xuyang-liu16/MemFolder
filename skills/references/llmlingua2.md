@@ -6,7 +6,7 @@
 
 For the recovered LongMemEval compression recipe, use the
 `llmlingua2-historical-service` plugin. The service configuration is supplied in
-[llmlingua2-historical-services.json](../../../examples/recipes/llmlingua2-historical-services.json).
+[llmlingua2-historical-services.json](../../examples/recipes/llmlingua2-historical-services.json).
 Keep the existing current-Record planner/writer recipe, with writer rate 0.55.
 The two service plugins implement the same writer contract; the rate-only
 adapter described below remains available as an explicitly different variant.
@@ -80,7 +80,7 @@ retained text proportion, distinct from Record `keep_ratio: 0.5`. The official
 classifier may produce a slightly different measured token proportion. This
 setting does not change ContextFolder's independent default rate of 0.8.
 
-Use [llmlingua2-post-record.json](../../../examples/recipes/llmlingua2-post-record.json)
+Use [llmlingua2-post-record.json](../../examples/recipes/llmlingua2-post-record.json)
 with `mode: "once"` on the **final current Record snapshot**. The planner emits
 one current-text rewrite per eligible record and keeps protected records. It
 does not reconstruct original source texts or perform additional Record merges.
@@ -138,7 +138,7 @@ path can replace `model_name`. For CPU execution declare `device_map: "cpu"`
 and `dtype: "float32"`. Another service can implement `compress(text, rate=...)`
 and return the same result contract.
 
-[record_then_context.py](../../../examples/record_then_context.py) demonstrates
+[record_then_context.py](../../examples/record_then_context.py) demonstrates
 temporal ToMe followed by LLMLingua-2 or ContextFolder as independent stages.
 Callers inject `chat`, `embeddings`, and the selected context services. Pass
 `embedding_space` explicitly for raw text input; an existing semantic batch or
@@ -146,7 +146,7 @@ unambiguous declared content-bound vectors can supply that space instead.
 Record pairing uses the shared semantic provider and common text operator,
 with fresh merged-text features before choosing the next pair;
 context compression runs only after Record compression finishes. Final QA and
-judge use the [shared MemForest protocol](../../../src/memfolder/prompt_protocol.py),
+judge use the [shared MemForest protocol](../../src/memfolder/prompt_protocol.py),
 with the same retrieval and scoring configuration across comparison arms.
 
 Historical results using another rate or the old ToMe recipe retain their
