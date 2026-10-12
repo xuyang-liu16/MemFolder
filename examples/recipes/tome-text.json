@@ -1,0 +1,8 @@
+{
+  "planner": {
+    "plugin": "tome"
+  },
+  "operator": {
+    "plugin": "text-operator"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "planner": {
+    "plugin": "tome-bsm"
+  },
+  "operator": {
+    "plugin": "contextfolder-operator"
+  }
+}

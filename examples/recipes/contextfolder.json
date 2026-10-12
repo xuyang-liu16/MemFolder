@@ -1,0 +1,8 @@
+{
+  "planner": {
+    "plugin": "contextfolder"
+  },
+  "operator": {
+    "plugin": "contextfolder-operator"
+  }
+}

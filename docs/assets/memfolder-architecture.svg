@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1030" viewBox="0 0 1440 1030" role="img" aria-labelledby="title desc">
+  <title id="title">MemFolder: compose the experiment, replace the component</title>
+  <desc id="desc">Configuration assembles a data loader and initializer, canonical snapshot and features, planner, operator, memory wrapper, reader and evaluator. Gold labels enter only the evaluator. Read-only observation hooks span all stages. Repeated compression projects results and refreshes features before the next planning round.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#576D80"/></marker>
+    <style>
+      text { font-family: Inter, 'Segoe UI', Arial, sans-serif; fill: #173453; }
+      .title { font-size: 37px; font-weight: 700; letter-spacing: -.8px; }
+      .eyebrow { font-size: 17px; font-weight: 700; letter-spacing: 2.2px; }
+      .heading { font-size: 28px; font-weight: 700; }
+      .body { font-size: 21px; }
+      .small { font-size: 18px; fill: #576D80; }
+      .flow { fill: none; stroke: #576D80; stroke-width: 3; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1440" height="1030" rx="24" fill="#FAFBFC"/>
+  <text x="48" y="48" class="eyebrow">MEMFOLDER / EXPERIMENT ARCHITECTURE</text>
+  <text x="48" y="100" class="title">Compose the experiment. Replace the component.</text>
+  <rect x="48" y="134" width="1344" height="116" rx="16" fill="#173453"/>
+  <text x="74" y="174" class="heading" style="fill:#FFF">Configuration assembler</text>
+  <text x="74" y="215" class="body" style="fill:#D9E5ED">Plugin roles + capabilities</text>
+  <path d="M448 158V225" stroke="#526780"/>
+  <text x="475" y="174" class="body" style="fill:#FFF">Methods · data · backends · protocols</text>
+  <text x="475" y="215" class="body" style="fill:#D9E5ED">Budgets · seeds · run directories</text>
+  <path d="M978 158V225" stroke="#526780"/>
+  <text x="1006" y="174" class="body" style="fill:#FFF">Shared model services</text>
+  <text x="1006" y="215" class="body" style="fill:#D9E5ED">Chat · embeddings · tokenizer</text>
+  <text x="48" y="288" class="eyebrow">COMPRESSION PIPELINE</text>
+  <rect x="48" y="310" width="256" height="280" rx="16" fill="#FFF" stroke="#C9D5DF" stroke-width="2"/>
+  <text x="70" y="345" class="eyebrow" style="fill:#576D80">01 / INPUT</text>
+  <text x="70" y="386" class="heading">Load &amp; initialize</text>
+  <text x="70" y="428" class="body">Benchmark history</text>
+  <text x="70" y="459" class="body">or existing memories</text>
+  <text x="70" y="500" class="small">Native wrapper export</text>
+  <rect x="66" y="532" width="220" height="38" rx="8" fill="#EDF2F7"/>
+  <text x="176" y="557" text-anchor="middle" class="small" style="fill:#173453">Snapshot + features</text>
+  <path d="M307 446H342" class="flow"/>
+  <rect x="352" y="310" width="314" height="280" rx="16" fill="#EFF8F5" stroke="#8ABDB3" stroke-width="2"/>
+  <text x="376" y="345" class="eyebrow" style="fill:#247D7A">02 / DECIDE</text>
+  <text x="376" y="386" class="heading">Planner</text>
+  <text x="376" y="428" class="body">Anchors · assignment</text>
+  <text x="376" y="461" class="body">Candidates · affinity</text>
+  <text x="376" y="494" class="body">Gates · matching · groups</text>
+  <rect x="372" y="532" width="274" height="38" rx="8" fill="#DCEEE7"/>
+  <text x="509" y="557" text-anchor="middle" class="small" style="fill:#247D7A">Output: action plan</text>
+  <path d="M669 446H704" class="flow"/>
+  <rect x="714" y="310" width="314" height="280" rx="16" fill="#FCF4EC" stroke="#D9B494" stroke-width="2"/>
+  <text x="738" y="345" class="eyebrow" style="fill:#A2653C">03 / TRANSFORM</text>
+  <text x="738" y="386" class="heading">Operator</text>
+  <text x="738" y="428" class="body">Keep · Drop · Merge</text>
+  <text x="738" y="461" class="body">Rewrite · text writers</text>
+  <text x="738" y="494" class="body">Encoding · verification</text>
+  <rect x="734" y="532" width="274" height="38" rx="8" fill="#F5E5D7"/>
+  <text x="871" y="557" text-anchor="middle" class="small" style="fill:#A2653C">Output: result + lineage</text>
+  <path d="M1031 446H1066" class="flow"/>
+  <rect x="1076" y="310" width="316" height="280" rx="16" fill="#FFF" stroke="#C9D5DF" stroke-width="2"/>
+  <text x="1100" y="345" class="eyebrow" style="fill:#576D80">04 / ADAPT</text>
+  <text x="1100" y="386" class="heading">Memory wrapper</text>
+  <text x="1100" y="428" class="body">Projection + ID mapping</text>
+  <text x="1100" y="461" class="body">Graph / vector refresh</text>
+  <text x="1100" y="494" class="body">Native materialization</text>
+  <rect x="1096" y="532" width="276" height="38" rx="8" fill="#EDF2F7"/>
+  <text x="1234" y="557" text-anchor="middle" class="small" style="fill:#173453">Mem0 · MemOS · M3</text>
+  <path d="M1136 593V630H870V674" class="flow"/>
+  <text x="48" y="630" class="small">Repeat mode: project results and refresh features before planning again.</text>
+  <rect x="48" y="682" width="616" height="196" rx="16" fill="#F0F4F8"/>
+  <text x="72" y="720" class="eyebrow">SHARED CONTRACTS</text>
+  <text x="72" y="760" class="body">Scopes · stable IDs · source provenance</text>
+  <text x="72" y="793" class="body">Typed actions · budgets · embedding spaces</text>
+  <text x="72" y="842" class="small">Modules register via entry points or module:factory.</text>
+  <rect x="714" y="682" width="314" height="196" rx="16" fill="#FFF" stroke="#C9D5DF" stroke-width="2"/>
+  <text x="738" y="719" class="eyebrow" style="fill:#576D80">05 / ANSWER</text>
+  <text x="738" y="762" class="heading">Reader</text>
+  <text x="738" y="804" class="body">Retrieve · build context</text>
+  <text x="738" y="837" class="body">Answer public questions</text>
+  <path d="M1031 780H1066" class="flow"/>
+  <rect x="1266" y="615" width="126" height="38" rx="8" fill="#EDF2F7"/>
+  <text x="1329" y="640" text-anchor="middle" class="small">Gold labels</text>
+  <path d="M1329 654V674" class="flow"/>
+  <rect x="1076" y="682" width="316" height="196" rx="16" fill="#FFF" stroke="#C9D5DF" stroke-width="2"/>
+  <text x="1100" y="719" class="eyebrow" style="fill:#576D80">06 / MEASURE</text>
+  <text x="1100" y="762" class="heading">Evaluator</text>
+  <text x="1100" y="804" class="body">Protocol-specific metrics</text>
+  <text x="1100" y="837" class="body">Quality + compression cost</text>
+  <rect x="48" y="912" width="1344" height="82" rx="14" fill="#FFF" stroke="#8CA4B5" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="72" y="947" class="body" style="font-weight:700">Read-only observation across every stage</text>
+  <text x="72" y="978" class="small">Events → public artifacts → observers → case reports</text>
+  <path d="M681 930V978" stroke="#D1DCE4"/>
+  <text x="709" y="947" class="body">Sources → groups → actions → outputs → answers</text>
+  <text x="709" y="978" class="small">Explicit capture policy · trace coverage · run comparison</text>
+</svg>

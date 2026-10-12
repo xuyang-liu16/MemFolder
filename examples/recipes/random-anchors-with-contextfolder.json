@@ -1,0 +1,13 @@
+{
+  "planner": {
+    "plugin": "contextfolder",
+    "parameters": {
+      "anchors": {
+        "plugin": "random-selector"
+      }
+    }
+  },
+  "operator": {
+    "plugin": "contextfolder-operator"
+  }
+}

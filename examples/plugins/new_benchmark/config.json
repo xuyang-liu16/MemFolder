@@ -1,0 +1,8 @@
+{
+  "plugin": "example.newbench",
+  "parameters": {
+    "path": "data/YOUR_BENCHMARK.json",
+    "dataset_id": "newbench",
+    "split": "test"
+  }
+}

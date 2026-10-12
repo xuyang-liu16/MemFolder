@@ -1,0 +1,16 @@
+{
+  "planner": {
+    "plugin": "tome-pooled",
+    "parameters": {
+      "partitioner": {
+        "plugin": "tome-pooled-groups",
+        "parameters": {
+          "id_order": "source_numeric"
+        }
+      }
+    }
+  },
+  "operator": {
+    "plugin": "recordfolder-operator"
+  }
+}

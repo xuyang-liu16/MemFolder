@@ -1,0 +1,8 @@
+{
+  "planner": {
+    "plugin": "random-merge-round"
+  },
+  "operator": {
+    "plugin": "recordfolder-operator"
+  }
+}

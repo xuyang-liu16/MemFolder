@@ -19,8 +19,10 @@ The selection routines preserve the source formulas and class quotas. MemFolder 
 RecordFolder, ContextFolder, and archived methods
 -------------------------------------------------
 
-RecordFolder and ContextFolder are the project authors' methods. MemFolder also
-includes memory adaptations of ToMe, MemForest, Random methods, and DART.
+RecordFolder and ContextFolder come from the project authors' standardized
+MemFolder-main.zip release. The archived experiments provide text ToMe,
+M3 pooled ToMe, the average-linkage MemForest proxy, Random methods, and DART
+memory adaptations.
 
 The MemForest tree-based routines and pair prompt come from
 11318_MemForest_Efficient_Agen_Supplementary_Material. Release permission for that

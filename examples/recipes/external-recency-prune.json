@@ -1,0 +1,13 @@
+{
+  "planner": {
+    "plugin": "prune-planner",
+    "parameters": {
+      "selector": {
+        "plugin": "example.recency"
+      }
+    }
+  },
+  "operator": {
+    "plugin": "rule-operator"
+  }
+}

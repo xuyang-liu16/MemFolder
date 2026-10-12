@@ -1,0 +1,144 @@
+{
+  "dataset": {
+    "plugin": "locomo-dataset",
+    "parameters": {
+      "path": "data/locomo.json"
+    }
+  },
+  "initializer": {
+    "plugin": "history-initializer"
+  },
+  "compression": {
+    "planner": {
+      "plugin": "recordfolder",
+      "parameters": {
+        "candidates": {
+          "plugin": "temporal-candidates",
+          "parameters": {
+            "temporal_feature": "temporal"
+          }
+        }
+      }
+    },
+    "operator": {
+      "plugin": "recordfolder-operator"
+    },
+    "wrapper": {
+      "plugin": "memos-wrapper",
+      "parameters": {
+        "output_dir": "unused"
+      }
+    },
+    "features": [
+      {
+        "plugin": "semantic-encoder",
+        "parameters": {
+          "space": {
+            "provider": "caller-declared",
+            "model": "REPLACE_EMBEDDING_MODEL",
+            "revision": "REPLACE_MODEL_REVISION",
+            "dimension": 1536
+          }
+        }
+      },
+      {
+        "plugin": "chat-grounding"
+      },
+      {
+        "plugin": "event-time-features"
+      }
+    ]
+  },
+  "reader": {
+    "plugin": "retrieval-reader",
+    "parameters": {
+      "answerer": {
+        "plugin": "chat-answerer",
+        "parameters": {
+          "prompt_builder": {
+            "plugin": "memforest-qa-prompt"
+          }
+        }
+      }
+    }
+  },
+  "evaluator": {
+    "plugin": "metric-evaluator",
+    "parameters": {
+      "metrics": [
+        {
+          "plugin": "memforest-judge"
+        }
+      ]
+    }
+  },
+  "capture": {
+    "profile": "cases",
+    "text_policy": "omit"
+  },
+  "observers": [
+    {
+      "plugin": "event-report-observer",
+      "required": true
+    }
+  ],
+  "output_dir": "../../build/experiments/recordfolder-001",
+  "run": {
+    "seed": 7,
+    "evaluate_source": true,
+    "budgets": [
+      {
+        "unit": "nodes",
+        "ratio": 0.5
+      }
+    ]
+  },
+  "services": {
+    "chat": {
+      "plugin": "compatible-http",
+      "parameters": {
+        "base_url": "https://api.example.invalid/v1",
+        "model": "REPLACE_CHAT_MODEL",
+        "api_key_env": "MEMFOLDER_PROVIDER_KEY",
+        "revision": "REPLACE_MODEL_REVISION"
+      }
+    },
+    "grounding": {
+      "plugin": "compatible-http",
+      "parameters": {
+        "base_url": "https://api.example.invalid/v1",
+        "model": "REPLACE_GROUNDING_MODEL",
+        "api_key_env": "MEMFOLDER_PROVIDER_KEY",
+        "revision": "REPLACE_MODEL_REVISION"
+      }
+    },
+    "embeddings": {
+      "plugin": "cached-service",
+      "parameters": {
+        "path": "../../build/caches/embeddings.sqlite",
+        "namespace": "example.embedding.v1",
+        "provider": {
+          "plugin": "compatible-http",
+          "parameters": {
+            "base_url": "https://api.example.invalid/v1",
+            "model": "REPLACE_EMBEDDING_MODEL",
+            "api_key_env": "MEMFOLDER_PROVIDER_KEY",
+            "revision": "REPLACE_MODEL_REVISION"
+          }
+        }
+      }
+    },
+    "tokenizer": {
+      "plugin": "tiktoken-counter"
+    },
+    "judge": {
+      "plugin": "compatible-http",
+      "parameters": {
+        "base_url": "https://api.example.invalid/v1",
+        "model": "REPLACE_CHAT_MODEL",
+        "api_key_env": "MEMFOLDER_PROVIDER_KEY",
+        "revision": "REPLACE_MODEL_REVISION"
+      }
+    }
+  }
+}

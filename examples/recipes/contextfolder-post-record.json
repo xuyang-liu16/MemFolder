@@ -1,0 +1,10 @@
+{
+  "planner": {"plugin": "current-record-rewrite"},
+  "operator": {
+    "plugin": "text-operator",
+    "parameters": {
+      "writer": {"plugin": "contextfolder-writer"},
+      "record_builder": {"plugin": "current-record-builder"}
+    }
+  }
+}

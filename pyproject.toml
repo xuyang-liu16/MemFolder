@@ -6,7 +6,6 @@ build-backend = "setuptools.build_meta"
 name = "memfolder"
 version = "0.1.0.dev0"
 description = "Composable agent memory compression planners, operators and native memory loaders"
-readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
 

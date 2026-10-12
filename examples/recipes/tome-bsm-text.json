@@ -1,0 +1,4 @@
+{
+  "planner": {"plugin": "tome-bsm"},
+  "operator": {"plugin": "recordfolder-operator"}
+}

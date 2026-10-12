@@ -1,0 +1,188 @@
+{
+  "dataset": {
+    "plugin": "personamem-dataset",
+    "parameters": {
+      "path": "data/personamem/questions.csv",
+      "contexts_path": "data/personamem/contexts.jsonl",
+      "sample_ids": [
+        "YOUR_QUESTION_ID"
+      ]
+    }
+  },
+  "initializer": {
+    "plugin": "bank-initializer",
+    "parameters": {
+      "prefix_end_field": "payload.history_end_index",
+      "loaders": {
+        "YOUR_QUESTION_ID": {
+          "plugin": "mem0",
+          "parameters": {
+            "path": "data/personamem/mem0-memory.json",
+            "options": {
+              "dataset_id": "personamem",
+              "sample_id": "YOUR_QUESTION_ID",
+              "order_by": "time_id",
+              "naive_timezone": "UTC",
+              "timestamp_fields": [
+                "created_at"
+              ],
+              "time_semantics": "creation_time",
+              "missing_time_order": "first"
+            }
+          }
+        }
+      }
+    }
+  },
+  "compression": {
+    "planner": {
+      "plugin": "recordfolder",
+      "parameters": {
+        "candidates": {
+          "plugin": "temporal-candidates",
+          "parameters": {
+            "temporal_order": "order",
+            "window": 50
+          }
+        }
+      }
+    },
+    "operator": {
+      "plugin": "text-operator",
+      "parameters": {
+        "member_resolver": {
+          "plugin": "member-resolver",
+          "parameters": {
+            "order_by": "order"
+          }
+        }
+      }
+    },
+    "wrapper": {
+      "plugin": "mem0-wrapper",
+      "parameters": {
+        "output_dir": "unused",
+        "embedding_provider": {
+          "plugin": "content-embeddings",
+          "parameters": {
+            "space": {
+              "provider": "caller-declared",
+              "model": "REPLACE_EMBEDDING_MODEL",
+              "revision": "REPLACE_MODEL_REVISION",
+              "dimension": 1536
+            }
+          }
+        }
+      }
+    },
+    "features": [
+      {
+        "plugin": "semantic-encoder",
+        "parameters": {
+          "space": {
+            "provider": "caller-declared",
+            "model": "REPLACE_EMBEDDING_MODEL",
+            "revision": "REPLACE_MODEL_REVISION",
+            "dimension": 1536
+          }
+        }
+      },
+      {
+        "plugin": "chat-grounding"
+      }
+    ]
+  },
+  "reader": {
+    "plugin": "retrieval-reader",
+    "parameters": {
+      "answerer": {
+        "plugin": "chat-answerer",
+        "parameters": {
+          "prompt_builder": {
+            "plugin": "memforest-qa-prompt"
+          }
+        }
+      }
+    }
+  },
+  "evaluator": {
+    "plugin": "metric-evaluator",
+    "parameters": {
+      "metrics": [
+        {
+          "plugin": "memforest-judge"
+        }
+      ]
+    }
+  },
+  "capture": {
+    "profile": "cases",
+    "text_policy": "omit"
+  },
+  "observers": [
+    {
+      "plugin": "event-report-observer",
+      "required": true
+    }
+  ],
+  "output_dir": "../../build/experiments/mem0-temporal-001",
+  "run": {
+    "seed": 7,
+    "evaluate_source": true,
+    "budgets": [
+      {
+        "unit": "nodes",
+        "ratio": 0.5,
+        "minimum": 1
+      }
+    ]
+  },
+  "services": {
+    "chat": {
+      "plugin": "compatible-http",
+      "parameters": {
+        "base_url": "https://api.example.invalid/v1",
+        "model": "REPLACE_CHAT_MODEL",
+        "api_key_env": "MEMFOLDER_PROVIDER_KEY",
+        "revision": "REPLACE_MODEL_REVISION"
+      }
+    },
+    "grounding": {
+      "plugin": "compatible-http",
+      "parameters": {
+        "base_url": "https://api.example.invalid/v1",
+        "model": "REPLACE_GROUNDING_MODEL",
+        "api_key_env": "MEMFOLDER_PROVIDER_KEY",
+        "revision": "REPLACE_MODEL_REVISION"
+      }
+    },
+    "embeddings": {
+      "plugin": "cached-service",
+      "parameters": {
+        "path": "../../build/caches/embeddings.sqlite",
+        "namespace": "example.embedding.v1",
+        "provider": {
+          "plugin": "compatible-http",
+          "parameters": {
+            "base_url": "https://api.example.invalid/v1",
+            "model": "REPLACE_EMBEDDING_MODEL",
+            "api_key_env": "MEMFOLDER_PROVIDER_KEY",
+            "revision": "REPLACE_MODEL_REVISION"
+          }
+        }
+      }
+    },
+    "tokenizer": {
+      "plugin": "tiktoken-counter"
+    },
+    "judge": {
+      "plugin": "compatible-http",
+      "parameters": {
+        "base_url": "https://api.example.invalid/v1",
+        "model": "REPLACE_CHAT_MODEL",
+        "api_key_env": "MEMFOLDER_PROVIDER_KEY",
+        "revision": "REPLACE_MODEL_REVISION"
+      }
+    }
+  }
+}

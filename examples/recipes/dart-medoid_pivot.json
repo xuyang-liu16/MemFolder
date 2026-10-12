@@ -1,0 +1,16 @@
+{
+  "planner": {
+    "plugin": "dart",
+    "parameters": {
+      "selector": {
+        "plugin": "dart-selector",
+        "parameters": {
+          "variant": "medoid_pivot"
+        }
+      }
+    }
+  },
+  "operator": {
+    "plugin": "rule-operator"
+  }
+}

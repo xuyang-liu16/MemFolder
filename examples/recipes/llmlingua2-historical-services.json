@@ -1,0 +1,10 @@
+{
+  "llmlingua2": {
+    "plugin": "llmlingua2-historical-service",
+    "parameters": {
+      "model_name": "microsoft/llmlingua-2-xlm-roberta-large-meetingbank",
+      "revision": "ebaba9b0e874dadd3003ffcff828e4397e568089",
+      "device_map": "cuda"
+    }
+  }
+}
