@@ -17,6 +17,7 @@ dist/
 *.db
 *.tar.gz
 *.zip
+*.[pP][dD][fF]
 runs/
 data/
 .pytest_cache/
@@ -41,6 +42,7 @@ htmlcov/
 /examples/experiments/offline-*.json
 /examples/recipes/offline-*.json
 /examples/plugins/new_benchmark/tiny-*.json
+/docs/assets/memfolder-architecture.svg
 
 # Generated schemas and authoring/audit records are not runtime configuration.
 /schemas/
