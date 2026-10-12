@@ -193,6 +193,8 @@ def load_library(path: str | Path, *, options: LoadOptions = LoadOptions(), obse
     require(not options.selectors and not options.sample_map and options.sample_id is None
             and options.namespace is None and not options.embedding_spaces and options.visibility_field is None
             and options.naive_timezone is None and options.numeric_timestamp_clock is None and options.order_by == 'source'
+            and options.timestamp_fields == ('timestamp',) and options.time_semantics == 'event_time'
+            and options.missing_time_order == 'error'
             and options.dataset_id == 'imported-memory' and options.split == 'memory',
             'Canonical bundle reload preserves its identities; native remapping options are not applicable')
     if observer:

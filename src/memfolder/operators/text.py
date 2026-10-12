@@ -21,7 +21,7 @@ def timestamp(record,policy='earliest'):
     return str(record.extensions.get('memfolder.event_timestamp','unknown'))
 
 
-def members_for(action, snapshot, originals):
+def members_for(action, snapshot, originals, *, order_by='event_time'):
     current={n.node_id:n for n in snapshot.records}
     inputs=tuple(current[i] for i in action.member_ids)
     if action.input_view=='original':
@@ -37,16 +37,20 @@ def members_for(action, snapshot, originals):
     policy=action.parameters.get('timestamp_policy','earliest')
     require(policy in ('earliest','latest'),'Unknown member timestamp policy')
     choose=max if policy=='latest' else min
+    require(order_by in ('event_time','order'),'Choose event_time or order for member ordering')
     selected=tuple(sorted(selected,key=lambda n:(
-        choose((r.start.value for r in n.time_ranges),default=n.order),n.node_id)))
+        n.order if order_by=='order' else choose((r.start.value for r in n.time_ranges),default=n.order),n.node_id)))
     return inputs,tuple(Member(n.node_id,n.text,timestamp(n,policy)) for n in selected)
 
 
 @dataclass(frozen=True)
 class ChronologicalMembers:
+    order_by: str = 'event_time'
     spec = spec('text.chronological_members','member_resolver')
+    def __post_init__(self):
+        require(self.order_by in ('event_time','order'),'Choose event_time or order for member ordering')
     def resolve(self,action,snapshot,context):
-        return members_for(action,snapshot,context.originals)
+        return members_for(action,snapshot,context.originals,order_by=self.order_by)
 
 
 @dataclass(frozen=True)
@@ -76,7 +80,10 @@ class ConcatWriter:
 
 @dataclass(frozen=True)
 class ConservativeRecordBuilder:
+    timestamp_policy: str | None = None
     spec = spec('records.conservative','record_builder')
+    def __post_init__(self):
+        require(self.timestamp_policy in (None,'earliest','latest'),'Unknown output timestamp policy')
     def build(self,inputs,action,written,context):
         require(written.status in ('success','fallback'),'Writer did not return a usable result')
         require(type(written.text) is str and bool(written.text.strip()),'Writer returned empty text')
@@ -95,8 +102,19 @@ class ConservativeRecordBuilder:
             available_at=bound('available_at',max),expires_at=bound('expires_at',min),
             extensions=FrozenMap({'memfolder.writer':written.metadata,'memfolder.action_id':action.action_id,
                 'memfolder.member_ids':action.member_ids,'memfolder.content_embedding':'refresh_required'}))
+        sources=[n.extensions.get('memfolder.temporal_source') for n in inputs]
+        if all(sources) and all(source==sources[0] for source in sources):
+            output=replace(output,extensions=FrozenMap({**output.extensions,
+                'memfolder.temporal_source':sources[0]}))
+        if not output.time_ranges:
+            # A shared explicit display label (e.g. an M3 clip) is not an event date.
+            labels={n.extensions.get('memfolder.event_timestamp') for n in inputs}
+            if len(labels)==1 and None not in labels and all(sources) and all(s==sources[0] for s in sources):
+                output=replace(output,extensions=FrozenMap({**output.extensions,
+                    'memfolder.event_timestamp':next(iter(labels)),
+                    'memfolder.temporal_source':sources[0]}))
         # Execute generic action policies while retaining the full time lineage.
-        policy=action.parameters.get('timestamp_policy')
+        policy=action.parameters.get('timestamp_policy',self.timestamp_policy)
         if policy is not None:
             require(policy in ('earliest','latest'),'Unknown output timestamp policy')
             output=replace(output,extensions=FrozenMap({**output.extensions,

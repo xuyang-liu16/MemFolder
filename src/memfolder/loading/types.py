@@ -29,8 +29,12 @@ class LoadOptions:
     # "episodic" / "semantic" / "img" / "voice" for M3.
     naive_timezone: str | None = None
     numeric_timestamp_clock: str | None = None  # e.g. unix_seconds, declared by the caller
+    # Explicit planning clock source; defaults retain the original import behavior.
+    timestamp_fields: tuple[str, ...] = ('timestamp',)
+    time_semantics: str = 'event_time'
+    missing_time_order: Literal['error', 'first'] = 'error'
     visibility_field: str | None = None
-    order_by: Literal['source', 'native_id', 'time_id'] = 'source'
+    order_by: Literal['source', 'native_id', 'numeric_native_id', 'time_id'] = 'source'
     allow_partial: bool = False
     max_records: int = 1_000_000
     max_file_bytes: int = 2 * 1024**3
@@ -40,7 +44,14 @@ class LoadOptions:
             identifier(v)
         for v in (self.sample_id, self.namespace, self.naive_timezone, self.visibility_field, self.numeric_timestamp_clock):
             require(v is None or type(v) is str and bool(v.strip()), 'Invalid optional import identifier')
-        require(self.order_by in ('source', 'native_id', 'time_id'), 'Unknown import ordering')
+        require(self.order_by in ('source', 'native_id', 'numeric_native_id', 'time_id'), 'Unknown import ordering')
+        require(isinstance(self.timestamp_fields, (tuple, list)) and bool(self.timestamp_fields)
+                and all(type(v) is str and v and all(v.split('.')) for v in self.timestamp_fields),
+                'timestamp_fields must be a nonempty list of field paths')
+        require(len(set(self.timestamp_fields)) == len(self.timestamp_fields), 'Repeated timestamp field')
+        object.__setattr__(self, 'timestamp_fields', tuple(self.timestamp_fields))
+        identifier(self.time_semantics)
+        require(self.missing_time_order in ('error', 'first'), 'Unknown missing-time ordering')
         require(type(self.allow_partial) is bool, 'allow_partial must be boolean')
         require(type(self.max_records) is int and self.max_records > 0, 'Invalid record limit')
         require(type(self.max_file_bytes) is int and self.max_file_bytes > 0, 'Invalid file-size limit')
@@ -151,6 +162,7 @@ class NativeRecord:
     available_at: TimePoint | None = None
     expires_at: TimePoint | None = None
     revision: str = '0'
+    extensions: FrozenMap = field(default_factory=FrozenMap)
 
     def __post_init__(self):
         for v in (self.native_id, self.namespace, self.sample_key, self.partition_key, self.kind, self.revision):
@@ -161,7 +173,7 @@ class NativeRecord:
         require(all(t is None or type(t) is TimePoint for t in (self.available_at, self.expires_at)), 'Invalid native visibility')
         object.__setattr__(self, 'parts', tuple(self.parts))
         object.__setattr__(self, 'time_ranges', tuple(self.time_ranges))
-        for name in ('native', 'selectors', 'vectors'):
+        for name in ('native', 'selectors', 'vectors', 'extensions'):
             object.__setattr__(self, name, FrozenMap(getattr(self, name)))
         for vectors in self.vectors.values():
             require(isinstance(vectors, tuple), 'Native vector set must be an array of vectors')

@@ -271,6 +271,8 @@ python -m memfolder case build/experiments/recordfolder-001 \
 
 方法与随机种子的批量对比可参照 [offline-matrix.json](examples/experiments/offline-matrix.json)，执行 `python -m memfolder matrix CONFIG.json`。`--resume` 复用校验通过的**已完成**实验。运行失败后，保留已有文件并使用新输出目录重试。
 
+[PersonaMem Mem0](examples/experiments/personamem-mem0-template.json)、[PersonaMem MemOS](examples/experiments/personamem-memos-template.json) 和 [M3](examples/experiments/m3-recordfolder-template.json) 模板使用旧实验的排序规则：Mem0 的 `created_at`、MemOS 的 `(ts, id)`，以及 M3 每个 clip 内的数字节点 ID。模板包含合成数据，采用公共 QA/judge；实际运行时配置模型服务并替换数据与记忆库映射。前缀库需要明确的源历史位置，M3 的预算仍按 clip 分配。[时间与前缀配置说明](skills/memfolder-exp/references/experiment-config.md#legacy-time-and-order-profiles) 包含字段映射、ContextFolder 组合方式和 reader 范围。
+
 <details>
 <summary><b>基线配置</b></summary>
 

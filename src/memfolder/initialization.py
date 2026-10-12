@@ -60,12 +60,17 @@ class BankInitializer:
     """Explicit benchmark sample -> independently configured memory_loader."""
     loaders: tuple
     fallback: object | None = None
+    # Exclusive source history end index for a bank record. No timestamp inference.
+    prefix_end_field: str | None = None
     spec=spec('initialization.bank','initializer')
     @property
     def source_paths(self):return tuple(p for _,loader in self.loaders for p in getattr(loader,'source_paths',()))
     async def initialize(self,memory,context):
         require(type(memory) is MemoryInput,'Bank initializer accepts memory only')
-        if memory.initial_snapshot is not None:return memory
+        if memory.initial_snapshot is not None:
+            require(self.prefix_end_field is None,
+                    'Bank prefix filtering needs raw history and an explicitly mapped bank')
+            return memory
         loaders=dict(self.loaders);sid=memory.sample.sample_id
         if sid not in loaders:
             require(self.fallback is not None,'No memory bank mapped to benchmark sample')
@@ -73,4 +78,24 @@ class BankInitializer:
         library=await resolve(loaders[sid].load());require(len(library.inputs)==1,'Select one bank per benchmark sample')
         loaded=library.inputs[0]
         require((loaded.sample.dataset_id,loaded.sample.sample_id)==(memory.sample.dataset_id,sid),'Bank loader must declare the matching dataset_id and sample_id')
+        if self.prefix_end_field is not None:
+            from .loading.common import field_value
+            require(type(self.prefix_end_field) is str and self.prefix_end_field
+                    and all(self.prefix_end_field.split('.')), 'Invalid bank prefix field')
+            require(memory.history_artifact is None, 'External history needs an explicit prefix adapter')
+            limit=max((e.sequence for e in memory.history),default=-1)+1
+            kept=[]
+            for node in loaded.initial_snapshot.records:
+                end=field_value(node.native.get('record',{}),self.prefix_end_field)
+                require(type(end) is int and end>0,
+                        'Bank prefix requires a positive exclusive history end index on every record')
+                if end<=limit:kept.append(node)
+            ids={n.node_id for n in kept}
+            assets={p.artifact.artifact_id for n in kept for p in n.parts if p.artifact}
+            snapshot=replace(loaded.initial_snapshot,records=tuple(kept),
+                edges=tuple(e for e in loaded.initial_snapshot.edges if e.source_id in ids and e.target_id in ids),
+                assets=tuple(a for a in loaded.initial_snapshot.assets if a.artifact_id in assets),
+                extensions=FrozenMap({**loaded.initial_snapshot.extensions,
+                    'memfolder.history_prefix':{'end_field':self.prefix_end_field,'exclusive_end':limit}}))
+            loaded=replace(loaded,initial_snapshot=snapshot,assets=snapshot.assets)
         return replace(loaded,sample=memory.sample)

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from collections.abc import Mapping
 import json
 import math
 import re
@@ -83,7 +84,7 @@ def dense_vectors(value, location: str) -> tuple[tuple[float, ...], ...]:
 def field_value(row: dict, name: str):
     current = row
     for key in name.split('.'):
-        if not isinstance(current, dict) or key not in current:
+        if not isinstance(current, Mapping) or key not in current:
             return None
         current = current[key]
     return current
@@ -127,10 +128,23 @@ def parse_time(value, *, options: LoadOptions) -> TimePoint | None:
 
 
 def temporal_fields(row: dict, meta: dict, options: LoadOptions, source_id: str, location: str):
+    """Compatibility view of the explicit temporal projection."""
+    return temporal_projection(row, meta, options, source_id, location)[:3]
+
+
+def temporal_projection(row: dict, meta: dict, options: LoadOptions, source_id: str, location: str):
     issues = []
-    raw = row.get('timestamp', meta.get('timestamp'))
-    timestamp = parse_time(raw, options=options)
-    if raw not in (None, '') and timestamp is None:
+    timestamp = None
+    selected = None
+    present = False
+    for name in options.timestamp_fields:
+        raw = field_value(row, name) if name.split('.')[0] in row else field_value(meta, name)
+        present |= raw not in (None, '')
+        timestamp = parse_time(raw, options=options)
+        if timestamp is not None:
+            selected = name
+            break
+    if present and timestamp is None:
         issues.append(issue('timestamp_unparsed', source_id, location,
                             'Original timestamp retained; no time value was invented.'))
     ranges = () if timestamp is None else (TimeRange(start=timestamp, end=timestamp),)
@@ -140,7 +154,13 @@ def temporal_fields(row: dict, meta: dict, options: LoadOptions, source_id: str,
         available = parse_time(raw_available, options=options)
         require(raw_available is not None and available is not None,
                 f'{location}: explicit visibility field is missing or cannot be parsed')
-    return ranges, available, issues
+    extensions = {}
+    if options.timestamp_fields != ('timestamp',) or options.time_semantics != 'event_time':
+        extensions['memfolder.temporal_source'] = {
+            'fields': options.timestamp_fields, 'selected_field': selected,
+            'semantics': options.time_semantics,
+            'clock': timestamp.clock if timestamp is not None else None}
+    return ranges, available, issues, extensions
 
 
 def check_coverage(data: dict, nodes: int, edges: int, source_id: str):

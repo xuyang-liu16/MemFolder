@@ -88,9 +88,14 @@ the shared MemForest judge differs from native benchmark scoring protocols.
 
 - `run.budgets[].ratio` is the fraction of eligible nodes retained. A 70% node
   reduction is `0.3`; report realized counts after scope rounding.
-- The main RecordFolder template needs semantic and entity features plus parsed
-  event times. PersonaMem turn order and M3 clip visibility require explicit
-  order/time adapters; replacing only `dataset` is insufficient.
+- The LoCoMo RecordFolder template needs semantic and entity features plus parsed
+  event times. The PersonaMem Mem0/MemOS and M3 templates instead declare native
+  ordering and set both temporal candidates and member resolution to `order`.
+  Read the legacy time/order profiles in the experiment-config reference.
+- PersonaMem bank prefixes use explicit `prefix_end_field` positions; missing
+  positions fail. Banks already prepared for each question can omit that field
+  with a verified prefix mapping. Keep M3 budgets per clip, with `minimum: 1`,
+  and preserve `before_clip`, media and equivalence nodes.
 - Temporal ToMe uses `repeat` mode, the shared `semantic-encoder` in one declared
   cosine space, and the common `text-operator`. Raw history works without stored
   vectors: the engine refreshes current-text features before each match. Use

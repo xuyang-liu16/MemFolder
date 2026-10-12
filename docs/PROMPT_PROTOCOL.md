@@ -29,6 +29,11 @@ QA. It adds no decoder legend. `qa-prompt` / `memforest-qa-prompt` and
 rejects method-specific instruction or legend parameters.
 Benchmark QA does not enable AGPR or append compression-specific decoding instructions.
 
+The PersonaMem/M3 temporal templates declare native order in the common member
+resolver. Creation-time and clip-coordinate metadata remain identified input
+data; they do not add method-specific instructions. Prefix/clip filtering also
+applies to the uncompressed control before the same QA/judge protocol runs.
+
 Public multiple-choice options and query time remain input data in the
 question slot. Memory adapters preserve timestamps and speaker attribution.
 For a single speaker the second slot is empty; for more than two speakers,

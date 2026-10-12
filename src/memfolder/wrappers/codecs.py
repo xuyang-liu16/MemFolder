@@ -199,6 +199,29 @@ class MemOSCodec:
                     meta.pop(key, None)
                 meta.pop('embedding_model', None)
                 meta['memfolder'] = provenance[node.node_id]
+                # Only an explicitly selected native time profile updates its
+                # native clock. Other backend timestamp behavior is unchanged.
+                source=original.extensions.get('memfolder.temporal_source',{}) if original else {}
+                policy=node.extensions.get('memfolder.timestamp_policy')
+                if source and policy in ('earliest','latest'):
+                    from ..operators.text import timestamp
+                    from ..loading.common import field_value
+                    value=timestamp(node,policy)
+                    selected=source.get('selected_field')
+                    raw=field_value(original.native['record'],selected) if selected else None
+                    if raw is None and selected:
+                        raw=field_value(original.native['record'].get('metadata',{}),selected)
+                    if type(raw) in (int,float) and node.time_ranges:
+                        choose=max if policy=='latest' else min
+                        value=choose(r.start.value for r in node.time_ranges)
+                    meta['timestamp']=value
+                    if selected:
+                        keys=selected.removeprefix('metadata.').split('.')
+                        target=meta
+                        for key in keys[:-1]:
+                            target=target.setdefault(key,{})
+                            require(type(target) is dict,'Native time field conflicts with metadata structure')
+                        target[keys[-1]]=value
                 if self.require_vectors or node.embeddings:
                     value = vectors(node, original, self.space)
                     require(len(value) == 1, 'MemOS text codec requires one refreshed vector')

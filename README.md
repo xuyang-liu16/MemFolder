@@ -271,6 +271,8 @@ These runs call the configured model APIs. Each output directory contains `resul
 
 For method/seed sweeps, follow [offline-matrix.json](examples/experiments/offline-matrix.json) and run `python -m memfolder matrix CONFIG.json`. `--resume` reuses a validated **completed** run. After a failed run, preserve its files and retry in a fresh output directory.
 
+The [PersonaMem Mem0](examples/experiments/personamem-mem0-template.json), [PersonaMem MemOS](examples/experiments/personamem-memos-template.json) and [M3](examples/experiments/m3-recordfolder-template.json) templates use the archived experiment's ordering rules: Mem0 `created_at`, MemOS `(ts, id)`, and numeric node IDs within each M3 clip. They include synthetic fixtures and use the shared QA/judge. Configure services and replace the fixture/bank mappings for a real run. Prefix banks require explicit source history positions; M3 budgets remain per clip. See the [time and prefix configuration](skills/memfolder-exp/references/experiment-config.md#legacy-time-and-order-profiles) for field mapping, ContextFolder composition and reader scope.
+
 <details>
 <summary><b>Baseline recipes</b></summary>
 

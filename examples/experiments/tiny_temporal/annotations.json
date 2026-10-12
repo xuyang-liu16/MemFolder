@@ -1,0 +1,17 @@
+{
+  "synthetic-video": {
+    "qa_list": [
+      {
+        "question_id": "robot-prefix",
+        "question": "What does Alice like?",
+        "answer": "tea",
+        "before_clip": 0
+      },
+      {
+        "question_id": "web-full",
+        "question": "What does Alice use for tea?",
+        "answer": "blue cup"
+      }
+    ]
+  }
+}

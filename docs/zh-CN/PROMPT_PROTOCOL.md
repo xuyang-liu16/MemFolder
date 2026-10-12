@@ -26,6 +26,10 @@ MemForest 模板中的条数及 Memory/Timestamp 槽位。ToMe 默认复用公�
 `chat-judge` 与 `memforest-judge` 使用同一份 JSON CORRECT/WRONG 判分模板。
 公开选项、问题时间、记忆时间戳和说话人身份作为输入保留；适配规则不随 baseline 变化。
 
+PersonaMem/M3 的时间模板在公共 member resolver 中声明原生排序。创建时间和
+clip 坐标属于标明来源的输入数据，不追加方法专属指令。历史前缀和 clip 截断
+同样作用于未压缩对照，再执行相同的 QA/judge。
+
 ContextFolder 内部的事实提取、编码、盲恢复检查、修订属于 operator 的算法步骤，
 保留它们的可替换接口。它们与最终 benchmark QA/judge 分开；其中普通 summary
 fallback 也使用公共 MemForest 模板。LLMLingua2 是本地 token 分类器，不调用

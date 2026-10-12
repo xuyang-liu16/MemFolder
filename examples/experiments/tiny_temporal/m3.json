@@ -1,0 +1,149 @@
+{
+  "video_id": "synthetic-video",
+  "nodes": [
+    {
+      "id": 0,
+      "type": "img",
+      "metadata": {
+        "contents": [
+          "SYNTHETIC_IMAGE_ASSET"
+        ]
+      },
+      "embeddings": [
+        [
+          1.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "id": 1,
+      "type": "voice",
+      "metadata": {
+        "contents": [
+          "SYNTHETIC_VOICE_ASSET"
+        ]
+      },
+      "embeddings": [
+        [
+          1.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "id": 2,
+      "type": "semantic",
+      "metadata": {
+        "contents": [
+          "Equivalence: <voice_1> is <face_0>"
+        ],
+        "timestamp": 0
+      },
+      "embeddings": [
+        [
+          1.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "id": 10,
+      "type": "episodic",
+      "metadata": {
+        "contents": [
+          "Alice likes tea."
+        ],
+        "timestamp": 0
+      },
+      "embeddings": [
+        [
+          1.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "id": 3,
+      "type": "episodic",
+      "metadata": {
+        "contents": [
+          "Alice drinks tea every morning."
+        ],
+        "timestamp": 0
+      },
+      "embeddings": [
+        [
+          1.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "id": 20,
+      "type": "episodic",
+      "metadata": {
+        "contents": [
+          "FUTURE_ONLY: Alice switches to coffee."
+        ],
+        "timestamp": 2
+      },
+      "embeddings": [
+        [
+          1.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "id": 12,
+      "type": "episodic",
+      "metadata": {
+        "contents": [
+          "Alice owns a blue cup."
+        ],
+        "timestamp": 1
+      },
+      "embeddings": [
+        [
+          1.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "id": 13,
+      "type": "episodic",
+      "metadata": {
+        "contents": [
+          "Alice uses her blue cup for tea."
+        ],
+        "timestamp": 1
+      },
+      "embeddings": [
+        [
+          1.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": 0,
+      "target": 3,
+      "weight": 1.0
+    }
+  ],
+  "character_mappings": {
+    "character_0": [
+      "face_0",
+      "voice_1"
+    ]
+  },
+  "reverse_character_mappings": {
+    "face_0": "character_0",
+    "voice_1": "character_0"
+  },
+  "next_node_id": 21
+}

@@ -91,7 +91,9 @@ Declare `embedding_spaces` only when the source model, revision, dimension, and
 slot are known. Native vectors with unknown provenance are not a substitute for
 declared semantic features. Set `naive_timezone`, `numeric_timestamp_clock`, and
 `visibility_field` from the source format. `order_by: "time_id"` requires
-comparable parsed times. Never infer availability from event time alone.
+comparable parsed times unless `missing_time_order: "first"` explicitly sorts
+unknowns first. This ordering policy leaves their time ranges empty. Never
+infer availability from the selected planning clock alone.
 
 ## Dense retrieval and embeddings
 
@@ -236,14 +238,14 @@ source records document those upstream sources without switching the run's judge
 | --- | --- | --- |
 | LoCoMo | Session dates, speakers and dialogue evidence | Declare timezone for naive dates; select the matching bank owners. |
 | LongMemEval | Session dates and query time | Preserve query-time visibility and use the matching original or converted schema. |
-| PersonaMem v1 | Role-tagged turn order and a per-question prefix | The default loader does not invent event dates. Use an explicitly declared order/time adapter or a matching bank with real event times. |
-| M3 robot/web | Clip visibility, native graph order and protected media/identity nodes | Clip `available_at` is not an event timestamp. Choose a method-compatible order/time adapter and preserve `before_clip` truncation. |
+| PersonaMem v1 | Role-tagged turn order and a per-question prefix | The Mem0 template orders the bank by `created_at`; the MemOS template orders declared `ts` and native ID. Preserve an explicit prefix mapping. |
+| M3 robot/web | Clip visibility, native graph order and protected media/identity nodes | The M3 template orders numeric native IDs within clip partitions. Clip `available_at` remains a visibility boundary, with no fabricated event date. |
 
 The RecordFolder/ContextFolder LoCoMo templates use `event-time-features`.
-PersonaMem and M3 fixtures without `time_ranges` fail that feature's contract.
-Setting an epoch timestamp or copying availability into event time hides the
-missing semantics. Supply a separate feature provider, or use a documented
-order-based method variant; keep its clock and variant identity explicit.
+The PersonaMem/M3 templates instead use `temporal-candidates` with
+`temporal_order: "order"` and a `member-resolver` with `order_by: "order"`.
+They do not configure `event-time-features`. Keep the selected clock source and
+ordering identity explicit; an unknown timestamp remains unknown.
 The temporal ToMe planner supports all-ordinal input when parsed times are absent.
 It consumes shared semantic features in a declared cosine space; the common
 `semantic-encoder` obtains them from current text before each match. No stored
@@ -252,6 +254,94 @@ node vectors are required by this composition. Mixed or incomparable clocks fail
 The generic answerer consumes text. Loading media and writing a native graph
 does not execute M3's multimodal controller. A controller-backed reader remains
 an explicit plugin; its retrieval and scoring scope must be recorded.
+
+## Legacy time and order profiles
+
+The full [PersonaMem Mem0](../../../examples/experiments/personamem-mem0-template.json),
+[PersonaMem MemOS](../../../examples/experiments/personamem-memos-template.json), and
+[M3](../../../examples/experiments/m3-recordfolder-template.json) templates include
+small synthetic fixtures, source and compressed evaluation, shared MemForest
+QA/judge, and native output. Fill service placeholders and replace dataset paths
+and bank mappings before a real experiment. The defaults use lexical retrieval;
+these fixtures establish wiring and cutoff behavior, not paper scores.
+
+Declare temporal fields under each memory loader's `options`. Paths can refer
+to top-level fields or nested metadata. The first parseable field wins; clocks
+and naive timezones remain explicitly declared. Native source payloads are
+retained. `memfolder.temporal_source` on imported records and `temporal_policy`
+in the snapshot's import metadata expose the selected field and ordering for
+case analysis.
+
+For the archived PersonaMem Mem0 bank, nodes had `timestamp="Unknown"` and the
+experiment used creation time for planning. Configure:
+
+```json
+{
+  "timestamp_fields": ["created_at"],
+  "time_semantics": "creation_time",
+  "naive_timezone": "UTC",
+  "order_by": "time_id",
+  "missing_time_order": "first"
+}
+```
+
+The shared archived parser sorted missing times using its minimum-date sentinel.
+The explicit `first` policy preserves that order without assigning a date to
+an unknown node. Creation time remains labeled as creation time; it does not
+assert when an event described in the memory happened.
+
+The archived MemOS planner expects `(ts, id)` order. Its underlying database
+reader is absent from the recovered archive, so the field is caller-declared.
+The template accepts top-level/metadata `ts`, then explicit `metadata.timestamp`:
+
+```json
+{
+  "timestamp_fields": ["ts", "metadata.timestamp"],
+  "time_semantics": "memory_time",
+  "naive_timezone": "UTC",
+  "order_by": "time_id"
+}
+```
+
+Declare `numeric_timestamp_clock` if the selected field is numeric. The template
+also selects `record-builder` with `timestamp_policy: "latest"`, matching the
+archived MemOS merge's maximum member timestamp. Its native output preserves
+the selected time field in metadata. Verify the actual database export's field
+and timezone rather than inferring them from the name `ts`.
+
+The M3 loader uses `order_by: "numeric_native_id"`. It rejects noninteger or
+colliding numeric IDs. Existing clip partitions keep planning, entity weights
+and node budgets local to each clip. Use node-budget `minimum: 1`, matching the
+archived per-clip `max(1, round(keep * N))`. The 50-node predecessor window counts
+earlier nodes within a clip. Clip numbers remain visibility/display coordinates,
+with empty event time ranges. Native writeback keeps clip indexes and protected
+media/equivalence nodes. The template selects one robot `before_clip` question;
+set `variant: "web"` and matching question/video mappings for the web subset.
+
+For PersonaMem, the template's `bank-initializer.prefix_end_field` points to a
+record's **exclusive source-history end index**. A record with end index 5 needs
+the first five turns and is excluded when the allowed history ends at 4. Every
+record needs an explicit integer index; missing positions fail. The initializer
+filters records, incident edges and assets before compression or source QA.
+Positions refer to the benchmark's shared-context sequence, not creation-time
+rank. Banks lacking these positions require separately verified question-prefix
+banks; omit `prefix_end_field` only for that explicit mapping. Do not infer
+source positions from creation times or user-ID suffixes.
+
+To use ContextFolder, keep the template's order, feature, wrapper and service
+configuration; select planner `contextfolder` and operator `contextfolder-operator`.
+Raw PersonaMem history can instead use `history-initializer` with the same
+order-based candidate/member configuration. This input is distinct from the
+archived framework-built banks. ToMe can reuse shared semantic features and the
+declared order. MemForest order-based components need both `joint-clusters`
+and `mst-pair` to select `time_order: "order"`.
+
+Archived paths, hashes and recovery limits are recorded in
+[TEMPORAL_PROFILES.json](../../../docs/TEMPORAL_PROFILES.json). The Mem0-specific
+planner wrappers and MemOS `pm_merge_lib.py` are incomplete in the backup; the
+recovered consumers/order contracts and available shared helpers are the
+verified scope. Full M3 multimodal control and paper-score reproduction remain
+separate from these text-compression templates.
 
 ## Inspect the implementation
 

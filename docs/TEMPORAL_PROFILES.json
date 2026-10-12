@@ -1,0 +1,84 @@
+{
+  "authority": "User-authorized archived experiment clock/order contracts, 2026-10-12",
+  "profiles": {
+    "personamem.mem0": {
+      "timestamp_fields": [
+        "created_at"
+      ],
+      "time_semantics": "creation_time",
+      "order_by": "time_id",
+      "missing_time_order": "first",
+      "naive_timezone": "UTC",
+      "scope": "Archived handoff, surviving V12 consumer and standard shared parser; dedicated planner wrapper missing."
+    },
+    "personamem.memos": {
+      "timestamp_fields": [
+        "ts",
+        "metadata.timestamp"
+      ],
+      "time_semantics": "memory_time",
+      "order_by": "time_id",
+      "naive_timezone": "UTC",
+      "scope": "Verified planner expects pre-sorted (ts,id); caller must declare native field/unit because pm_merge_lib.py is absent.",
+      "output_timestamp_policy": "latest"
+    },
+    "m3": {
+      "order_by": "numeric_native_id",
+      "partition": "clip",
+      "window": 50,
+      "minimum_nodes_per_clip": 1,
+      "scope": "Per-clip graphio/planner/builder/materializer and original before_clip control; text compression only."
+    }
+  },
+  "generic_implementations": [
+    "loading/types.py",
+    "loading/common.py",
+    "loading/importer.py",
+    "operators/text.py",
+    "initialization.py",
+    "wrappers/codecs.py"
+  ],
+  "sources": [
+    {
+      "source": "reference_releases/MemFolder-main_2026-10-04_e8b562e02c3a/MemFolder-main/g1s/g1s/timeparse.py",
+      "sha256": "1d573a3fe413801697eb7adacf96a06d8f0fca4eccb15f56b82e5301fd85e75f"
+    },
+    {
+      "source": "reference_releases/MemFolder-main_2026-10-04_e8b562e02c3a/MemFolder-main/g1s/g1s/entities.py",
+      "sha256": "a10b8b53e899216cb8371e3a676741f076c65e40a5e625e16f2f01d1ab18b9ee"
+    },
+    {
+      "source": "reference_releases/MemFolder-main_2026-10-04_e8b562e02c3a/MemFolder-main/g1s/g1s/steps/s4_chaining.py",
+      "sha256": "7926052de893ec3962513d4c1dbaabd4c07d6791b73ff0a5d871bc1583e89884"
+    },
+    {
+      "source": "server_audit/source_snapshot/data/coding/m3-agent/tools/g1s/graphio.py",
+      "sha256": "e1de722373caac3e41926f8d4bdd7a5da9032e07b2656d2c619857381929b085"
+    },
+    {
+      "source": "server_audit/source_snapshot/data/coding/m3-agent/tools/g1s/builder.py",
+      "sha256": "eed8f7c245b394d12907c1cf9c90bc53c99bd9d44f85c5a490c3fba3eff090ee"
+    },
+    {
+      "source": "server_audit/source_snapshot/data/coding/m3-agent/tools/g1s/plan.py",
+      "sha256": "b326a14db3109bb0d5b9f3102618d51fe6f927bd64638bbf0eae65a57ba70a1a"
+    },
+    {
+      "source": "server_audit/source_snapshot/data/coding/m3-agent/tools/g1s/materialize.py",
+      "sha256": "543fcc8496d713bb9476e29e0ab32ba8d7c73e7cb07de39e3fc8703a18f32e16"
+    },
+    {
+      "source": "server_audit/source_snapshot/data/v12_g1s_experiments_20260921/docs/g1s_handoff_docs/HANDOFF_PERSONAMEM_G1S_20260916.md",
+      "sha256": "2c7915e89b52a7bfea29b630137db51a820e2cb0093fa5b46e8585d8cb57a5f1"
+    },
+    {
+      "source": "transfer_main:tmp/personamem_v12_matrix_20260924/run_v12_encode_personamem.py",
+      "sha256": "b876fa1b77f84d3109450c07f82e9905a488590effa88993fc72878ea6a958de"
+    },
+    {
+      "source": "transfer_main:tmp/pm_memos_20260922/pm_g1s.py",
+      "sha256": "a821e894cc0c30a6027afe55070e20332b4309e8ef5466c6cfc150ab6ecff5d4"
+    }
+  ],
+  "validation_scope": "Synthetic and archived-helper offline checks; no real model inference or paper-score claim."
+}

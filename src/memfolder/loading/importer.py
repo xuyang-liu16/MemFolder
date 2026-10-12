@@ -101,7 +101,8 @@ def normalize(sources: Iterable[tuple[SourceDocument, NativeLibrary]], *, option
                 parts=row.parts, kind=row.kind, eligible=row.eligible, retention=row.retention,
                 time_ranges=row.time_ranges, available_at=row.available_at, expires_at=row.expires_at,
                 embeddings=tuple(embeddings), native=native,
-                extensions=FrozenMap({'memfolder.import': {'source_id': doc.source_id, 'source_index': index}}))
+                extensions=FrozenMap({**row.extensions,
+                    'memfolder.import': {'source_id': doc.source_id, 'source_index': index}}))
             groups[sample_id].append(record)
             indexes[key] = record
             source_metadata[sample_id][doc.source_id] = {'source': to_data(info), 'metadata': to_data(lib.metadata)}
@@ -131,10 +132,19 @@ def normalize(sources: Iterable[tuple[SourceDocument, NativeLibrary]], *, option
         nodes = groups[sample_id]
         if options.order_by == 'native_id':
             nodes.sort(key=lambda n: (n.scope.partition_id, n.native['id']))
+        elif options.order_by == 'numeric_native_id':
+            import re
+            require(all(re.fullmatch(r'[0-9]+', n.native['id']) for n in nodes),
+                    'numeric_native_id ordering requires nonnegative integer IDs')
+            keys = {(n.scope.partition_id, int(n.native['id'])) for n in nodes}
+            require(len(keys) == len(nodes), 'Numeric native IDs collide within a partition')
+            nodes.sort(key=lambda n: (n.scope.partition_id, int(n.native['id'])))
         elif options.order_by == 'time_id':
-            require(all(n.time_ranges for n in nodes), 'time_id ordering requires parsed event timestamps on every record')
-            require(len({n.time_ranges[0].start.clock for n in nodes}) <= 1, 'Ordering mixes event clocks')
-            nodes.sort(key=lambda n: (n.time_ranges[0].start.value, n.native['id']))
+            require(options.missing_time_order == 'first' or all(n.time_ranges for n in nodes),
+                    'time_id ordering requires parsed timestamps; declare missing_time_order=first for unknowns')
+            require(len({n.time_ranges[0].start.clock for n in nodes if n.time_ranges}) <= 1, 'Ordering mixes time clocks')
+            nodes.sort(key=lambda n: (bool(n.time_ranges),
+                n.time_ranges[0].start.value if n.time_ranges else 0, n.native['id']))
         nodes = tuple(replace(n, order=i) for i, n in enumerate(nodes))
         assets = {}
         for n in nodes:
@@ -143,9 +153,15 @@ def normalize(sources: Iterable[tuple[SourceDocument, NativeLibrary]], *, option
                     previous = assets.get(p.artifact.artifact_id)
                     require(previous is None or previous == p.artifact, 'Conflicting asset identity')
                     assets[p.artifact.artifact_id] = p.artifact
+        policy = {}
+        if options.order_by == 'numeric_native_id' or options.timestamp_fields != ('timestamp',) \
+                or options.time_semantics != 'event_time' or options.missing_time_order != 'error':
+            policy['temporal_policy'] = {'timestamp_fields': options.timestamp_fields,
+                'time_semantics': options.time_semantics, 'order_by': options.order_by,
+                'missing_time_order': options.missing_time_order}
         snapshot = Snapshot(snapshot_id='import:' + fingerprint((options.dataset_id, sample_id, dataset_digest)),
             records=nodes, edges=tuple(graph_groups[sample_id]), assets=tuple(assets.values()),
-            extensions=FrozenMap({'memfolder.import': {'sources': source_metadata[sample_id]}}))
+            extensions=FrozenMap({'memfolder.import': {'sources': source_metadata[sample_id], **policy}}))
         sample = SampleRef(dataset_id=options.dataset_id, sample_id=sample_id, split=options.split,
                            dataset_fingerprint=dataset_digest)
         inputs.append(MemoryInput(sample=sample, initial_snapshot=snapshot, assets=snapshot.assets))

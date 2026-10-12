@@ -5,7 +5,7 @@ from memfolder.core import ContentPart, FrozenMap, RetentionPolicy, TimePoint
 from memfolder.core.values import fingerprint, require
 from .common import (
     array_value, check_coverage, dense_vectors, issue, metadata, native_id,
-    object_value, parse_time, temporal_fields, text_value,
+    object_value, parse_time, temporal_projection, text_value,
 )
 from .types import LoadOptions, NativeEdge, NativeLibrary, NativeRecord
 
@@ -65,7 +65,7 @@ class Mem0Adapter:
             namespace = 'mem0:' + fingerprint(identifiers if identifiers else {'namespace': options.namespace or options.sample_id})
             owner = next(iter(identifiers), None)
             sample_key = (owner + ':' + identifiers[owner]) if owner else 'namespace:' + (options.namespace or options.sample_id)
-            ranges, available, row_issues = temporal_fields(payload, meta, options, source_id, location)
+            ranges, available, row_issues, temporal_meta = temporal_projection(payload, meta, options, source_id, location)
             issues.extend(row_issues)
             expires = None
             if payload.get('expiration_date'):
@@ -88,7 +88,8 @@ class Mem0Adapter:
                 partition_key=namespace, parts=(ContentPart(modality='text', text=text),),
                 native=FrozenMap(row), selectors=FrozenMap(identifiers), vectors=FrozenMap(vectors),
                 kind=payload.get('memory_type') or meta.get('memory_type') or 'memory',
-                time_ranges=ranges, available_at=available, expires_at=expires))
+                time_ranges=ranges, available_at=available, expires_at=expires,
+                extensions=FrozenMap(temporal_meta)))
         return NativeLibrary(framework=self.framework, format_id=self.format_id,
             records=tuple(records), metadata=FrozenMap(extra), coverage=coverage, issues=tuple(issues))
 
@@ -123,7 +124,7 @@ class MemOSAdapter:
             require(nid not in namespace_by_id, f'{location}: duplicate native node ID; load cubes separately')
             namespace_by_id[nid] = namespace
             memory = text_value(row.get('memory'), location + '.memory')
-            ranges, available, row_issues = temporal_fields(row, meta, options, source_id, location)
+            ranges, available, row_issues, temporal_meta = temporal_projection(row, meta, options, source_id, location)
             issues.extend(row_issues)
             vectors = {}
             for name in ('embedding', 'embedding_1024', 'embedding_3072', 'embedding_768'):
@@ -141,7 +142,8 @@ class MemOSAdapter:
                 native=FrozenMap(row), selectors=FrozenMap(selectors), vectors=FrozenMap(vectors),
                 kind=meta.get('memory_type') or meta.get('type') or 'memory', eligible=eligible,
                 retention=RetentionPolicy() if eligible else RetentionPolicy(may_drop=False, may_merge=False, may_rewrite=False),
-                time_ranges=ranges, available_at=available, revision=str(meta.get('version') or '0')))
+                time_ranges=ranges, available_at=available, revision=str(meta.get('version') or '0'),
+                extensions=FrozenMap(temporal_meta)))
         edges = []
         for index, edge in enumerate(raw_edges):
             location = f'edges[{index}]'
@@ -230,13 +232,18 @@ class M3Adapter:
                     parts = (ContentPart(modality='structured', data=FrozenMap({'node_type': kind})),)
                 partition, available, eligible = 'identity', None, False
             vectors = {kind: dense_vectors(row.get('embeddings'), location + '.embeddings')}
+            temporal_meta = {}
+            if is_text and options.order_by == 'numeric_native_id':
+                temporal_meta = {'memfolder.event_timestamp': str(clip),
+                    'memfolder.temporal_source': {'selected_field': 'metadata.timestamp',
+                        'semantics': 'clip_index', 'clock': available.clock}}
             records.append(NativeRecord(native_id=nid, namespace=namespace, sample_key=video,
                 partition_key=partition, parts=parts, native=FrozenMap(row),
                 selectors=FrozenMap({'video_id': video, 'node_type': kind,
                                      **({'clip_id': meta['timestamp']} if is_text else {})}),
                 vectors=FrozenMap(vectors), kind=kind, eligible=eligible,
                 retention=RetentionPolicy() if eligible else RetentionPolicy(may_drop=False, may_merge=False, may_rewrite=False),
-                available_at=available))
+                available_at=available, extensions=FrozenMap(temporal_meta)))
         # Validate all official retrieval indexes; preserve their exact ordering in metadata.
         if 'text_nodes' in data:
             supplied = [native_id(v, source_id + '.text_nodes') for v in array_value(data['text_nodes'], 'text_nodes')]

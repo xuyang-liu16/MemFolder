@@ -1,0 +1,3 @@
+persona_id,question_id,question_type,user_question_or_message,correct_answer,all_options,shared_context_id,end_index_in_shared_context
+synthetic,q0,preference,What does Alice like to drink?,(a),"(a) tea
+(b) coffee",shared,4
