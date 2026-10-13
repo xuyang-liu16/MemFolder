@@ -234,14 +234,8 @@ class M3BenchmarkLoader:
                     dataset_fingerprint=fingerprint((sha256(raw).hexdigest(),loaded.sample.dataset_fingerprint)))
                 snapshot=loaded.initial_snapshot
                 if cutoff is not None:
-                    require(type(cutoff) is int and cutoff>=0,'Invalid M3 before_clip')
-                    # Official truncate_memory_by_clip retains native IDs through the last
-                    # text node at this clip, including earlier protected identity nodes.
-                    ends=[int(n.native['id']) for n in snapshot.records if n.kind in ('episodic','semantic') and n.native['record']['metadata']['timestamp']==cutoff]
-                    require(bool(ends),'M3 cutoff clip missing; refusing to expose the full graph')
-                    end=max(ends);kept=tuple(n for n in snapshot.records if int(n.native['id'])<=end);ids={n.node_id for n in kept}
-                    require(all(n.available_at is None or n.available_at.value<=cutoff for n in kept),'M3 native ordering crosses clip boundary')
-                    snapshot=replace(snapshot,records=kept,edges=tuple(e for e in snapshot.edges if e.source_id in ids and e.target_id in ids))
+                    from ..loading.memory_adapters import project_m3_cutoff
+                    snapshot=project_m3_cutoff(snapshot,cutoff)
                 # Rebind only public sample scopes. Native graph/video identities stay intact.
                 records=[]
                 for n in snapshot.records:

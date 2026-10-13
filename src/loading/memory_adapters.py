@@ -1,14 +1,18 @@
 """Convert framework-native memory formats to the public data contracts."""
 
 from __future__ import annotations
+from collections import defaultdict
+from dataclasses import replace
+import re
 from .contracts import LoadOptions, NativeEdge, NativeLibrary, NativeRecord
-from ..core import ContentPart, FrozenMap, RetentionPolicy, TimePoint
+from ..core import ContentPart, FrozenMap, RetentionPolicy, TimePoint, to_data
 from ..core.values import fingerprint, require
 from .validation import (
     array_value,
     check_coverage,
     dense_vectors,
     issue,
+    lineage_temporal_projection,
     metadata,
     native_id,
     object_value,
@@ -82,6 +86,19 @@ class Mem0Adapter:
                 if expires is None:
                     issues.append(issue('expiration_unparsed', source_id, location,
                                         'Expiration retained but its timezone is unspecified or invalid.'))
+            lineage_time = lineage_temporal_projection(payload, meta, location)
+            if lineage_time is not None:
+                lineage_ranges, lineage_available, lineage_expires = lineage_time
+                if options.timestamp_fields == ('timestamp',) and options.time_semantics == 'event_time':
+                    ranges = lineage_ranges
+                if options.visibility_field:
+                    require(lineage_available is None or available == lineage_available,
+                            f'{location}: native visibility conflicts with MemFolder lineage')
+                else:
+                    available = lineage_available
+                require(expires is None or lineage_expires is None or expires == lineage_expires,
+                        f'{location}: native expiration conflicts with MemFolder lineage')
+                expires = lineage_expires if lineage_expires is not None else expires
             vectors = {}
             vector = row.get('vector') if is_point else row.get('embedding')
             if vector is not None:
@@ -134,6 +151,18 @@ class MemOSAdapter:
             memory = text_value(row.get('memory'), location + '.memory')
             ranges, available, row_issues, temporal_meta = temporal_projection(row, meta, options, source_id, location)
             issues.extend(row_issues)
+            expires = None
+            lineage_time = lineage_temporal_projection(row, meta, location)
+            if lineage_time is not None:
+                lineage_ranges, lineage_available, lineage_expires = lineage_time
+                if options.timestamp_fields == ('timestamp',) and options.time_semantics == 'event_time':
+                    ranges = lineage_ranges
+                if options.visibility_field:
+                    require(lineage_available is None or available == lineage_available,
+                            f'{location}: native visibility conflicts with MemFolder lineage')
+                else:
+                    available = lineage_available
+                expires = lineage_expires
             vectors = {}
             for name in ('embedding', 'embedding_1024', 'embedding_3072', 'embedding_768'):
                 top, nested = row.get(name), meta.get(name)
@@ -150,7 +179,8 @@ class MemOSAdapter:
                 native=FrozenMap(row), selectors=FrozenMap(selectors), vectors=FrozenMap(vectors),
                 kind=meta.get('memory_type') or meta.get('type') or 'memory', eligible=eligible,
                 retention=RetentionPolicy() if eligible else RetentionPolicy(may_drop=False, may_merge=False, may_rewrite=False),
-                time_ranges=ranges, available_at=available, revision=str(meta.get('version') or '0'),
+                time_ranges=ranges, available_at=available, expires_at=expires,
+                revision=str(meta.get('version') or '0'),
                 extensions=FrozenMap(temporal_meta)))
         edges = []
         for index, edge in enumerate(raw_edges):
@@ -312,3 +342,123 @@ class M3Adapter:
         extra = {k: v for k, v in data.items() if k not in ('nodes', 'edges')}
         return NativeLibrary(framework=self.framework, format_id=self.format_id, records=tuple(records),
             edges=tuple(edges), metadata=FrozenMap(extra), coverage='unknown', issues=tuple(issues))
+
+
+def _m3_entities(text, media_types):
+    entities = []
+    for modality, identity in re.findall(r'<(face|voice)_([0-9]+)>', text, flags=re.I):
+        modality = modality.lower()
+        identity = str(int(identity))
+        if media_types.get(identity) == {'face': 'img', 'voice': 'voice'}[modality]:
+            entities.append((modality, identity))
+    return entities
+
+
+def _m3_character_indexes(records, edges):
+    """Deterministic form of VideoGraph.refresh_equivalences()."""
+    by_node = {record.node_id: record for record in records}
+    by_native = {str(record.native['id']): record for record in records}
+    media_types = {native: record.kind for native, record in by_native.items()
+                   if record.kind in ('img', 'voice')}
+    equivalences = {record.node_id for record in records
+                    if record.kind == 'semantic' and
+                    any(part.text and part.text.lower().startswith('equivalence')
+                        for part in record.parts)}
+    connected = defaultdict(set)
+    weights = {}
+    for edge in edges:
+        left, right = by_node[edge.source_id], by_node[edge.target_id]
+        for media, semantic in ((left, right), (right, left)):
+            if media.kind in ('img', 'voice') and semantic.node_id in equivalences:
+                connected[media.node_id].add(semantic.node_id)
+                key = (media.node_id, semantic.node_id)
+                weights[key] = max(weights.get(key, float('-inf')), float(edge.weight))
+    selected = set()
+    ordered_media = sorted((record for record in records if record.kind in ('img', 'voice')),
+                           key=lambda record: int(record.native['id']))
+    for media in ordered_media:
+        candidates = sorted(connected.get(media.node_id, ()),
+                            key=lambda node_id: int(by_node[node_id].native['id']))
+        if media.kind == 'img':
+            selected.update(candidates)
+            continue
+        face_links, other_links = [], []
+        for node_id in candidates:
+            entities = _m3_entities(by_node[node_id].text, media_types)
+            (face_links if any(kind == 'face' for kind, _ in entities) else other_links).append(node_id)
+        selected.update(other_links)
+        if face_links:
+            selected.add(max(face_links, key=lambda node_id:
+                (weights[(media.node_id, node_id)], -int(by_node[node_id].native['id']))))
+
+    parent, rank = {}, {}
+    def find(item):
+        if item not in parent:
+            parent[item], rank[item] = item, 0
+        if parent[item] != item:
+            parent[item] = find(parent[item])
+        return parent[item]
+    def union(left, right):
+        left, right = find(left), find(right)
+        if left == right:
+            return
+        if rank[left] < rank[right]:
+            left, right = right, left
+        parent[right] = left
+        if rank[left] == rank[right]:
+            rank[left] += 1
+    for node_id in sorted(selected, key=lambda value: int(by_node[value].native['id'])):
+        entities = _m3_entities(by_node[node_id].text, media_types)
+        if len(entities) >= 2:
+            anchor = entities[0][1]
+            for _, identity in entities[1:]:
+                union(anchor, identity)
+    groups = defaultdict(list)
+    for identity in sorted(media_types, key=int):
+        groups[find(identity)].append(identity)
+    ordered_groups = sorted(groups.values(), key=lambda group: min(map(int, group)))
+    mappings = {}
+    for index, group in enumerate(ordered_groups):
+        mappings[f'character_{index}'] = [
+            ('face_' if media_types[identity] == 'img' else 'voice_') + identity
+            for identity in group]
+    reverse = {tag: character for character, tags in mappings.items() for tag in tags}
+    return mappings, reverse
+
+
+def project_m3_cutoff(snapshot, cutoff):
+    """Apply the official ID cutoff and refresh every graph-derived index."""
+    require(type(cutoff) is int and cutoff >= 0, 'Invalid M3 before_clip')
+    ends = [int(record.native['id']) for record in snapshot.records
+            if record.kind in ('episodic', 'semantic') and
+            record.native['record']['metadata']['timestamp'] == cutoff]
+    require(bool(ends), 'M3 cutoff clip missing; refusing to expose the full graph')
+    end = max(ends)
+    records = tuple(record for record in snapshot.records if int(record.native['id']) <= end)
+    ids = {record.node_id for record in records}
+    require(all(record.available_at is None or record.available_at.value <= cutoff for record in records),
+            'M3 native ordering crosses clip boundary')
+    edges = tuple(edge for edge in snapshot.edges if edge.source_id in ids and edge.target_id in ids)
+    text = sorted((record for record in records if record.kind in ('episodic', 'semantic')),
+                  key=lambda record: int(record.native['id']))
+    by_clip, events = defaultdict(list), defaultdict(list)
+    for record in text:
+        clip = str(record.native['record']['metadata']['timestamp'])
+        native = int(record.native['id'])
+        by_clip[clip].append(native)
+        if record.kind == 'episodic':
+            events[clip].append(native)
+    mappings, reverse = _m3_character_indexes(records, edges)
+    extensions = to_data(snapshot.extensions)
+    imported = extensions.get('memfolder.import', {})
+    sources = imported.get('sources', {})
+    selected = [key for key, value in sources.items()
+                if value.get('source', {}).get('framework') == 'm3']
+    require(len(selected) == 1, 'M3 cutoff needs exactly one native graph source')
+    source = sources[selected[0]]
+    metadata = source['metadata']
+    metadata.update(text_nodes=[int(record.native['id']) for record in text],
+        text_nodes_by_clip=dict(by_clip), event_sequence_by_clip=dict(events),
+        character_mappings=mappings, reverse_character_mappings=reverse,
+        next_node_id=max((int(record.native['id']) for record in records), default=-1) + 1)
+    return replace(snapshot, records=records, edges=edges, extensions=FrozenMap(extensions))

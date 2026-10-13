@@ -131,6 +131,54 @@ def temporal_fields(row: dict, meta: dict, options: LoadOptions, source_id: str,
     return temporal_projection(row, meta, options, source_id, location)[:3]
 
 
+def _lineage_time_point(value, location: str) -> TimePoint | None:
+    if value is None:
+        return None
+    value = object_value(value, location)
+    require(set(value) == {'value', 'clock'}, f'{location}: invalid time point')
+    return TimePoint(value=value['value'], clock=value['clock'])
+
+
+def _lineage_time_range(value, location: str) -> TimeRange:
+    value = object_value(value, location)
+    require(set(value) == {'start', 'end'}, f'{location}: invalid time range')
+    return TimeRange(start=_lineage_time_point(value['start'], location + '.start'),
+                     end=_lineage_time_point(value['end'], location + '.end'))
+
+
+def lineage_temporal_projection(row: dict, meta: dict, location: str):
+    """Restore exact canonical time fields written by a MemFolder native codec.
+
+    Native timestamps remain a framework-facing projection.  The namespaced
+    lineage preserves the full event ranges and visibility interval so a
+    MemFolder export can be loaded again without widening visibility.
+    """
+    top, nested = row.get('memfolder'), meta.get('memfolder')
+    require(top is None or nested is None or top == nested,
+            f'{location}: conflicting MemFolder lineage')
+    value = top if top is not None else nested
+    if value is None:
+        return None
+    value = object_value(value, location + '.memfolder')
+    schema = value.get('schema')
+    require(schema in (None, 'memfolder.lineage.v1'),
+            f'{location}: unsupported MemFolder lineage schema')
+    temporal = {'time_ranges', 'available_at', 'expires_at'}
+    if not temporal.intersection(value):
+        return None
+    require(temporal <= set(value), f'{location}: incomplete MemFolder temporal lineage')
+    raw_ranges = value['time_ranges']
+    require(type(raw_ranges) is list, f'{location}.memfolder.time_ranges: expected array')
+    ranges = tuple(_lineage_time_range(item, f'{location}.memfolder.time_ranges[{index}]')
+                   for index, item in enumerate(raw_ranges))
+    available = _lineage_time_point(value['available_at'], location + '.memfolder.available_at')
+    expires = _lineage_time_point(value['expires_at'], location + '.memfolder.expires_at')
+    require(available is None or expires is None or
+            available.clock == expires.clock and available.value <= expires.value,
+            f'{location}: invalid MemFolder visibility interval')
+    return ranges, available, expires
+
+
 def temporal_projection(row: dict, meta: dict, options: LoadOptions, source_id: str, location: str):
     issues = []
     timestamp = None

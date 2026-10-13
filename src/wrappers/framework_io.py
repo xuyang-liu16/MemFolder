@@ -77,7 +77,8 @@ def allocate_ids(snapshot, archive, framework, *, numeric=False):
 
 
 def lineage(snapshot, archive):
-    return {n.node_id: {'origins': [to_data(o) for o in n.origins],
+    return {n.node_id: {'schema':'memfolder.lineage.v1',
+        'origins': [to_data(o) for o in n.origins],
         'source_node_ids': [r.node_id for r in archive.contributors(n)],
         'content_fingerprint': n.content_fingerprint, 'scope':to_data(n.scope), 'kind':n.kind,
         'time_ranges':to_data(n.time_ranges), 'available_at':to_data(n.available_at),
