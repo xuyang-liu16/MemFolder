@@ -85,8 +85,8 @@ Context compression after record compression is a separate pipeline stage that
 consumes the final record snapshot. See
 [record_then_context.py](../../examples/record_then_context.py); declare
 `embedding_space` for raw input and inject the selected context services. The
-older `tome-with-contextfolder.json` example is explicitly a legacy BSM/group
-composition, rather than temporal ToMe followed by a separate context stage.
+`tome-with-contextfolder.json` recipe composes BSM grouping with a ContextFolder
+writer. It differs from temporal ToMe followed by a separate context stage.
 
 Libraries produced with a different ToMe variant or merge prompt retain those
 identities. New record grouping, text or embeddings require new record banks.

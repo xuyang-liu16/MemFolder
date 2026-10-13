@@ -14,9 +14,8 @@ a fresh directory.
 
 Preserve the user's dataset, bank, method, services, output location and existing
 authorization. Reuse available inputs. Prepare a pilot when no run size was
-specified; the README example uses LoCoMo `conv-26` and node retention `0.5`.
-That conversation has 199 questions, so estimate calls from the loaded questions
-and compression stages. Resolve missing choices before dependent model calls.
+specified, and estimate calls from the loaded questions and compression stages.
+Resolve missing choices before dependent model calls.
 An authorized experiment does not need another confirmation for its routine
 steps; setup or inspection alone does not authorize paid inference.
 
@@ -76,7 +75,7 @@ uncompressed control, LLMLingua-2 and BabelTele. The judge accepts JSON
 enable AGPR in benchmark QA. A distinct explicit research protocol needs its
 own identity and must not be mixed into this comparison.
 
-ContextFolder's fact extraction, encoding, blind recovery and repair are
+ContextFolder's fact extraction, encoding, blind QA and repair are
 compression-internal stages. They use source memory, not benchmark QA or gold.
 LLMLingua-2 and BabelTele retain their own compression mechanisms.
 Keep the same source, retrieval, models and scoring coverage across arms.
@@ -90,7 +89,7 @@ the shared MemForest judge differs from native benchmark scoring protocols.
 - The LoCoMo RecordFolder template needs semantic and entity features plus parsed
   event times. The PersonaMem Mem0/MemOS and M3 templates instead declare native
   ordering and set both temporal candidates and member resolution to `order`.
-  Read the legacy time/order profiles in the experiment-config reference.
+  Read the framework time/order profiles in the experiment-config reference.
 - PersonaMem bank prefixes use explicit `prefix_end_field` positions; missing
   positions fail. Banks already prepared for each question can omit that field
   with a verified prefix mapping. Keep M3 budgets per clip, with `minimum: 1`,
@@ -132,8 +131,7 @@ use the Python API for detail before retrying. Stop expansion on unresolved
 authentication, quota, schema or input-contract failures. Call counts are not
 a billing total, and trace redaction does not redact all private run files.
 
-Development validation is maintained outside the published repository. Inspect
-real inputs through the loader CLI, verify completed experiment artifacts with
+Inspect inputs through the loader CLI, verify completed experiment artifacts with
 `memfolder verify`, and use case export to assess behavior. State the data/model
 coverage accurately; artifact verification does not establish paper-score
 reproduction.

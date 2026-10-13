@@ -68,7 +68,7 @@ parameters in `src/loading/loader_registry.py` and `LoadOptions` in
 | Input | Loader function | Additional setup |
 | --- | --- | --- |
 | Mem0 export or Qdrant point JSON/JSONL | `load_mem0` | Owner selectors |
-| Archived MemoryNode JSONL | `load_mem0_legacy_nodes` | Source namespace |
+| MemoryNode JSONL | Select the node-export adapter in `src/loading/loader_registry.py` | Source namespace |
 | Local Qdrant directory | `load_mem0_qdrant` | Collection name and `.[qdrant]` |
 | Offline Qdrant `storage.sqlite` | `load_mem0_sqlite` | No pending WAL/journal |
 | MemOS text/tree JSON or cube | `load_memos`, `load_memos_cube` | Cube selection and component assets |
@@ -181,7 +181,7 @@ The target is based on the sum of the input members' token counts. It guides the
 loop but is not an exact output size. Keep a tokenizer with a declared
 `measurement_id`, such as the configured `tiktoken-counter`.
 The blind answerer sees encoding, questions, and the decoding legend. The judge
-compares recovered answers with the planner's facts. Neither is the downstream
+compares answers generated from the encoding with the planner's facts. Neither is the downstream
 benchmark judge.
 
 For a post-record pass, use `current-record-rewrite` and `current-record-builder`
@@ -255,7 +255,7 @@ The generic answerer consumes text. Loading media and writing a native graph
 does not execute M3's multimodal controller. A controller-backed reader remains
 an explicit plugin; its retrieval and scoring scope must be recorded.
 
-## Legacy time and order profiles
+## Framework time and order profiles
 
 The full [PersonaMem Mem0](../../examples/experiments/personamem-mem0-template.json),
 [PersonaMem MemOS](../../examples/experiments/personamem-memos-template.json), and
@@ -272,8 +272,8 @@ retained. `memfolder.temporal_source` on imported records and `temporal_policy`
 in the snapshot's import metadata expose the selected field and ordering for
 case analysis.
 
-For the archived PersonaMem Mem0 bank, nodes had `timestamp="Unknown"` and the
-experiment used creation time for planning. Configure:
+For PersonaMem Mem0 banks with unavailable event timestamps, use creation
+time for planning only when that clock matches the intended protocol:
 
 ```json
 {
@@ -285,13 +285,11 @@ experiment used creation time for planning. Configure:
 }
 ```
 
-The shared archived parser sorted missing times using its minimum-date sentinel.
-The explicit `first` policy preserves that order without assigning a date to
-an unknown node. Creation time remains labeled as creation time; it does not
-assert when an event described in the memory happened.
+The explicit `first` policy sorts missing times before known times without
+assigning a date to an unknown node. Creation time remains labeled as creation
+time; it does not assert when an event described in the memory happened.
 
-The archived MemOS planner expects `(ts, id)` order. Its underlying database
-reader is absent from the recovered archive, so the field is caller-declared.
+For MemOS banks ordered by `(ts, id)`, declare the timestamp field explicitly.
 The template accepts top-level/metadata `ts`, then explicit `metadata.timestamp`:
 
 ```json
@@ -304,15 +302,14 @@ The template accepts top-level/metadata `ts`, then explicit `metadata.timestamp`
 ```
 
 Declare `numeric_timestamp_clock` if the selected field is numeric. The template
-also selects `record-builder` with `timestamp_policy: "latest"`, matching the
-archived MemOS merge's maximum member timestamp. Its native output preserves
-the selected time field in metadata. Verify the actual database export's field
+also selects `record-builder` with `timestamp_policy: "latest"` to retain the
+maximum member timestamp. Its native output preserves the selected time field in metadata. Verify the actual database export's field
 and timezone rather than inferring them from the name `ts`.
 
 The M3 loader uses `order_by: "numeric_native_id"`. It rejects noninteger or
 colliding numeric IDs. Existing clip partitions keep planning, entity weights
-and node budgets local to each clip. Use node-budget `minimum: 1`, matching the
-archived per-clip `max(1, round(keep * N))`. The 50-node predecessor window counts
+and node budgets local to each clip. Use node-budget `minimum: 1` to retain at
+least one eligible node per nonempty clip. The 50-node predecessor window counts
 earlier nodes within a clip. Clip numbers remain visibility/display coordinates,
 with empty event time ranges. Native writeback keeps clip indexes and protected
 media/equivalence nodes. The template selects a caller-supplied robot video;
@@ -333,7 +330,7 @@ To use ContextFolder, keep the template's order, feature, wrapper and service
 configuration; select planner `contextfolder` and operator `contextfolder-operator`.
 Raw PersonaMem history can instead use `history-initializer` with the same
 order-based candidate/member configuration. This input is distinct from the
-archived framework-built banks. ToMe can reuse shared semantic features and the
+framework-built banks. ToMe can reuse shared semantic features and the
 declared order. MemForest order-based components need both `joint-clusters`
 and `mst-pair` to select `time_order: "order"`.
 

@@ -2,46 +2,42 @@
 
 [Experiment skill](../SKILL.md) · [Configuration](experiment-config.md)
 
-## Recovered LongMemEval recipe
+## Token-budget compression
 
-For the recovered LongMemEval compression recipe, use the
-`llmlingua2-historical-service` plugin. The service configuration is supplied in
-[llmlingua2-historical-services.json](../../examples/recipes/llmlingua2-historical-services.json).
+For compression with an explicit token budget, select the token-budget service
+implemented in [services.py](../../src/services.py). Resolve its registered
+plugin key from [catalog.py](../../src/catalog.py) when assembling the config.
 Keep the existing current-Record planner/writer recipe, with writer rate 0.55.
 The two service plugins implement the same writer contract; the rate-only
 adapter described below remains available as an explicitly different variant.
 
-The historical service strips the final merged Record text, counts tokens with
+This service strips the final merged Record text, counts tokens with
 `cl100k_base`, and calls `compress_prompt` with
 `target_token=max(6, round(rate * source_tokens))` and
 `force_reserve_digit=True`. It adds `force_tokens=["\n"]` only if the stripped
-input contains a newline. It loads the pinned checkpoint using the original
+input contains a newline. It loads the pinned checkpoint using the
 constructor defaults, without a dtype or internal batch-size override. Both
 the normalized input and the original writer input have recorded hashes; cache
 identities distinguish this profile from the rate-only adapter. Empty output
 is an explicit fallback to the stripped current Record; other model failures propagate.
 
-For historical Mem0 export, configure the wrapper's codec as
-`{"plugin": "llmlingua2-historical-mem0-codec"}`. Supply the original native
-source archive: each output inherits its latest original contributor's point
-ID and payload; tied timestamps use the original point ID. Text embeddings
-must be refreshed before retrieval. Configure the wrapper's embedding provider
-as `llmlingua2-historical-all-embeddings` with the declared embedding space and
-service. It encodes every final text, including unchanged singleton text;
+For Mem0 export with latest-contributor metadata, select the corresponding
+codec and all-text embedding provider in
+[framework_io.py](../../src/wrappers/framework_io.py), using their registered
+keys from [catalog.py](../../src/catalog.py). Supply the native source bank:
+each output inherits its latest contributor's point ID and payload; tied
+timestamps use the original point ID. Configure the embedding provider with
+the declared embedding space and service. It encodes every final text, including unchanged singleton text;
 verified provider-cache reuse is permitted, original source-vector reuse is not.
 This codec preserves original native timestamp and payload fields and changes
-`data`; canonical lineage is recorded in the package sidecar. Original plan's
-`compression_*` annotations require that plan and are not reconstructed here.
-This does not alter other framework codecs.
+`data`; canonical lineage is recorded in the package sidecar. Source-plan
+`compression_*` annotations are not reconstructed by this codec.
 
-The recovered LongMemEval common.py also maps original
-user_qid_turn / assistant_qid_turn IDs to User_i / Assistant_i, where i is
-the dataset sample index, before materialization. When supplying an unconverted
-native source archive, declare that index explicitly in the historical codec:
-
-```json
-{"plugin": "llmlingua2-historical-mem0-codec", "parameters": {"sample_index": 7}}
-```
+For LongMemEval banks whose owners use `user_qid_turn` / `assistant_qid_turn`,
+the codec can map them to `User_i` / `Assistant_i`, where `i` is the dataset
+sample index. Enable this only when the retrieval and QA pipeline expects
+those mapped IDs. Set `sample_index` in the selected codec's `parameters`
+to the dataset row index.
 
 Bind `sample_index` to the selected dataset row, not to a filename, owner turn
 suffix, or worker number. The generic codec does not validate dataset length;
@@ -52,28 +48,9 @@ then uses the User / Assistant speaker labels. Already mapped IDs for this
 sample are accepted; IDs mapped to another sample are rejected. With no
 sample_index, native owner IDs are preserved. This opt-in projection preserves
 canonical origins/scopes, timestamps and vectors; it never rewrites a source
-bank. Its effect on accuracy has not been measured and old QA artifacts must
-not be renamed or reported as this corrected schema's results.
+bank.
 
-Matching compression calls is only one part of reproducing Figure 3. The
-Record parent store, grouping/merged text, native metadata, retrieval, QA,
-judge, and repeated-run protocol also need recorded provenance. At present,
-historical parent stores and the complete historical runtime are not verified.
-The common.py source snapshot and its MemForest timestamp-parser dependency
-have been recovered; the original NPZ dump and converted QA schema remain
-unverified. In the current local all-500 source index, all 310,120 event times
-agree with that recovered parsing rule. All original owner IDs require the
-explicit projection above; the existing scored run retained their raw form.
-Do not interpret this plugin as a guarantee of the paper's numerical score or
-adjust its rate, retrieval, or judge based on the resulting accuracy.
-
-The local LongMemEval seed-7 check on the current Record parents completed
-500 questions and scored 259/500 (51.8%). It is a current-parent result, not a
-claim that Figure 3's three-run result has been reproduced.
-That check predates this release's all-text embedding refresh and exact native
-payload preservation; those differences have not been assessed with paid QA.
-
-## Rate-only variant
+## Rate-based compression
 
 The `llmlingua2-writer` plugin targets **rate 0.55** by default. Rate is the
 retained text proportion, distinct from Record `keep_ratio: 0.5`. The official
@@ -149,6 +126,5 @@ context compression runs only after Record compression finishes. Final QA and
 judge use the [shared MemForest protocol](../../src/prompt_protocol.py),
 with the same retrieval and scoring configuration across comparison arms.
 
-Historical results using another rate or the old ToMe recipe retain their
-original identities. A corrected configuration requires new context/QA
-artifacts; it does not relabel historical scores.
+Changing the compression service, rate or input requires new context and QA
+artifacts. Record the selected service and measured token retention with results.
