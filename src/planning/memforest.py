@@ -406,14 +406,14 @@ class CapacityAllocator:
 
 
 @dataclass(frozen=True)
-class LegacyClusterCeil:
+class PerClusterCeilAllocator:
     keep_ratio: float = .7
-    spec = spec('memforest.legacy_cluster_ceil','budget_allocator')
+    spec = spec('memforest.per_cluster_ceil','budget_allocator')
     def allocate(self,groups,target,context):
         require(0<self.keep_ratio<=1,'Invalid MemForest cluster keep ratio')
         result={g.anchor_id:max(1,math.ceil(len(g.member_ids)*self.keep_ratio)) for g in groups}
         require(sum(result.values())==target,
-                'Legacy per-cluster ceil differs from requested scope K; resolve explicit cluster budgets or select capacity allocation')
+                'Per-cluster ceil differs from requested scope K; resolve explicit cluster budgets or select capacity allocation')
         return FrozenMap(result)
 
 
@@ -459,7 +459,7 @@ class MemForestPlanner:
             local=subset_request(request,active)
             if key not in previous:
                 # Group budgets were produced by the upstream joint clusterer.
-                # Re-clustering these groups would silently change the legacy method.
+                # Re-clustering these groups would silently change the per-cluster allocation method.
                 node_budget=next(b for b in request.budgets if b.request.unit=='nodes')
                 initial=(Group(active[0].node_id,tuple(n.node_id for n in active)),) if node_budget.request.allocation=='group' else await resolve(self.clusterer.partition(local,k,context))
                 from .plan_helpers import check_groups
@@ -500,7 +500,7 @@ async def resolve_memforest_budget(request,context,*,clusterer=None,keep_ratio=.
         if n.eligible:by_scope[n.scope].append(n)
     groups=[]
     for scope,nodes in by_scope.items():
-        require(all(n.retention.may_merge for n in nodes),'Legacy MemForest clustering requires mergeable nodes; use capacity adaptation for protected inputs')
+        require(all(n.retention.may_merge for n in nodes),'Per-cluster MemForest clustering requires mergeable nodes; use capacity adaptation for protected inputs')
         local=subset_request(request,tuple(nodes));clusters=await resolve(clusterer.partition(local,len(nodes),context))
         from .plan_helpers import check_groups
         check_groups(nodes,clusters)

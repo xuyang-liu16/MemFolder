@@ -28,7 +28,7 @@ class QAPrompt:
 
 @dataclass(frozen=True)
 class ContextFolderPrompt(QAPrompt):
-    """Legacy configuration alias: identical QA, with no appended legend."""
+    """Configuration alias: identical QA, with no appended legend."""
 
 
 @dataclass(frozen=True)

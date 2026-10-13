@@ -33,7 +33,7 @@ from .plugins import Factory, PluginRegistry, PluginRequest
 from .services import (
     CachedService,
     CompatibleHTTP,
-    HistoricalLLMLingua2Service,
+    TokenBudgetLLMLingua2Service,
     LLMLingua2Service,
     TiktokenCounter,
 )
@@ -72,7 +72,7 @@ def factories():
         'kmeans-prune':Factory(bl.PrunePlanner,defaults={'selector':{'plugin':'cluster-representatives'}},roles={'selector':'anchor_selector'}),
         'kmeans-merge':Factory(bl.PartitionPlanner,defaults={'partitioner':{'plugin':'kmeans-clusters'}},roles={'partitioner':'partitioner'}),
         'joint-clusters':Factory(mf.JointClusters),'capacity-allocator':Factory(mf.CapacityAllocator),
-        'legacy-cluster-ceil':Factory(mf.LegacyClusterCeil),'mst-pair':Factory(mf.MstPairRouter),
+        'per-cluster-ceil':Factory(mf.PerClusterCeilAllocator),'mst-pair':Factory(mf.MstPairRouter),
         'memforest':Factory(mf.MemForestPlanner,roles={'clusterer':'partitioner','allocator':'budget_allocator','router':'pair_router'}),
         'media-connectivity':Factory(sm.MediaConnectivity),'spherical-coverage':Factory(sm.SphericalCoverage),
         'importance-diversity':Factory(sm.ImportanceDiversity),
@@ -161,7 +161,7 @@ def register_experiment_plugins(registry):
         'compatible-http':StageFactory(CompatibleHTTP),'cached-service':StageFactory(CachedService,roles={'provider':'service'},paths=('path',)),
         'tiktoken-counter':StageFactory(TiktokenCounter),'chat-grounding':StageFactory(ChatGroundingFeatures),
         'llmlingua2-service':StageFactory(LLMLingua2Service),
-        'llmlingua2-historical-service':StageFactory(HistoricalLLMLingua2Service),
+        'llmlingua2-token-budget-service':StageFactory(TokenBudgetLLMLingua2Service),
     }
     for name,factory in factories.items():registry.register(name,factory)
 

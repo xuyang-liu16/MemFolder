@@ -199,28 +199,28 @@ class LLMLingua2Service:
         await asyncio.to_thread(release)
 
 
-PROFILE = 'llmlingua2.longmemeval.historical55.normalized_fallback.v3'
+PROFILE = 'llmlingua2.token_budget.normalized_fallback.v3'
 
 
-class _HistoricalCounter:
+class _Cl100kTokenCounter:
     def count(self, text):
         import tiktoken
-        # Preserve the recovered encoder's token counting, including its
+        # Use cl100k_base token counting, including its
         # handling of special-token strings, rather than broadening that API.
         return len(tiktoken.get_encoding('cl100k_base').encode(text))
 
 
 @dataclass(frozen=True)
-class HistoricalLLMLingua2Service:
+class TokenBudgetLLMLingua2Service:
     model_name: str = 'microsoft/llmlingua-2-xlm-roberta-large-meetingbank'
     revision: str = 'ebaba9b0e874dadd3003ffcff828e4397e568089'
     device_map: str = 'cuda'
-    spec = spec('service.llmlingua2_historical55.v1', 'service')
+    spec = spec('service.llmlingua2_token_budget.v1', 'service')
 
     def __post_init__(self):
         require(all(type(value) is str and value for value in
                     (self.model_name, self.revision, self.device_map)),
-                'Declare the historical LLMLingua model, revision and device')
+                'Declare the token-budget LLMLingua model, revision and device')
         object.__setattr__(self, '_lock', threading.Lock())
 
     @property
@@ -231,7 +231,7 @@ class HistoricalLLMLingua2Service:
 
     @cached_property
     def _counter(self):
-        return _HistoricalCounter()
+        return _Cl100kTokenCounter()
 
     @cached_property
     def _compressor(self):
@@ -240,7 +240,7 @@ class HistoricalLLMLingua2Service:
         from huggingface_hub import snapshot_download
         from llmlingua import PromptCompressor
         checkpoint = snapshot_download(repo_id=self.model_name, revision=self.revision)
-        # The recovered factory supplies only these three arguments. In
+        # The token-budget service supplies only these three arguments. In
         # particular, it does not override dtype or the internal batch size.
         return PromptCompressor(model_name=str(checkpoint),
                                 use_llmlingua2=True, device_map=self.device_map)
@@ -256,7 +256,7 @@ class HistoricalLLMLingua2Service:
             result = self._compressor.compress_prompt(source, **kwargs)
         require(isinstance(result, dict) and
                 isinstance(result.get('compressed_prompt'), (str, type(None))),
-                'Invalid historical LLMLingua-2 response')
+                'Invalid token-budget LLMLingua-2 response')
         output = (result.get('compressed_prompt') or '').strip()
         # The existing writer explicitly retains its source on empty output.
         # Other model failures propagate; no failed inference becomes a score.
@@ -286,7 +286,7 @@ class HistoricalLLMLingua2Service:
         from .operators.llmlingua2 import validate_rate
         validate_rate(rate)
         require(type(text) is str and bool(text.strip()),
-                'Historical LLMLingua requires nonempty final Record text')
+                'Token-budget LLMLingua requires nonempty final Record text')
         return await asyncio.to_thread(self._compress, text, rate)
 
     async def close(self):

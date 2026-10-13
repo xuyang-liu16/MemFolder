@@ -15,20 +15,18 @@ Implementation: src/planning/streammeco.py
 
 The selection routines preserve the source formulas and class quotas. MemFolder adds graph conversion, protected-record handling, and vector-space checks. This port covers graph compression; the upstream temporal retrieval stage requires a separate reader.
 
-RecordFolder, ContextFolder, and archived methods
+Project methods and memory-compression adaptations
 -------------------------------------------------
 
-RecordFolder and ContextFolder come from the project authors' standardized
-MemFolder-main.zip release. The archived experiments provide text ToMe,
-M3 pooled ToMe, the average-linkage MemForest proxy, Random methods, and DART
-memory adaptations.
+RecordFolder and ContextFolder are implemented by the project authors. The
+project also includes text ToMe, M3 pooled ToMe, the average-linkage MemForest
+proxy, Random methods, and DART memory adaptations.
 
-The MemForest tree-based routines and pair prompt come from
-11318_MemForest_Efficient_Agen_Supplementary_Material. Release permission for that
-archive still needs confirmation from the source. Licensing for the historical
-contributions remains under review, and their existing terms continue to apply.
+The MemForest tree-based routines and pair prompt derive from the MemForest
+supplementary implementation. Release permission still needs confirmation
+from the source; licensing remains under review and existing terms apply.
 
-The shared merge, final QA and judge literals are archived MemForest templates.
+The shared merge, final QA and judge literals are MemForest templates.
 Their source-file and prompt SHA-256 hashes are recorded in
 src/prompt_protocol.py.
 

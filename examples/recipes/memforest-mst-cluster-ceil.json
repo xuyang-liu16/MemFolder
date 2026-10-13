@@ -3,7 +3,7 @@
     "plugin": "memforest",
     "parameters": {
       "allocator": {
-        "plugin": "legacy-cluster-ceil",
+        "plugin": "per-cluster-ceil",
         "parameters": {
           "keep_ratio": 0.7
         }

@@ -5,8 +5,9 @@
 ## Token-budget compression
 
 For compression with an explicit token budget, select the token-budget service
-implemented in [services.py](../../src/services.py). Resolve its registered
-plugin key from [catalog.py](../../src/catalog.py) when assembling the config.
+implemented by `TokenBudgetLLMLingua2Service` in
+[services.py](../../src/services.py). Configure `llmlingua2-token-budget-service`
+using [the service recipe](../../examples/recipes/llmlingua2-token-budget-services.json).
 Keep the existing current-Record planner/writer recipe, with writer rate 0.55.
 The two service plugins implement the same writer contract; the rate-only
 adapter described below remains available as an explicitly different variant.
@@ -22,9 +23,8 @@ identities distinguish this profile from the rate-only adapter. Empty output
 is an explicit fallback to the stripped current Record; other model failures propagate.
 
 For Mem0 export with latest-contributor metadata, select the corresponding
-codec and all-text embedding provider in
-[framework_io.py](../../src/wrappers/framework_io.py), using their registered
-keys from [catalog.py](../../src/catalog.py). Supply the native source bank:
+`mem0-latest-contributor-codec` and `all-text-embeddings` plugins in
+[framework_io.py](../../src/wrappers/framework_io.py). Supply the native source bank:
 each output inherits its latest contributor's point ID and payload; tied
 timestamps use the original point ID. Configure the embedding provider with
 the declared embedding space and service. It encodes every final text, including unchanged singleton text;

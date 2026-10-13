@@ -68,7 +68,7 @@ parameters in `src/loading/loader_registry.py` and `LoadOptions` in
 | Input | Loader function | Additional setup |
 | --- | --- | --- |
 | Mem0 export or Qdrant point JSON/JSONL | `load_mem0` | Owner selectors |
-| MemoryNode JSONL | Select the node-export adapter in `src/loading/loader_registry.py` | Source namespace |
+| MemoryNode JSONL | `load_mem0_node_export` | Source namespace |
 | Local Qdrant directory | `load_mem0_qdrant` | Collection name and `.[qdrant]` |
 | Offline Qdrant `storage.sqlite` | `load_mem0_sqlite` | No pending WAL/journal |
 | MemOS text/tree JSON or cube | `load_memos`, `load_memos_cube` | Cube selection and component assets |

@@ -11,7 +11,7 @@ from .memory_libraries import (
     load_library,
     load_m3,
     load_mem0,
-    load_mem0_legacy_nodes,
+    load_mem0_node_export,
     load_mem0_qdrant,
     load_mem0_sqlite,
     load_memos,
@@ -70,7 +70,7 @@ def _factory(name, function, *, qdrant=False, graph=False):
 mem0 = _factory('mem0', load_mem0)
 
 
-mem0_legacy = _factory('mem0-legacy', load_mem0_legacy_nodes)
+mem0_node_export = _factory('mem0-node-export', load_mem0_node_export)
 
 
 mem0_qdrant = _factory('mem0-qdrant', load_mem0_qdrant, qdrant=True)
@@ -94,7 +94,7 @@ canonical = _factory('canonical', load_library, graph=True)
 def register_memory_loaders(registry: PluginRegistry) -> None:
     # A provider-owned catalog, not a core dispatch switch. External providers
     # register themselves or publish entry points without editing this list.
-    for name, factory in {'mem0':mem0, 'mem0-legacy':mem0_legacy, 'mem0-qdrant':mem0_qdrant,
+    for name, factory in {'mem0':mem0, 'mem0-node-export':mem0_node_export, 'mem0-qdrant':mem0_qdrant,
                          'mem0-sqlite':mem0_sqlite, 'memos':memos, 'memos-cube':memos_cube,
                          'm3':m3, 'canonical':canonical}.items():
         registry.register(name, factory)

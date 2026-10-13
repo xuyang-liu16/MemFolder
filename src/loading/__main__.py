@@ -18,7 +18,7 @@ def main(argv=None):
     parser.add_argument('format', nargs='?', help='Builtin/installed plugin name or module:factory')
     parser.add_argument('path', nargs='?', type=Path)
     parser.add_argument('--config', type=Path, help='Plugin JSON: plugin + parameters; paths relative to this file')
-    parser.add_argument('--options', type=Path, help='Legacy shorthand: LoadOptions JSON')
+    parser.add_argument('--options', type=Path, help='Shorthand for LoadOptions JSON')
     parser.add_argument('--output-dir', type=Path, help='New directory for library.json, report.json and binding.json')
     parser.add_argument('--collection')
     parser.add_argument('--metadata-path', type=Path)
@@ -33,7 +33,7 @@ def main(argv=None):
             raise ContractError('--output-dir is required')
         if args.config is not None:
             if any(v is not None for v in (args.format,args.path,args.options,args.collection,args.metadata_path)):
-                raise ContractError('--config cannot be combined with positional/legacy loading options')
+                raise ContractError('--config cannot be combined with positional loading options or --options')
             request, context = read_plugin_request(args.config)
         else:
             if args.format is None or args.path is None:

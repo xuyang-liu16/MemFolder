@@ -37,7 +37,6 @@ _install_aliases(_sys.modules[__name__], {
     'writers': _compat_framework_io,
     'm3_native': _compat_framework_io,
     'readers': _compat_framework_io,
-    'lingua_historical': _compat_framework_io,
     'base': _compat_framework_wrapper,
     'runtime': _compat_framework_wrapper,
     'embedding': _compat_postprocessing,

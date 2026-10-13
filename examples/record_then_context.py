@@ -10,7 +10,7 @@ import json
 from memfolder.assembly import assemble
 from memfolder.core import to_data
 from memfolder.core.values import require
-from memfolder.services import HistoricalLLMLingua2Service
+from memfolder.services import TokenBudgetLLMLingua2Service
 
 RECIPES = Path(__file__).parent / 'recipes'
 
@@ -46,4 +46,4 @@ async def record_then_context(request, *, services, context_method='llmlingua2',
 
 def local_lingua_service():
     """Optional service for caller-provided ServiceMap; loading is lazy."""
-    return HistoricalLLMLingua2Service()
+    return TokenBudgetLLMLingua2Service()

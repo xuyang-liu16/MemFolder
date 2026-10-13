@@ -39,7 +39,7 @@ from ..core import (
     to_data,
 )
 from ..core.values import require
-from .memory_adapters import M3Adapter, Mem0Adapter, Mem0LegacyNodesAdapter, MemOSAdapter
+from .memory_adapters import M3Adapter, Mem0Adapter, Mem0NodeExportAdapter, MemOSAdapter
 from .source_readers import (
     SourceDocument,
     child_path,
@@ -274,8 +274,8 @@ def load_mem0(path: str | Path, *, options: LoadOptions = LoadOptions(), observe
     return JsonMemoryLoader(paths=(path,), adapter=Mem0Adapter(), options=options).load(observer=observer)
 
 
-def load_mem0_legacy_nodes(path: str | Path, *, options: LoadOptions = LoadOptions(), observer=None) -> LoadedLibrary:
-    return JsonMemoryLoader(paths=(path,), adapter=Mem0LegacyNodesAdapter(), options=options).load(observer=observer)
+def load_mem0_node_export(path: str | Path, *, options: LoadOptions = LoadOptions(), observer=None) -> LoadedLibrary:
+    return JsonMemoryLoader(paths=(path,), adapter=Mem0NodeExportAdapter(), options=options).load(observer=observer)
 
 
 def load_mem0_qdrant(path: str | Path, *, collection: str = 'mem0', options: LoadOptions = LoadOptions(),

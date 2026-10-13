@@ -167,10 +167,10 @@ class MemOSAdapter:
             edges=tuple(edges), metadata=FrozenMap(extra), coverage=coverage, issues=tuple(issues))
 
 
-class Mem0LegacyNodesAdapter:
-    """JSONL emitted by the historical export_mem0_sample_nodes.py script."""
+class Mem0NodeExportAdapter:
+    """MemoryNode JSONL with native point IDs and source provenance."""
     framework = 'mem0'
-    format_id = 'mem0.legacy_nodes.v1'
+    format_id = 'mem0.node_export.v1'
 
     def decode(self, data, *, options: LoadOptions, source_id: str) -> NativeLibrary:
         rows = array_value(data, source_id)
@@ -183,20 +183,20 @@ class Mem0LegacyNodesAdapter:
             native_id(row.get('node_id'), location + '.node_id')
             candidate = provenance.get('point_id') if provenance.get('point_id') is not None else row.get('raw_pointer')
             point_id = native_id(candidate, location + '.point_id')
-            require(row.get('raw_pointer') is None or str(row['raw_pointer']) == point_id, 'Legacy point identity conflicts with raw_pointer')
+            require(row.get('raw_pointer') is None or str(row['raw_pointer']) == point_id, 'Exported point identity conflicts with raw_pointer')
             user_id = native_id(provenance.get('user_id'), location + '.user_id')
             text = text_value(row.get('text'), location + '.text')
             point = {'id': point_id, 'payload': {'data': text, 'user_id': user_id,
                      'timestamp': row.get('timestamp')}, 'vector': row.get('embedding')}
             lib = Mem0Adapter().decode([point], options=options, source_id=source_id)
             record = lib.records[0]
-            # The historical exporter explicitly recorded benchmark sample identity.
+            # Source provenance explicitly records benchmark sample identity.
             sample_key = provenance.get('sample_id') or record.sample_key
             records.append(replace(record, sample_key=native_id(sample_key, location + '.sample_id'), native=FrozenMap(row)))
             issues.extend(replace(i, location=location) for i in lib.issues)
             if row.get('timestamp') == 0:
-                issues.append(issue('legacy_zero_timestamp', source_id, location,
-                    'Historical exporter used zero for missing/unparsed time; the raw value is retained.'))
+                issues.append(issue('node_export_zero_timestamp', source_id, location,
+                    'Node export uses zero for missing/unparsed time; the raw value is retained.'))
         return NativeLibrary(framework=self.framework, format_id=self.format_id, records=tuple(records), issues=tuple(issues))
 
 

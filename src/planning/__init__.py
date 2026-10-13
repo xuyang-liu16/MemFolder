@@ -40,7 +40,7 @@ from .memforest import (
     MemForestPlanner,
     JointClusters,
     CapacityAllocator,
-    LegacyClusterCeil,
+    PerClusterCeilAllocator,
     MstPairRouter,
     resolve_memforest_budget,
 )

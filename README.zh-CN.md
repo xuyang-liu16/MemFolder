@@ -269,7 +269,7 @@ python -m memfolder case build/experiments/recordfolder-001 \
 
 预算与随机种子的批量对比可参照 [matrix-template.json](examples/experiments/matrix-template.json)，填入与单组实验相同的数据和服务配置后，执行 `python -m memfolder matrix CONFIG.json`。`--resume` 复用校验通过的**已完成**实验。运行失败后，保留已有文件并使用新输出目录重试。
 
-[PersonaMem Mem0](examples/experiments/personamem-mem0-template.json)、[PersonaMem MemOS](examples/experiments/personamem-memos-template.json) 和 [M3](examples/experiments/m3-recordfolder-template.json) 模板使用旧实验的排序规则：Mem0 的 `created_at`、MemOS 的 `(ts, id)`，以及 M3 每个 clip 内的数字节点 ID。填入自己的数据路径、问题或视频 ID、记忆库映射及模型服务后运行。前缀库需要明确的源历史位置，M3 的预算仍按 clip 分配。[时间与前缀配置说明](skills/references/experiment-config.md#legacy-time-and-order-profiles) 包含字段映射、ContextFolder 组合方式和 reader 范围。
+[PersonaMem Mem0](examples/experiments/personamem-mem0-template.json)、[PersonaMem MemOS](examples/experiments/personamem-memos-template.json) 和 [M3](examples/experiments/m3-recordfolder-template.json) 模板使用各框架的排序规则：Mem0 的 `created_at`、MemOS 的 `(ts, id)`，以及 M3 每个 clip 内的数字节点 ID。填入自己的数据路径、问题或视频 ID、记忆库映射及模型服务后运行。前缀库需要明确的源历史位置，M3 的预算仍按 clip 分配。[时间与前缀配置说明](skills/references/experiment-config.md#framework-time-and-order-profiles) 包含字段映射、ContextFolder 组合方式和 reader 范围。
 
 <details>
 <summary><b>基线配置</b></summary>
@@ -278,7 +278,7 @@ python -m memfolder case build/experiments/recordfolder-001 \
 
 - [MemForest 范围预算分配](examples/recipes/memforest-mst-capacity.json)版本需设置 `run.mode: "repeat"`，并在语义编码器之外使用 `aggregation: "latest"` 的 `event-time-features`。[逐簇向上取整](examples/recipes/memforest-mst-cluster-ceil.json)版本通过 Python API 配合 `resolve_memforest_budget` 运行。M3 的 average-linkage proxy 是单独命名的适配版本。
 - [文本 ToMe](skills/references/tome.md)将时间连续二分 planner 与公共 `text-operator`、`semantic-encoder` 组合，采用 `run.mode: "repeat"`。公共特征提供器在每次匹配前编码当前文本，原始 history 无须预存节点向量。可从 [tome-template.json](examples/experiments/tome-template.json) 开始，声明向量空间，每个特征名只配置一次。带缓存的向量服务会复用未变化文本的向量。原生向量输出和向量检索仍需配置 wrapper 的内容向量提供器。历史交错分区版本名为 `tome-bsm`。
-- [LLMLingua-2](skills/references/llmlingua2.md)压缩最终节点文本，默认保留比例为 `0.55`。已恢复的 LongMemEval service、全量文本向量刷新及显式 Mem0 owner 映射仍可分别配置。
+- [LLMLingua-2](skills/references/llmlingua2.md)压缩最终节点文本，默认保留比例为 `0.55`。按 token 预算压缩的 service、全量文本向量刷新及显式 Mem0 owner 映射仍可分别配置。
 - [record_then_context.py](examples/record_then_context.py) 将 ContextFolder 应用于其他压缩方法输出的最终节点，保持节点数量并改写文本。
 
 </details>

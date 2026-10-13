@@ -13,7 +13,7 @@ from .contracts import (
     SourceInfo,
 )
 from .source_readers import SourceDocument, read_json, read_local_qdrant, read_qdrant, read_qdrant_sqlite
-from .memory_adapters import M3Adapter, Mem0Adapter, Mem0LegacyNodesAdapter, MemOSAdapter
+from .memory_adapters import M3Adapter, Mem0Adapter, Mem0NodeExportAdapter, MemOSAdapter
 from .memory_libraries import (
     Importer,
     NativeVectorSet,
@@ -27,7 +27,7 @@ from .memory_libraries import (
     load_m3,
     load_mem0,
     load_mem0_client,
-    load_mem0_legacy_nodes,
+    load_mem0_node_export,
     load_mem0_qdrant,
     load_mem0_sqlite,
     load_memos,

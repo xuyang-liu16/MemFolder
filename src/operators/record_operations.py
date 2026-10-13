@@ -178,7 +178,7 @@ class RuleOperator(TextOperator):
 class MemForestPairWriter:
     service: str = 'chat'
     attempts: int = 3
-    failure_policy: str = 'raise'  # historical keep-newer fallback is explicit, never hidden
+    failure_policy: str = 'raise'  # keep-newer fallback is explicit, never hidden
     spec = spec('memforest.pair_summary','text_writer')
     async def write(self,members,action,context):
         require(len(members)==2,'MemForest pair writer requires exactly two current memories')

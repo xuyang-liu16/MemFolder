@@ -4,8 +4,8 @@
 from ..artifacts import VerifiedAssetCopier
 from ..core.values import require
 from .framework_io import (
-    HistoricalAllTextEmbeddings,
-    HistoricalLLMLinguaMem0Codec,
+    AllTextEmbeddings,
+    LatestContributorMem0Codec,
     M3Codec,
     M3JsonWriter,
     M3PickleWriter,
@@ -47,8 +47,8 @@ def register_wrappers(registry):
     for framework,codec,writer in (('mem0','mem0-codec','mem0-points-writer'),('memos','memos-codec','memos-writer'),('m3','m3-codec','m3-json-writer')):
         registry.register(framework+'-wrapper', WrapperFactory({'codec':{'plugin':codec},'writer':{'plugin':writer}}))
     for name,cls in {'mem0-codec':Mem0Codec,'memos-codec':MemOSCodec,'m3-codec':M3Codec,
-        'llmlingua2-historical-mem0-codec':HistoricalLLMLinguaMem0Codec,
-        'llmlingua2-historical-all-embeddings':HistoricalAllTextEmbeddings,
+        'mem0-latest-contributor-codec':LatestContributorMem0Codec,
+        'all-text-embeddings':AllTextEmbeddings,
         'content-embeddings':ChangedTextEmbeddings,'redirect-edges':RedirectEdges,'mem0-points-writer':Mem0PointsWriter,
         'qdrant-writer':QdrantWriter,'memos-writer':MemOSWriter,'m3-json-writer':M3JsonWriter,'m3-pickle-writer':M3PickleWriter}.items():
         registry.register(name, Factory(cls))
