@@ -84,11 +84,13 @@ source .venv/bin/activate
 python -m pip install -e .
 python -m memfolder --help
 ```
+
 For RecordFolder and ContextFolder, install:
 
 ```bash
 python -m pip install -e ".[algorithms,contextfolder,evaluation]"
 ```
+
 #### 2. Download data
 
 Experiments need **benchmark conversations/questions** and an **input memory store**. For an initial LoCoMo run, download the conversations below and keep the template's `history-initializer`, which creates one record per turn. For Mem0 or MemOS experiments, load a separately generated memory store instead.
@@ -98,6 +100,7 @@ mkdir -p data/locomo
 curl -fL https://raw.githubusercontent.com/snap-research/locomo/3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376/data/locomo10.json \
   -o data/locomo/locomo10.json
 ```
+
 | Benchmark | Download | Dataset plugin and inputs |
 | --- | --- | --- |
 | LoCoMo | [Official release](https://github.com/snap-research/locomo) | `locomo-dataset`: `locomo10.json` |
@@ -127,7 +130,8 @@ curl -fL https://raw.githubusercontent.com/ByteDance-Seed/m3-agent/0e3e41939bd8a
 curl -fL https://raw.githubusercontent.com/ByteDance-Seed/m3-agent/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/data/annotations/web.json \
   -o data/m3/web.json
 ```
-Use the corresponding entry in [dataset-components.json](examples/experiments/dataset-components.json) as the experiment's `dataset` section. PersonaMem provides turn order, and M3 clip indices express visibility; the LoCoMo templates' default `event-time-features` requires explicit parsed event times. Configure a declared order/time adapter for those inputs before compression; replacing only the dataset section is insufficient. See [benchmark configuration](skills/references/experiment-config.md#benchmark-time-and-reader-scope). Set `contexts_path` for PersonaMem, and `memory_loaders` plus `variant` for M3. Download both M3 annotations and memory graphs, preserving media paths and clip cutoffs. Full multimodal evaluation also requires the [M3-Agent controller setup](https://github.com/ByteDance-Seed/m3-agent#control).
+
+Use the corresponding entry in [dataset-components.json](examples/experiments/dataset-components.json) as the experiment's `dataset` section. Set `contexts_path` for PersonaMem, and `memory_loaders` plus `variant` for M3. Download both M3 annotations and memory graphs, preserving media paths and clip cutoffs. Full multimodal evaluation also requires the [M3-Agent controller setup](https://github.com/ByteDance-Seed/m3-agent#control).
 
 Use the original benchmark formats with these loaders. MemForest's `dataset/longmemeval.json` and `dataset/personamem_32k.json` use a converted LoCoMo-style schema and require a matching adapter. Keep the dataset version, memory snapshot and scoring protocol matched.
 
@@ -144,6 +148,7 @@ curl -fL https://huggingface.co/datasets/Celina-love-sweet/MemForest_data/resolv
   -o data/memforest/locomo.tar.gz
 tar -xzf data/memforest/locomo.tar.gz -C data/memforest
 ```
+
 The archive is about 46 MB. Keep the original store unchanged. In a configuration under `build/configs/`, replace `initializer` with the following for the first LoCoMo sample, `conv-26`:
 
 ```json
@@ -167,6 +172,7 @@ The archive is about 46 MB. Keep the original store unchanged. In a configuratio
   }
 }
 ```
+
 The owner names follow MemForest's `<speaker>_<sample index>` convention. Check them against the selected store. To expand beyond this pilot, add one mapping per sample and update `dataset.parameters.sample_ids`. Use `selectors` to select each sample's owners, and import the collection's `storage.sqlite` from an offline snapshot.
 
 Use answer scoring for imported memories. Enable `evidence-recall` when the imported nodes map to the original dialogue evidence IDs, and remove it otherwise. Other supported bank plugins are `mem0`, `mem0-qdrant`, `memos`, `memos-cube` and `m3`. The `history-initializer` creates one node per conversation turn. For framework-specific memory extraction and updates, use the upstream [Mem0](https://github.com/mem0ai/mem0), [MemOS](https://github.com/MemTensor/MemOS) or [M3-Agent](https://github.com/ByteDance-Seed/m3-agent) pipeline.
@@ -183,6 +189,7 @@ cp examples/experiments/recordfolder-template.json build/configs/locomo-recordfo
 cp examples/experiments/contextfolder-template.json build/configs/locomo-contextfolder.json
 export MEMFOLDER_PROVIDER_KEY="YOUR_API_KEY"
 ```
+
 In **both files**, replace the `dataset` section with:
 
 ```json
@@ -196,6 +203,7 @@ In **both files**, replace the `dataset` section with:
   }
 }
 ```
+
 This selects one conversation. Set `sample_ids` to `[]` for all ten. `preserve_unknown` retains questions with unresolved evidence IDs and marks their evidence recall as unscored. The explicit UTC offset is used to interpret timezone-free dates consistently.
 
 | Setting | What to change |
@@ -206,51 +214,47 @@ This selects one conversation. Set `sample_ids` to `[]` for all ten. `preserve_u
 | `run.budgets[0].ratio` | Fraction of nodes **retained**: `0.5` for 50% reduction, `0.3` for 70% reduction. |
 | `output_dir` | Use a fresh directory for each experiment. Template defaults are `../../build/experiments/recordfolder-001` and `../../build/experiments/contextfolder-001`. |
 
-All paths resolve from the configuration file's directory. The two templates use the same source and evaluate both original and compressed memory. Keep model, sample, retrieval and scoring settings identical across the comparison. ContextFolder's writer defaults to a **0.8 token-retention target**, up to **3 rounds** and **1.15 budget slack**. An empty/invalid fact plan currently enters an unverified summary fallback without a length bound; inspect fallback counts and actual saved lengths before expanding a run. The target guides revision. Report the measured token retention of the final output.
+All paths resolve from the configuration file's directory. The two templates use the same source and evaluate both original and compressed memory. Keep model, sample, retrieval and scoring settings identical across the comparison. ContextFolder's writer defaults to a **0.8 token-retention target**, up to **3 rounds** and **1.15 budget slack**. The target guides revision. Report the measured token retention of the final output.
 
 <details>
 <summary><b>Dense retrieval and paper settings</b></summary>
 
-The starter templates use lexical top-10 retrieval, the shared MemForest LLM judge and MemOS-format output. Configure dense retrieval separately from the semantic features used for compression. Add the following under `reader.parameters`, keeping the existing answerer:
+The starter templates use lexical top-10 retrieval, MemForest judge accuracy and MemOS-format output. Configure dense retrieval separately from the semantic features used for compression. Add the following under `reader.parameters`, keeping the existing answerer:
 
 ```json
-{
-  "retriever": {
-    "plugin": "dense-retriever",
-    "parameters": {
-      "top_k": 10,
-      "space": {
-        "provider": "caller-declared",
-        "model": "YOUR_EMBEDDING_MODEL",
-        "revision": "YOUR_MODEL_REVISION",
-        "dimension": 1536
-      }
+"retriever": {
+  "plugin": "dense-retriever",
+  "parameters": {
+    "top_k": 10,
+    "space": {
+      "provider": "caller-declared",
+      "model": "YOUR_EMBEDDING_MODEL",
+      "revision": "YOUR_MODEL_REVISION",
+      "dimension": 1536
     }
   }
 }
 ```
+
 Also add `embedding_provider` under `compression.wrapper.parameters`, so rewritten records receive new embeddings:
 
 ```json
-{
-  "embedding_provider": {
-    "plugin": "content-embeddings",
-    "parameters": {
-      "space": {
-        "provider": "caller-declared",
-        "model": "YOUR_EMBEDDING_MODEL",
-        "revision": "YOUR_MODEL_REVISION",
-        "dimension": 1536
-      }
+"embedding_provider": {
+  "plugin": "content-embeddings",
+  "parameters": {
+    "space": {
+      "provider": "caller-declared",
+      "model": "YOUR_EMBEDDING_MODEL",
+      "revision": "YOUR_MODEL_REVISION",
+      "dimension": 1536
     }
   }
 }
 ```
-Use the same `space` in both blocks and in the semantic feature provider, with your model's actual dimension. Both readers select `memforest-qa-prompt`; `contextfolder-qa-prompt` remains an identical compatibility alias.
 
-All built-in record summaries use the same MemForest merge template. Final QA and judge are shared across methods and benchmarks: `memforest-qa-prompt` and `memforest-judge`, with JSON `CORRECT`/`WRONG` labels. LLMLingua-2 and BabelTele retain their compression logic; ContextFolder's internal fact/encoding checks remain separate from final evaluation. The [prompt protocol](src/prompt_protocol.py) records the exact templates, hashes and cache identities.
+Use the same `space` in both blocks and in the semantic feature provider, with your model's actual dimension. Both readers use `memforest-qa-prompt`; evaluation uses `memforest-judge`.
 
-To reproduce a paper table, also match its memory snapshot, model versions, retrieval settings and scoring coverage. LoCoMo F1 is an optional distinct metric; the MemForest judge is distinct from the benchmarks' original scoring protocols. For Mem0-native evaluation, configure its retriever explicitly alongside the imported memory store.
+To reproduce a paper table, match its memory snapshot, model versions, prompts, retrieval settings and scoring protocol. The starter templates use the shared MemForest judge; LoCoMo F1 is an optional separate metric. For Mem0-native evaluation, configure its retriever explicitly alongside the imported memory store.
 
 </details>
 
@@ -265,40 +269,27 @@ python -m memfolder case build/experiments/recordfolder-001 \
   --dataset-id locomo --sample-id conv-26 --question-id conv-26:0 \
   --output build/cases/locomo-recordfolder-q0
 ```
+
 These runs call the configured model APIs. Each output directory contains `result.json` with original/compressed scores and per-sample statistics, `run.manifest.json` with execution status, and per-sample memory snapshots and predictions. `verify` checks artifact integrity. `case` exports one question for inspection.
 
-For budget/seed sweeps, configure [matrix-template.json](examples/experiments/matrix-template.json) with the same data and services as your experiment, then run `python -m memfolder matrix CONFIG.json`. `--resume` reuses a validated **completed** run. After a failed run, preserve its files and retry in a fresh output directory.
-
-The [PersonaMem Mem0](examples/experiments/personamem-mem0-template.json), [PersonaMem MemOS](examples/experiments/personamem-memos-template.json) and [M3](examples/experiments/m3-recordfolder-template.json) templates use framework-specific ordering rules: Mem0 `created_at`, MemOS `(ts, id)`, and numeric node IDs within each M3 clip. Supply your dataset paths, question/video IDs, memory mappings and model services. Prefix banks require explicit source history positions; M3 budgets remain per clip. See the [time and prefix configuration](skills/references/experiment-config.md#framework-time-and-order-profiles) for field mapping, ContextFolder composition and reader scope.
+For method/seed sweeps, follow [matrix-template.json](examples/experiments/matrix-template.json) and run `python -m memfolder matrix CONFIG.json`. `--resume` reuses a validated **completed** run. After a failed run, preserve its files and retry in a fresh output directory.
 
 <details>
 <summary><b>Baseline recipes</b></summary>
 
-[examples/recipes/](examples/recipes/) provides compression configurations for each method. Copy your configured RecordFolder experiment, then replace its `compression.planner` and `compression.operator` with the selected recipe's components. Configure each required feature once, keep the wrapper and services, and retain the shared QA/judge. A compression recipe is a component fragment, not a complete experiment config.
+[examples/recipes/](examples/recipes/) provides compression configurations for each method. Copy your configured RecordFolder experiment, then replace its `compression.planner` and `compression.operator` with the selected recipe's components. Merge its feature settings with the semantic encoder, and keep the wrapper and services.
 
 - For [MemForest scope-capacity](examples/recipes/memforest-mst-capacity.json), set `run.mode` to `"repeat"` and use `event-time-features` with `aggregation: "latest"`, alongside the semantic encoder. Run the [per-cluster ceiling](examples/recipes/memforest-mst-cluster-ceil.json) variant through the Python API with `resolve_memforest_budget`. The M3 average-linkage proxy is a separately named adaptation.
-- [Text ToMe](skills/references/tome.md) uses a chronological-halves planner with the common `text-operator` and `semantic-encoder`, in `run.mode: "repeat"`. The shared feature provider encodes current text before each match, so raw history needs no precomputed node vectors. Start from [tome-template.json](examples/experiments/tome-template.json), declare the embedding space and configure each feature name once. The cached embedding service reuses unchanged text. Native vector output and dense retrieval still need the wrapper's content-embedding provider. The alternating-partition variant is `tome-bsm`.
-- [LLMLingua-2](skills/references/llmlingua2.md) compresses final record text with a default retention rate of `0.55`. The token-budget compression service, all-text embedding refresh and explicit Mem0 owner mapping remain separately configurable.
+- Text ToMe also requires `run.mode: "repeat"` and uses chronological halves. The alternating-partition variant is `tome-bsm`.
+- LLMLingua-2 compresses final record text with a default retention rate of `0.55`.
 - [record_and_context_compression.py](examples/record_and_context_compression.py) applies ContextFolder to another compressor's final records, preserving their count while rewriting the text.
 
 </details>
-
-JSON files under `examples/` configure experiments, compression components and
-data loaders. The Python contracts in [src/core/](src/core/)
-define the data interface. Export JSON Schema when an integration needs it:
-
-```bash
-python tools/export_schemas.py --output-dir build/schemas
-```
 
 <a id="main-results"></a>
 <a id="full-results"></a>
 
 ## Full results
-
-The tables and figures below report the paper's results with their original
-method and evaluation identities. New repository runs record their own scores
-and protocol manifests; updated prompts or methods do not relabel these numbers.
 
 ### RecordFolder: record compression
 

@@ -1,56 +1,189 @@
 ---
 name: memfolder-exp
-description: Configure, run, compare, and inspect MemFolder memory-compression experiments using its loaders, plugins and CLI. Use for real memory banks, benchmark evaluation, case analysis and method comparisons.
+description: Set up, run, compare, and inspect MemFolder memory-compression experiments on LoCoMo, LongMemEval, PersonaMem, and M3 using the repository's loaders and CLI. Use for environment checks, existing memory stores, RecordFolder or ContextFolder evaluation, and baseline comparisons.
 ---
 
 # MemFolder experiments
 
-Locate the checkout containing `pyproject.toml`, `src/__main__.py` and
-`examples/experiments/`. Read its [README](../README.md) and inspect the actual
-configuration before running. Paths below are relative to that checkout; an
-installed skill may live elsewhere. If the user requests this repository and no
-checkout is available, clone `https://github.com/xuyang-liu16/MemFolder.git` into
-a fresh directory.
+Use the existing CLI and plugins. Locate the checkout containing `pyproject.toml`,
+`src/__main__.py`, and `examples/experiments/`. All paths below are
+relative to that root. An installed skill can live elsewhere. If the checkout
+is missing and the user requests a run from `xuyang-liu16/MemFolder`, clone
+`https://github.com/xuyang-liu16/MemFolder.git` into a fresh directory and continue.
+For an existing local checkout, use the path supplied by the user.
 
-Preserve the user's dataset, bank, method, services, output location and existing
-authorization. Reuse available inputs. Prepare a pilot when no run size was
-specified, and estimate calls from the loaded questions and compression stages.
-Resolve missing choices before dependent model calls.
-An authorized experiment does not need another confirmation for its routine
-steps; setup or inspection alone does not authorize paid inference.
+Read `README.md`, set up the environment below, and run `python -m memfolder --help`.
+Read [experiment-config.md](references/experiment-config.md) when configuring
+model-backed evaluation or an existing memory bank.
+Inspect `examples/recipes/` for method variants and use the CLI's `case` command
+to inspect a saved question.
 
-## Prepare the run
+For the README's one-line LoCoMo pilot, use `conv-26`, a retained-node ratio
+of `0.5`, and the RecordFolder and ContextFolder templates. Reuse the user's
+selected memory store and configured model services. Otherwise, start with
+`history-initializer` and resolve the missing service settings with the user.
+Download the documented LoCoMo input as part of the requested run, prepare both
+configurations, and follow the authorization check below before model calls.
+Explicit user choices take precedence over these pilot defaults.
 
-- Establish whether this is an input inspection, a new comparison, or
-  reproduction of a particular paper result.
-- Record benchmark version, sample IDs, bank-to-sample/owner mapping and hashes.
-  `history-initializer` creates one node per turn; framework-generated memory
-  banks require an explicit loader and `bank-initializer` mapping.
-- Resolve model/revision, embedding space, tokenizer, retrieval budget, retained
-  node ratio, seed, and fresh output directory. Credentials stay in environment
-  variables. Paths resolve from the configuration's directory.
-- Read [experiment-config.md](references/experiment-config.md) for bank import,
-  dense retrieval, benchmark time semantics and model-backed scoring.
-- Use [tome.md](references/tome.md) for temporal ToMe, and
-  [llmlingua2.md](references/llmlingua2.md) for its two context-compression variants.
+## Resolve the experiment
 
-Recipes under `examples/recipes/` configure compression components. Full run
-configs are under `examples/experiments/`; a recipe alone is not a run config.
-Replace each required component and configure each feature name once.
+Identify whether the user wants an environment check, a new benchmark run, or
+reproduction of a particular paper result. Resolve the following from their
+request and existing configuration:
 
-## Check installation and execute
+- Dataset version, split, selected sample IDs, and data paths.
+- Original memory store or history initializer, framework, and sample mapping.
+- Method recipe, retained-record ratio, seed, and `once` or `repeat` mode.
+- Chat, grounding, embedding, and judge models, revisions, endpoints, and key
+  environment variables. Resolve tokenizer identity separately.
+- Retriever, top-k, context builder, answer prompt, scoring metric, and whether
+  to evaluate the original memory.
+- A fresh output directory, capture policy, and available compute or API budget.
 
-Use Python 3.11+ and install the extras needed by the selected components.
-`algorithms`, `contextfolder`, `qdrant`, `evaluation`, and `llmlingua2` are separate
-extras. Classifier weights are loaded lazily; a model-backed run may need them.
+Ask only for missing choices that affect the experiment. Show the planned
+configuration and call estimate before paid inference unless already authorized.
+Setup alone does not authorize model calls, model-weight downloads, or full
+benchmark downloads. Never print credentials or write them into configuration.
+The built-in `compatible-http` service reads its configured key environment
+variable even for a local endpoint.
+
+There is no `--dry-run`, `--limit`, or `--max-requests` flag on this CLI.
+Select a pilot through `dataset.parameters.sample_ids` in a separate config.
+Count questions from the selected loader before estimating QA and judge calls.
+Grounding, embedding, consolidation, and ContextFolder verification add calls.
+A fact-bearing ContextFolder group uses one planning call plus up to three
+compile/answer/judge triplets by default. Caching and fallbacks affect actual use.
+Do not invent an exact total from question count alone.
+
+## Check installation without model calls
+
+Use Python 3.11+ in an isolated environment:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -e .
 python -m memfolder --help
 ```
 
-Prepare a functional template with the user's real data, memory mapping and
-model services. For the configured experiment:
+Install only the extras needed for the selected workflow:
+
+```bash
+python -m pip install -e ".[algorithms,contextfolder,evaluation]"
+```
+
+`algorithms` provides NumPy, SciPy, and scikit-learn. `contextfolder` provides
+tiktoken. `evaluation` provides NLTK. Local Qdrant access additionally needs
+`.[qdrant]`. `.[llmlingua2]` is optional and can require model weights.
+Do not substitute greedy matching for missing SciPy or character counts for
+the configured tokenizer.
+
+## Prepare data and configuration
+
+Start with README's **Download data** section. Resolve two separate inputs:
+benchmark conversations/questions and the memory bank to compress. The checkout
+does not include full benchmark data or the paper's frozen banks.
+
+- LoCoMo: use the pinned `data/locomo10.json` download in README. Set
+  `utc_offset_minutes: 0` for the documented UTC interpretation and
+  `evidence_policy: "preserve_unknown"` for its unresolved evidence IDs.
+  This keeps questions and marks their evidence recall `not_run`.
+  Select `conv-26` for the documented pilot, or `[]` for all ten conversations.
+- LongMemEval: the native loader expects `question_id`, `haystack_sessions`,
+  `haystack_session_ids` and `haystack_dates`. Record the selected release/split.
+- PersonaMem v1: download both `questions_32k.csv` and
+  `shared_contexts_32k.jsonl`, and set `contexts_path`.
+- M3: annotations require an explicit video-to-memory mapping. Preserve media
+  paths and `before_clip` limits. Downloading annotations alone is insufficient.
+
+MemForest_data provides original Mem0 banks and already compressed `keep*`
+banks. Use the originals as controlled-comparison inputs. Its LongMemEval and
+PersonaMem question files use a converted LoCoMo-style schema, not the native
+loaders' schemas. Do not relabel these converted files as native benchmark runs.
+If reusing them, inspect conversion/category semantics and provide a matching
+adapter and scoring protocol. A public bank is not proof that its hash matches
+the paper's frozen bank.
+
+Full experiment templates are in `examples/experiments/`. Files in
+`examples/recipes/` configure compression only and cannot be passed directly
+to `python -m memfolder run`.
+
+Copy a template to a user-owned config, preserving the distributed example.
+Paths resolve from the config's directory, not the shell's working directory.
+When moving a config, resolve dataset, prompt-source, cache, and output paths
+again. Replace every `REPLACE_*` value and `api.example.invalid` endpoint.
+Inspect the supplied templates before treating their defaults as an experiment:
+
+- `history-initializer` creates records from turns. It does not run Mem0's or
+  MemOS's extraction/update pipeline. For an existing bank, use
+  `bank-initializer` with one explicitly selected store per benchmark sample.
+- `retrieval-reader` defaults to lexical top-10 retrieval. Semantic features
+  used for grouping do not automatically enable dense retrieval.
+- The templates select `memforest-judge`. LoCoMo F1 is an optional separate metric.
+- The supplied wrapper writes MemOS-format output. Select the intended
+  framework and native retriever explicitly when that matters.
+
+Use the import instructions in [experiment-config.md](references/experiment-config.md)
+and `python -m memfolder.loading --help`. Verify source completeness, owner-to-sample
+mapping, clocks, and vector model identity before compression. For Mem0 SQLite,
+use the collection's `storage.sqlite`, not the operation history `history.db`,
+and require an offline store without pending WAL/journal writes.
+Preserve originals and write imports and native outputs to new directories.
+
+## Preserve budgets and evidence
+
+- `run.budgets[].ratio` is the fraction retained. A 70% record reduction is
+  `ratio: 0.3`. Node budgets count eligible records and use per-scope,
+  half-even rounding by default. Report realized counts after rounding.
+- RecordFolder needs current semantic vectors, entity features, and comparable
+  event times. Its template selects `temporal_feature: "temporal"` from
+  `event-time-features`. Keep sample/scope boundaries and protected records.
+- ContextFolder's `target_ratio`, default `0.8`, guides text generation.
+  Its default `max_rounds: 3` and `budget_slack: 1.15` are writer settings,
+  separate from `run.max_rounds`. The selector or fallback can miss the target.
+  Report `final_tokens`, required-fact losses, and fallback reasons. The driver
+  enforces node budgets, not a strict global token cap.
+- Use `memforest-qa-prompt` and `memforest-judge` across comparison arms.
+  Compression fact checks use source memory, never benchmark QA or gold answers.
+- LongMemEval query time, PersonaMem's per-question history prefix, and M3's
+  `before_clip` cutoff constrain available memory. Never expose future records
+  to make a sample pass.
+- Use one original memory snapshot, sample selection, retrieval budget, answerer,
+  and scoring protocol across a controlled comparison. Keep independent reruns
+  separately identified. Do not replace a figure baseline with a table value.
+
+## Select methods
+
+Use the supplied RecordFolder and ContextFolder experiment templates as starting
+points. The latter groups original records and encodes the source members.
+
+For ContextFolder after another completed record compressor, use
+`examples/recipes/contextfolder-post-record.json` and the composition pattern
+in `examples/record_and_context_compression.py`. This separate pass rewrites each current
+record once without regrouping or reapplying the record reduction. It is distinct
+from encoding original group members. Do not claim these input modes are identical.
+
+For comparisons, inspect the selected JSON in `examples/recipes/` and its
+registration in `src/catalog.py`:
+
+- Text ToMe and MST MemForest require repeated execution and embedding refresh.
+  The current `tome` plugin uses chronological halves. `tome-bsm` names the
+  alternating-partition variant.
+- MemForest's scope-budget and per-cluster ceiling variants resolve budgets
+  differently. Preserve the selected variant and its budget resolver. The full
+  experiment CLI has no dynamic budget-resolver field. Use the Python API's
+  `resolve_memforest_budget` for per-cluster ceilings rather than passing
+  that recipe with a scope-level ratio and claiming upstream parity.
+- LLMLingua-2 operates on final current records, with default rate `0.55`.
+- M3 MemForest proxy and DART memory adaptations are explicitly named variants.
+  StreamMeCo's compression plugin does not supply its upstream temporal reader.
+
+The generic text-chat template does not reproduce the full M3 multimodal
+controller. Native storage and retrieval are separate from multimodal answering.
+Check the selected reader, answerer, and judge before making that comparison.
+
+## Run, verify, and inspect
 
 ```bash
 python -m memfolder run /path/to/experiment.json
@@ -58,80 +191,33 @@ python -m memfolder verify /path/to/output
 python -m memfolder run /path/to/experiment.json --resume
 ```
 
-`--resume` validates and reuses a completed run; it does not continue partial
-samples. Preserve failed runs and retry in a fresh directory. There are no
-`--dry-run`, `--limit` or `--max-requests` options; select sample IDs in the config.
-For sweeps, use `examples/experiments/matrix-template.json` with the same data
-and service parameters as the single-run configuration.
+`--resume` validates and reuses a completed run with matching inputs,
+configuration, components, and runtime. It does not continue partially completed
+samples. After a failure, keep its files and use a new output directory for a
+retry. Do not edit receipts or predictions to bypass validation.
 
-## Preserve the comparison protocol
+For a method/seed sweep, follow `examples/experiments/matrix-template.json`.
+The number of runs is the product of axis lengths and seed count, bounded by
+`max_runs`. Each run has an isolated directory.
 
-All built-in ordinary summaries, final QA and final judges use
-[`memforest.shared.v1`](../src/prompt_protocol.py). Keep
-`memforest-qa-prompt` and `memforest-judge` across every arm, including the
-uncompressed control, LLMLingua-2 and BabelTele. The judge accepts JSON
-`CORRECT`/`WRONG`. `qa-prompt` and `contextfolder-qa-prompt` are identical aliases;
-`chat-judge` is an alias of the same judge. Do not append a decoder legend or
-enable AGPR in benchmark QA. A distinct explicit research protocol needs its
-own identity and must not be mixed into this comparison.
+The CLI emits only an exception type on failure. Inspect the failed-stage entry
+in `run.manifest.json` and use the Python API locally for the original exception.
+Stop paid expansion on authentication, quota, schema, data, or persistent service
+errors. The built-in HTTP service has no automatic retry loop.
 
-ContextFolder's fact extraction, encoding, blind QA and repair are
-compression-internal stages. They use source memory, not benchmark QA or gold.
-LLMLingua-2 and BabelTele retain their own compression mechanisms.
-Keep the same source, retrieval, models and scoring coverage across arms.
-F1 and deterministic choice accuracy remain separately identified metrics;
-the shared MemForest judge differs from native benchmark scoring protocols.
+Read `result.json` for `aggregate.compressed`, `aggregate.uncompressed`, and
+per-sample statistics. Metrics include version, `test_only`, measured, failed,
+and not-run counts. Token measurements include the tokenizer identity.
+`provider_token_usage` may be null. Call counts are not a billing total.
 
-## Match method and input contracts
+Use `sources.json`, `run.manifest.json`, `completion.json`, per-sample
+`source.json`, `final.json`, `evaluation.json`, and `baseline_evaluation.json`
+to trace a comparison. Export a question with `python -m memfolder case`.
+`capture.text_policy: "omit"` redacts public trace views, not all private run
+files. Review snapshots, reader context, predictions, and answers before sharing.
 
-- `run.budgets[].ratio` is the fraction of eligible nodes retained. A 70% node
-  reduction is `0.3`; report realized counts after scope rounding.
-- The LoCoMo RecordFolder template needs semantic and entity features plus parsed
-  event times. The PersonaMem Mem0/MemOS and M3 templates instead declare native
-  ordering and set both temporal candidates and member resolution to `order`.
-  Read the framework time/order profiles in the experiment-config reference.
-- PersonaMem bank prefixes use explicit `prefix_end_field` positions; missing
-  positions fail. Banks already prepared for each question can omit that field
-  with a verified prefix mapping. Keep M3 budgets per clip, with `minimum: 1`,
-  and preserve `before_clip`, media and equivalence nodes.
-- Temporal ToMe uses `repeat` mode, the shared `semantic-encoder` in one declared
-  cosine space, and the common `text-operator`. Raw history works without stored
-  vectors: the engine refreshes current-text features before each match. Use
-  `examples/experiments/tome-template.json`; configure final content embeddings
-  separately for native vector output or dense retrieval. Read the ToMe reference.
-- MemForest scope-capacity and per-cluster ceilings have different budgets.
-  The latter uses the Python API's `resolve_memforest_budget`; the full run
-  schema has no dynamic budget-resolver field.
-- ContextFolder's default text target is `0.8`, with three writer rounds and
-  slack `1.15`. These differ from driver round limits. Its empty/invalid fact
-  fallback currently lacks a length bound and blind verification. Inspect
-  fallback reasons, required-fact losses and measured saved lengths.
-- For a context pass after Record compression, use the current-record rewrite
-  recipes and `examples/record_and_context_compression.py`. Reset stage state/features
-  and node budget; do not regroup original source members.
-- Preserve LongMemEval query-time visibility, PersonaMem history prefixes and
-  M3 clip cutoffs/protected nodes. Text-chat answering does not implement the
-  full M3 multimodal controller or StreamMeCo's temporal reader.
-
-## Inspect and report
-
-Inspect `result.json`, `run.manifest.json`, `sources.json` and per-sample
-snapshots, predictions, evaluation and baseline evaluation. Export a case with:
-
-```bash
-python -m memfolder case /path/to/output \
-  --dataset-id DATASET --sample-id SAMPLE --question-id QUESTION \
-  --output /path/to/new-case
-```
-
-Report completed/expected samples and questions, metric identity/coverage,
-original/final nodes and tokens, tokenizer, fallbacks, service failures and
-artifact paths. The CLI reports an exception type; inspect the failed stage or
-use the Python API for detail before retrying. Stop expansion on unresolved
-authentication, quota, schema or input-contract failures. Call counts are not
-a billing total, and trace redaction does not redact all private run files.
-
-Inspect inputs through the loader CLI, verify completed experiment artifacts with
-`memfolder verify`, and use case export to assess behavior. State the data/model
-coverage accurately; artifact verification does not establish paper-score
-reproduction.
+Report the configuration, completed/expected sample and question counts,
+original/final record and token counts, metric names/versions, score coverage,
+fallbacks, and output paths. Distinguish a tested pipeline from reproduced paper
+results. Reproduction requires the matching bank, models, prompts, retrieval,
+metric, method version, and seed, not just a successful exit code.

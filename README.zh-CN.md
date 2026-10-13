@@ -84,11 +84,13 @@ source .venv/bin/activate
 python -m pip install -e .
 python -m memfolder --help
 ```
+
 运行 RecordFolder 和 ContextFolder 还需安装：
 
 ```bash
 python -m pip install -e ".[algorithms,contextfolder,evaluation]"
 ```
+
 #### 2. 下载数据
 
 实验需要**基准的对话与问答数据**以及**待压缩的记忆库**。首次运行 LoCoMo 时，可下载下面的对话数据，并保留模板中的 `history-initializer`，按每个对话轮次构建一个节点。开展 Mem0 或 MemOS 实验时，应换成单独生成的记忆库。
@@ -98,6 +100,7 @@ mkdir -p data/locomo
 curl -fL https://raw.githubusercontent.com/snap-research/locomo/3eb6f2c585f5e1699204e3c3bdf7adc5c28cb376/data/locomo10.json \
   -o data/locomo/locomo10.json
 ```
+
 | 基准 | 下载地址 | 数据插件与输入文件 |
 | --- | --- | --- |
 | LoCoMo | [官方发布](https://github.com/snap-research/locomo) | `locomo-dataset`：`locomo10.json` |
@@ -127,7 +130,8 @@ curl -fL https://raw.githubusercontent.com/ByteDance-Seed/m3-agent/0e3e41939bd8a
 curl -fL https://raw.githubusercontent.com/ByteDance-Seed/m3-agent/0e3e41939bd8a0b66d756e7b7eb8d5fe9992da5c/data/annotations/web.json \
   -o data/m3/web.json
 ```
-将 [dataset-components.json](examples/experiments/dataset-components.json) 中对应条目作为实验的 `dataset` 配置。PersonaMem 提供对话顺序，M3 的 clip 序号表示可见性；LoCoMo 模板默认的 `event-time-features` 需要已解析的事件时间。这两类输入须先配置语义明确的顺序／时间适配器，仅替换数据集配置还不够，见[基准配置](skills/references/experiment-config.md#benchmark-time-and-reader-scope)。PersonaMem 还需填写 `contexts_path`，M3 还需填写 `memory_loaders` 和 `variant`。下载 M3 问答标注及对应记忆图，并保留媒体路径与 clip 截止范围。完整多模态评测还需配置 [M3-Agent 控制器](https://github.com/ByteDance-Seed/m3-agent#control)。
+
+将 [dataset-components.json](examples/experiments/dataset-components.json) 中对应的条目作为实验的 `dataset` 配置。PersonaMem 还需填写 `contexts_path`，M3 还需填写 `memory_loaders` 和 `variant`。下载 M3 问答标注及对应记忆图，并保留媒体路径与 clip 截止范围。完整多模态评测还需配置 [M3-Agent 控制器](https://github.com/ByteDance-Seed/m3-agent#control)。
 
 这些加载器使用基准原始格式。MemForest 的 `dataset/longmemeval.json` 和 `dataset/personamem_32k.json` 使用转换后的 LoCoMo 风格格式，需要匹配的适配器。数据版本、记忆快照和评分协议需配套使用。
 
@@ -144,6 +148,7 @@ curl -fL https://huggingface.co/datasets/Celina-love-sweet/MemForest_data/resolv
   -o data/memforest/locomo.tar.gz
 tar -xzf data/memforest/locomo.tar.gz -C data/memforest
 ```
+
 压缩包约 46 MB。保留原始记忆库不变。在 `build/configs/` 下的实验配置中，将 `initializer` 替换为以下内容，对应 LoCoMo 的第一个样本 `conv-26`：
 
 ```json
@@ -167,6 +172,7 @@ tar -xzf data/memforest/locomo.tar.gz -C data/memforest
   }
 }
 ```
+
 用户标识遵循 MemForest 的 `<speaker>_<sample index>` 命名方式，使用前需核对所选库中的实际值。扩展到更多样本时，为每个样本添加映射，并同步修改 `dataset.parameters.sample_ids`。通过 `selectors` 筛选每个样本对应的用户，并从离线快照导入 collection 中的 `storage.sqlite`。
 
 导入记忆后使用答案评分。节点具有原始对话的证据 ID 映射时，可启用 `evidence-recall`，其余情况从 evaluator 中移除该项。其他记忆库可使用 `mem0`、`mem0-qdrant`、`memos`、`memos-cube` 和 `m3` 插件。`history-initializer` 按对话轮次构建节点。需要框架自身的记忆提取与更新时，使用上游 [Mem0](https://github.com/mem0ai/mem0)、[MemOS](https://github.com/MemTensor/MemOS) 或 [M3-Agent](https://github.com/ByteDance-Seed/m3-agent) 流程。
@@ -183,6 +189,7 @@ cp examples/experiments/recordfolder-template.json build/configs/locomo-recordfo
 cp examples/experiments/contextfolder-template.json build/configs/locomo-contextfolder.json
 export MEMFOLDER_PROVIDER_KEY="YOUR_API_KEY"
 ```
+
 将**两个文件**的 `dataset` 部分替换为：
 
 ```json
@@ -196,6 +203,7 @@ export MEMFOLDER_PROVIDER_KEY="YOUR_API_KEY"
   }
 }
 ```
+
 这里先选一个对话。将 `sample_ids` 设为 `[]` 可运行全部十个对话。`preserve_unknown` 保留证据编号无法解析的问题，并将其证据召回标为未评分。显式 UTC 偏移用于统一解释没有时区的日期。
 
 | 配置项 | 需要填写的内容 |
@@ -206,51 +214,47 @@ export MEMFOLDER_PROVIDER_KEY="YOUR_API_KEY"
 | `run.budgets[0].ratio` | 节点**保留比例**：`0.5` 表示缩减 50%，`0.3` 表示缩减 70%。 |
 | `output_dir` | 每次实验使用新目录。模板默认为 `../../build/experiments/recordfolder-001` 和 `../../build/experiments/contextfolder-001`。 |
 
-所有路径以配置文件所在目录为基准。两个模板使用同一输入，并评测原始与压缩后的记忆。对比时保持模型、样本、检索和评分设置一致。ContextFolder 的 writer 默认使用 **0.8 token 保留目标**、最多 **3 轮**和 **1.15 预算容差**。当前空／非法事实规划会进入未经盲验证、缺少长度保护的摘要回退；扩大实验前应检查 fallback 数量和实际保存长度。目标用于指导修订，结果报告最终输出的实际 token 保留比例。
+所有路径以配置文件所在目录为基准。两个模板使用同一输入，并评测原始与压缩后的记忆。对比时保持模型、样本、检索和评分设置一致。ContextFolder 的 writer 默认使用 **0.8 token 保留目标**、最多 **3 轮**和 **1.15 预算容差**。目标用于指导修订，结果报告最终输出的实际 token 保留比例。
 
 <details>
 <summary><b>向量检索与论文设置</b></summary>
 
-入门模板默认使用词项匹配 top-10 检索、公共 MemForest LLM judge 和 MemOS 格式输出。向量检索与压缩阶段的语义特征分别配置。需要向量检索时，在 `reader.parameters` 下加入以下内容，并保留原有 answerer：
+入门模板默认使用词项匹配 top-10 检索、MemForest judge 准确率评分和 MemOS 格式输出。向量检索与压缩阶段的语义特征分别配置。需要向量检索时，在 `reader.parameters` 下加入以下内容，并保留原有 answerer：
 
 ```json
-{
-  "retriever": {
-    "plugin": "dense-retriever",
-    "parameters": {
-      "top_k": 10,
-      "space": {
-        "provider": "caller-declared",
-        "model": "YOUR_EMBEDDING_MODEL",
-        "revision": "YOUR_MODEL_REVISION",
-        "dimension": 1536
-      }
+"retriever": {
+  "plugin": "dense-retriever",
+  "parameters": {
+    "top_k": 10,
+    "space": {
+      "provider": "caller-declared",
+      "model": "YOUR_EMBEDDING_MODEL",
+      "revision": "YOUR_MODEL_REVISION",
+      "dimension": 1536
     }
   }
 }
 ```
+
 同时在 `compression.wrapper.parameters` 下加入 `embedding_provider`，为改写后的节点重新生成向量：
 
 ```json
-{
-  "embedding_provider": {
-    "plugin": "content-embeddings",
-    "parameters": {
-      "space": {
-        "provider": "caller-declared",
-        "model": "YOUR_EMBEDDING_MODEL",
-        "revision": "YOUR_MODEL_REVISION",
-        "dimension": 1536
-      }
+"embedding_provider": {
+  "plugin": "content-embeddings",
+  "parameters": {
+    "space": {
+      "provider": "caller-declared",
+      "model": "YOUR_EMBEDDING_MODEL",
+      "revision": "YOUR_MODEL_REVISION",
+      "dimension": 1536
     }
   }
 }
 ```
-两处 `space` 与语义特征提供器保持一致，并填写模型实际维度。两个 reader 均使用 `memforest-qa-prompt`；`contextfolder-qa-prompt` 只是行为相同的兼容别名。
 
-所有内置普通摘要合并使用同一份 MemForest merge 模板。各方法、各基准的最终 QA 和 judge 均使用 `memforest-qa-prompt`、`memforest-judge`，judge 返回 JSON `CORRECT`／`WRONG`。LLMLingua-2 和 BabelTele 保留各自的压缩逻辑；ContextFolder 内部的事实提取、编码与恢复检查独立于最终评测。[提示词协议](src/prompt_protocol.py)记录具体模板、哈希和缓存身份。
+两处 `space` 与语义特征提供器保持一致，并填写模型实际维度。两个 reader 均使用 `memforest-qa-prompt`，评测使用 `memforest-judge`。
 
-复现论文表格还需匹配原始记忆快照、模型版本、检索设置和评分覆盖。LoCoMo F1 可作为单独指标配置；MemForest judge 与各基准原始评分协议具有不同身份。使用 Mem0 原生评测流程时，应为导入的记忆库显式配置相应检索器。
+复现论文表格时，需匹配原始记忆快照、模型版本、提示词、检索设置和评分协议。入门模板使用统一的 MemForest judge，LoCoMo F1 是可选的独立指标。使用 Mem0 原生评测流程时，应为导入的记忆库显式配置相应检索器。
 
 </details>
 
@@ -265,39 +269,27 @@ python -m memfolder case build/experiments/recordfolder-001 \
   --dataset-id locomo --sample-id conv-26 --question-id conv-26:0 \
   --output build/cases/locomo-recordfolder-q0
 ```
+
 这些实验会调用配置的模型 API。输出目录中的 `result.json` 包含原始/压缩后分数及逐样本统计，`run.manifest.json` 保存执行状态，样本子目录保存记忆快照和预测。`verify` 校验结果文件的完整性，`case` 导出一道问题用于检查。
 
-预算与随机种子的批量对比可参照 [matrix-template.json](examples/experiments/matrix-template.json)，填入与单组实验相同的数据和服务配置后，执行 `python -m memfolder matrix CONFIG.json`。`--resume` 复用校验通过的**已完成**实验。运行失败后，保留已有文件并使用新输出目录重试。
-
-[PersonaMem Mem0](examples/experiments/personamem-mem0-template.json)、[PersonaMem MemOS](examples/experiments/personamem-memos-template.json) 和 [M3](examples/experiments/m3-recordfolder-template.json) 模板使用各框架的排序规则：Mem0 的 `created_at`、MemOS 的 `(ts, id)`，以及 M3 每个 clip 内的数字节点 ID。填入自己的数据路径、问题或视频 ID、记忆库映射及模型服务后运行。前缀库需要明确的源历史位置，M3 的预算仍按 clip 分配。[时间与前缀配置说明](skills/references/experiment-config.md#framework-time-and-order-profiles) 包含字段映射、ContextFolder 组合方式和 reader 范围。
+方法与随机种子的批量对比可参照 [matrix-template.json](examples/experiments/matrix-template.json)，执行 `python -m memfolder matrix CONFIG.json`。`--resume` 复用校验通过的**已完成**实验。运行失败后，保留已有文件并使用新输出目录重试。
 
 <details>
 <summary><b>基线配置</b></summary>
 
-[examples/recipes/](examples/recipes/) 提供各方法的压缩配置。复制已配置好的 RecordFolder 实验，将其中的 `compression.planner` 和 `compression.operator` 替换为所选方法的组件。每个所需特征只配置一次，保留 wrapper、模型服务及公共 QA/judge。recipe 是组件片段，不能直接作为完整实验配置运行。
+[examples/recipes/](examples/recipes/) 提供各方法的压缩配置。复制已配置好的 RecordFolder 实验，将其中的 `compression.planner` 和 `compression.operator` 替换为所选方法的组件，合并所需特征与语义编码器，并保留 wrapper 和模型服务。
 
 - [MemForest 范围预算分配](examples/recipes/memforest-mst-capacity.json)版本需设置 `run.mode: "repeat"`，并在语义编码器之外使用 `aggregation: "latest"` 的 `event-time-features`。[逐簇向上取整](examples/recipes/memforest-mst-cluster-ceil.json)版本通过 Python API 配合 `resolve_memforest_budget` 运行。M3 的 average-linkage proxy 是单独命名的适配版本。
-- [文本 ToMe](skills/references/tome.md)将时间连续二分 planner 与公共 `text-operator`、`semantic-encoder` 组合，采用 `run.mode: "repeat"`。公共特征提供器在每次匹配前编码当前文本，原始 history 无须预存节点向量。可从 [tome-template.json](examples/experiments/tome-template.json) 开始，声明向量空间，每个特征名只配置一次。带缓存的向量服务会复用未变化文本的向量。原生向量输出和向量检索仍需配置 wrapper 的内容向量提供器。历史交错分区版本名为 `tome-bsm`。
-- [LLMLingua-2](skills/references/llmlingua2.md)压缩最终节点文本，默认保留比例为 `0.55`。按 token 预算压缩的 service、全量文本向量刷新及显式 Mem0 owner 映射仍可分别配置。
+- 文本 ToMe 同样需要 `run.mode: "repeat"`，按时间连续二分，交错分区版本名为 `tome-bsm`。
+- LLMLingua-2 压缩最终节点文本，默认保留比例为 `0.55`。
 - [record_and_context_compression.py](examples/record_and_context_compression.py) 将 ContextFolder 应用于其他压缩方法输出的最终节点，保持节点数量并改写文本。
 
 </details>
-
-`examples/` 中的 JSON 用于配置实验、压缩组件和数据加载器。
-[src/core/](src/core/) 中的 Python 契约定义数据接口。
-需要 JSON Schema 的集成可以按需导出：
-
-```bash
-python tools/export_schemas.py --output-dir build/schemas
-```
 
 <a id="main-results"></a>
 <a id="full-results"></a>
 
 ## 全部结果
-
-以下表格和图片保留论文报告的结果及原始方法、评测身份。仓库中新运行的
-实验单独记录分数和协议 manifest；更新提示词或方法不会改写这些历史数值。
 
 ### RecordFolder：节点压缩
 
