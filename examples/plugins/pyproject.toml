@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "memfolder-example-extensions"
+version = "0.1.0"
+description = "MemFolder examples for method, dataset, evaluation and analysis extensions"
+requires-python = ">=3.11"
+dependencies = ["memfolder>=0.1.0.dev0"]
+
+[project.entry-points."memfolder.plugins"]
+"example.recency" = "memory_selection_components:build_recency_selector"
+"example.threshold" = "memory_selection_components:build_threshold_gate"
+"example.newbench" = "benchmark_dataset_loader:build"
+"example.answer-length" = "evaluation_and_case_analysis:metric_factory"
+"example.trace-observer" = "evaluation_and_case_analysis:observer_factory"
+"example.case-writer" = "evaluation_and_case_analysis:build_case_writer"
+
+[tool.setuptools]
+py-modules = ["memory_selection_components", "benchmark_dataset_loader", "evaluation_and_case_analysis"]

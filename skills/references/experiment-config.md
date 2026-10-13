@@ -187,7 +187,7 @@ benchmark judge.
 For a post-record pass, use `current-record-rewrite` and `current-record-builder`
 as in `examples/recipes/contextfolder-post-record.json`. Reset the compression
 state, features, rounds, and node budget for this separate `mode: "once"` pass.
-`examples/record_then_context.py` demonstrates that composition in Python.
+`examples/record_and_context_compression.py` demonstrates that composition in Python.
 There is no arbitrary multi-stage list in the full experiment JSON schema.
 
 ## Shared benchmark QA and scoring

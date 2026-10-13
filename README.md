@@ -279,7 +279,7 @@ The [PersonaMem Mem0](examples/experiments/personamem-mem0-template.json), [Pers
 - For [MemForest scope-capacity](examples/recipes/memforest-mst-capacity.json), set `run.mode` to `"repeat"` and use `event-time-features` with `aggregation: "latest"`, alongside the semantic encoder. Run the [per-cluster ceiling](examples/recipes/memforest-mst-cluster-ceil.json) variant through the Python API with `resolve_memforest_budget`. The M3 average-linkage proxy is a separately named adaptation.
 - [Text ToMe](skills/references/tome.md) uses a chronological-halves planner with the common `text-operator` and `semantic-encoder`, in `run.mode: "repeat"`. The shared feature provider encodes current text before each match, so raw history needs no precomputed node vectors. Start from [tome-template.json](examples/experiments/tome-template.json), declare the embedding space and configure each feature name once. The cached embedding service reuses unchanged text. Native vector output and dense retrieval still need the wrapper's content-embedding provider. The alternating-partition variant is `tome-bsm`.
 - [LLMLingua-2](skills/references/llmlingua2.md) compresses final record text with a default retention rate of `0.55`. The token-budget compression service, all-text embedding refresh and explicit Mem0 owner mapping remain separately configurable.
-- [record_then_context.py](examples/record_then_context.py) applies ContextFolder to another compressor's final records, preserving their count while rewriting the text.
+- [record_and_context_compression.py](examples/record_and_context_compression.py) applies ContextFolder to another compressor's final records, preserving their count while rewriting the text.
 
 </details>
 

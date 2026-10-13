@@ -279,7 +279,7 @@ python -m memfolder case build/experiments/recordfolder-001 \
 - [MemForest 范围预算分配](examples/recipes/memforest-mst-capacity.json)版本需设置 `run.mode: "repeat"`，并在语义编码器之外使用 `aggregation: "latest"` 的 `event-time-features`。[逐簇向上取整](examples/recipes/memforest-mst-cluster-ceil.json)版本通过 Python API 配合 `resolve_memforest_budget` 运行。M3 的 average-linkage proxy 是单独命名的适配版本。
 - [文本 ToMe](skills/references/tome.md)将时间连续二分 planner 与公共 `text-operator`、`semantic-encoder` 组合，采用 `run.mode: "repeat"`。公共特征提供器在每次匹配前编码当前文本，原始 history 无须预存节点向量。可从 [tome-template.json](examples/experiments/tome-template.json) 开始，声明向量空间，每个特征名只配置一次。带缓存的向量服务会复用未变化文本的向量。原生向量输出和向量检索仍需配置 wrapper 的内容向量提供器。历史交错分区版本名为 `tome-bsm`。
 - [LLMLingua-2](skills/references/llmlingua2.md)压缩最终节点文本，默认保留比例为 `0.55`。按 token 预算压缩的 service、全量文本向量刷新及显式 Mem0 owner 映射仍可分别配置。
-- [record_then_context.py](examples/record_then_context.py) 将 ContextFolder 应用于其他压缩方法输出的最终节点，保持节点数量并改写文本。
+- [record_and_context_compression.py](examples/record_and_context_compression.py) 将 ContextFolder 应用于其他压缩方法输出的最终节点，保持节点数量并改写文本。
 
 </details>
 

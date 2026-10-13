@@ -83,7 +83,7 @@ the default raw-text pipeline.
 
 Context compression after record compression is a separate pipeline stage that
 consumes the final record snapshot. See
-[record_then_context.py](../../examples/record_then_context.py); declare
+[record_and_context_compression.py](../../examples/record_and_context_compression.py); declare
 `embedding_space` for raw input and inject the selected context services. The
 `tome-with-contextfolder.json` recipe composes BSM grouping with a ContextFolder
 writer. It differs from temporal ToMe followed by a separate context stage.

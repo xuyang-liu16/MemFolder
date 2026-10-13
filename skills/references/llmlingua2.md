@@ -115,7 +115,7 @@ path can replace `model_name`. For CPU execution declare `device_map: "cpu"`
 and `dtype: "float32"`. Another service can implement `compress(text, rate=...)`
 and return the same result contract.
 
-[record_then_context.py](../../examples/record_then_context.py) demonstrates
+[record_and_context_compression.py](../../examples/record_and_context_compression.py) demonstrates
 temporal ToMe followed by LLMLingua-2 or ContextFolder as independent stages.
 Callers inject `chat`, `embeddings`, and the selected context services. Pass
 `embedding_space` explicitly for raw text input; an existing semantic batch or

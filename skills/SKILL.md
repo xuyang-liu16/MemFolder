@@ -107,7 +107,7 @@ the shared MemForest judge differs from native benchmark scoring protocols.
   fallback currently lacks a length bound and blind verification. Inspect
   fallback reasons, required-fact losses and measured saved lengths.
 - For a context pass after Record compression, use the current-record rewrite
-  recipes and `examples/record_then_context.py`. Reset stage state/features
+  recipes and `examples/record_and_context_compression.py`. Reset stage state/features
   and node budget; do not regroup original source members.
 - Preserve LongMemEval query-time visibility, PersonaMem history prefixes and
   M3 clip cutoffs/protected nodes. Text-chat answering does not implement the
