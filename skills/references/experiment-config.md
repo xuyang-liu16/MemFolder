@@ -75,7 +75,8 @@ parameters in `src/loading/loader_registry.py` and `LoadOptions` in
 | M3 VideoGraph JSON or pickle | `load_m3` | Video mapping, NumPy for array-bearing pickles |
 | Saved MemFolder library | `load_library` | Matching dataset/sample IDs |
 
-An import writes a fresh directory containing `library.json` and `report.json`:
+An import writes a fresh directory containing `library.json`, `report.json`
+and `binding.json`:
 
 ```bash
 python -m memfolder.loading mem0-sqlite /path/to/storage.sqlite \
@@ -91,7 +92,15 @@ Declare `embedding_spaces` only when the source model, revision, dimension, and
 slot are known. Native vectors with unknown provenance are not a substitute for
 declared semantic features. Set `naive_timezone`, `numeric_timestamp_clock`, and
 `visibility_field` from the source format. `order_by: "time_id"` requires
-comparable parsed times. Never infer availability from event time alone.
+comparable parsed times unless `missing_time_order: "first"` is explicitly set.
+Never infer availability from event time alone.
+
+Use `personamem-mem0-template.json`, `personamem-memos-template.json`, or
+`m3-recordfolder-template.json` in `examples/experiments/` for their declared
+ordering and native output settings. PersonaMem's `prefix_end_field` is an
+exclusive source-turn end index, not a timestamp or sorted record position.
+If it is unavailable, use verified per-question prefix banks and omit the field.
+M3 keeps node budgets per clip with `minimum: 1` and preserves `before_clip`.
 
 ## Dense retrieval and embeddings
 

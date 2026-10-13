@@ -58,7 +58,8 @@ Do not invent an exact total from question count alone.
 
 ## Check installation without model calls
 
-Use Python 3.11+ in an isolated environment:
+Use Python 3.11+ in an isolated environment. The commands below use Bash;
+on Windows, use the equivalent PowerShell activation command.
 
 ```bash
 python3 -m venv .venv
@@ -85,7 +86,7 @@ Start with README's **Download data** section. Resolve two separate inputs:
 benchmark conversations/questions and the memory bank to compress. The checkout
 does not include full benchmark data or the paper's frozen banks.
 
-- LoCoMo: use the pinned `data/locomo10.json` download in README. Set
+- LoCoMo: use the pinned `data/locomo/locomo10.json` download in README. Set
   `utc_offset_minutes: 0` for the documented UTC interpretation and
   `evidence_policy: "preserve_unknown"` for its unresolved evidence IDs.
   This keeps questions and marks their evidence recall `not_run`.
@@ -121,7 +122,7 @@ Inspect the supplied templates before treating their defaults as an experiment:
 - `retrieval-reader` defaults to lexical top-10 retrieval. Semantic features
   used for grouping do not automatically enable dense retrieval.
 - The templates select `memforest-judge`. LoCoMo F1 is an optional separate metric.
-- The supplied wrapper writes MemOS-format output. Select the intended
+- The LoCoMo starter templates write MemOS-format output. Select the intended
   framework and native retriever explicitly when that matters.
 
 Use the import instructions in [experiment-config.md](references/experiment-config.md)
@@ -136,16 +137,19 @@ Preserve originals and write imports and native outputs to new directories.
 - `run.budgets[].ratio` is the fraction retained. A 70% record reduction is
   `ratio: 0.3`. Node budgets count eligible records and use per-scope,
   half-even rounding by default. Report realized counts after rounding.
-- RecordFolder needs current semantic vectors, entity features, and comparable
-  event times. Its template selects `temporal_feature: "temporal"` from
-  `event-time-features`. Keep sample/scope boundaries and protected records.
+- RecordFolder needs current semantic vectors, entity features, and a declared
+  time/order policy. The LoCoMo template uses `event-time-features`; PersonaMem
+  and M3 templates use ordinal ordering. Start from the matching benchmark
+  template instead of changing only the dataset in a LoCoMo config. Keep
+  sample/scope boundaries and protected records.
 - ContextFolder's `target_ratio`, default `0.8`, guides text generation.
   Its default `max_rounds: 3` and `budget_slack: 1.15` are writer settings,
   separate from `run.max_rounds`. The selector or fallback can miss the target.
   Report `final_tokens`, required-fact losses, and fallback reasons. The driver
   enforces node budgets, not a strict global token cap.
 - Use `memforest-qa-prompt` and `memforest-judge` across comparison arms.
-  Compression fact checks use source memory, never benchmark QA or gold answers.
+  Final QA uses no AGPR or method-specific decoding legend. Compression fact
+  checks use source memory, never benchmark QA or gold answers.
 - LongMemEval query time, PersonaMem's per-question history prefix, and M3's
   `before_clip` cutoff constrain available memory. Never expose future records
   to make a sample pass.
@@ -169,13 +173,18 @@ registration in `src/catalog.py`:
 
 - Text ToMe and MST MemForest require repeated execution and embedding refresh.
   The current `tome` plugin uses chronological halves. `tome-bsm` names the
-  alternating-partition variant.
+  alternating-partition variant. Start temporal ToMe from
+  `examples/experiments/tome-template.json`; configure `semantic-encoder` once
+  with the declared embedding space. Stored vectors are not required.
 - MemForest's scope-budget and per-cluster ceiling variants resolve budgets
   differently. Preserve the selected variant and its budget resolver. The full
   experiment CLI has no dynamic budget-resolver field. Use the Python API's
   `resolve_memforest_budget` for per-cluster ceilings rather than passing
   that recipe with a scope-level ratio and claiming upstream parity.
 - LLMLingua-2 operates on final current records, with default rate `0.55`.
+  `llmlingua2-service` passes a rate; `llmlingua2-token-budget-service` computes
+  an explicit token budget. Declare which service is used; they are distinct
+  compression configurations. Refresh output embeddings before dense retrieval.
 - M3 MemForest proxy and DART memory adaptations are explicitly named variants.
   StreamMeCo's compression plugin does not supply its upstream temporal reader.
 
