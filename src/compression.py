@@ -3,15 +3,26 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from types import MappingProxyType
-import inspect
 from pathlib import Path
 
-from .core import (AlgorithmContext, OperatorContext, PlanningRequest, Snapshot,
-    NullDiagnostics, FrozenMap, validate_composition, validate_features,
-    validate_plan, validate_result, validate_projection, validate_budget,
-    result_records, fingerprint)
+from .core import (
+    AlgorithmContext,
+    OperatorContext,
+    PlanningRequest,
+    Snapshot,
+    NullDiagnostics,
+    FrozenMap,
+    validate_composition,
+    validate_features,
+    validate_plan,
+    validate_result,
+    validate_projection,
+    validate_budget,
+    result_records,
+    fingerprint,
+)
 from .core.values import require
-from .planning.common import emit
+from .component_runtime import emit, resolve as resolved
 
 
 class ServiceMap:
@@ -59,9 +70,6 @@ class DiagnosticCollector:
         path=Path(path)
         with path.open('x',encoding='utf-8') as stream:
             for record in self.records:stream.write(dumps(record)+'\n')
-
-
-async def resolved(value):return await value if inspect.isawaitable(value) else value
 
 
 @dataclass(frozen=True)

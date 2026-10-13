@@ -62,8 +62,8 @@ end-to-end clustering or retrieval behavior.
 
 Run `python -m memfolder.loading --help` for the supported input formats.
 The Python entry points are in `src/loading/__init__.py`, with loader
-parameters in `src/loading/factories.py` and `LoadOptions` in
-`src/loading/types.py`.
+parameters in `src/loading/loader_registry.py` and `LoadOptions` in
+`src/loading/contracts.py`.
 
 | Input | Loader function | Additional setup |
 | --- | --- | --- |
@@ -143,7 +143,7 @@ Use the actual dimension and matching declarations in the semantic feature
 provider and `services.embeddings` too. The default embedding service name is
 `embeddings`. Rewritten text needs fresh content-bound embeddings.
 `top_k: 10` is an example, not a claim about the paper's setting.
-For framework-native retrieval, inspect `src/evaluation/native.py`
+For framework-native retrieval, inspect `src/evaluation/retrieval.py`
 and the selected wrapper in `src/wrappers/`.
 
 The Mem0 Qdrant writer requires one unnamed dense-vector space. MemOS tree output
@@ -219,7 +219,7 @@ endpoint and credentials alongside chat/grounding/embeddings. The template
 copies the chat settings for judge, so keep both synchronized or explicitly
 record a different judge model consistently across every comparison arm.
 
-The single source is `src/prompt_templates.py`.
+The single source is `src/prompt_protocol.py`.
 The [prompt protocol](../../src/prompt_protocol.py) records source/template
 hashes, message roles and JSON output. The judge accepts only
 `{"label":"CORRECT"}` or `{"label":"WRONG"}`; invalid labels fail evaluation.
@@ -348,15 +348,15 @@ these text-compression templates.
 | CLI arguments and config-relative paths | `src/__main__.py` |
 | Assembly, output isolation, verification, resume | `src/experiment.py` |
 | Matrix axes, seeds, and limits | `src/matrix.py` |
-| Registered parameters and plugin names | `src/experiment_plugins.py`, `src/method_plugins.py` |
+| Registered parameters and plugin names | `src/catalog.py` |
 | History records versus imported banks | `src/initialization.py` |
 | Anchor selection, affinity, temporal matching | `src/planning/recordfolder.py` |
 | Fact planning, blind checks, fallback selection | `src/operators/contextfolder.py` |
 | Node budgets and enforcement | `src/core/budgets.py`, `src/compression.py` |
-| Reader defaults and content limits | `src/evaluation/reader.py`, `src/evaluation/retrieval.py` |
-| Metric and judge protocols | `src/evaluation/metrics.py`, `src/evaluation/official.py` |
+| Reader defaults and content limits | `src/evaluation/qa_reader.py`, `src/evaluation/retrieval.py` |
+| Metric and judge protocols | `src/evaluation/metrics.py` |
 | HTTP payloads, cache identity, token counting | `src/services.py` |
-| Post-rewrite embeddings | `src/wrappers/embedding.py` |
+| Post-rewrite embeddings | `src/wrappers/postprocessing.py` |
 
 The built-in context builder limits characters, not tokens. Record that setting
 when comparing reader budgets. The supplied chat answerer consumes text.

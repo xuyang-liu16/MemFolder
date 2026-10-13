@@ -2,11 +2,26 @@
 from dataclasses import dataclass
 from pathlib import Path
 from time import monotonic_ns
-from .core import (CapturePolicy, TraceCoverage, EventEnvelope, Snapshot, ActionPlan,
-    OperatorResult, DiagnosticRecord, DiagnosticLinks, FrozenMap, project_snapshot, to_data, dumps,
-    MemoryInput,Prediction,EvaluationReport,FeatureBatch)
+from .core import (
+    CapturePolicy,
+    TraceCoverage,
+    EventEnvelope,
+    Snapshot,
+    ActionPlan,
+    OperatorResult,
+    DiagnosticRecord,
+    DiagnosticLinks,
+    FrozenMap,
+    project_snapshot,
+    to_data,
+    dumps,
+    MemoryInput,
+    Prediction,
+    EvaluationReport,
+    FeatureBatch,
+)
 from .core.values import require
-from .planning.common import resolve
+from .component_runtime import resolve
 from .artifacts import ArtifactStore, PublicArtifacts, FileReportWriter
 
 

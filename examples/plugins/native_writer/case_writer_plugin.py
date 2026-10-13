@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from memfolder.core import PluginSpec, to_data
 from memfolder.core.values import require
 from memfolder.plugins import PluginRequest
-from memfolder.planning.common import resolve
-from memfolder.wrappers.io import write_json
+from memfolder.component_runtime import resolve
+from memfolder.artifacts import write_json
 
 SPEC=PluginSpec(plugin_id='example.case_writer',role='native_writer')
 

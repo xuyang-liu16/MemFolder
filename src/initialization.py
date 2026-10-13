@@ -1,10 +1,18 @@
 """Memory-only initialization. Framework construction is an independent extension."""
-from dataclasses import dataclass,replace
-from .core import (MemoryInput,MemoryRecord,OriginRef,Snapshot,TimeRange,ContentPart,
-    FrozenMap,fingerprint)
+from dataclasses import dataclass, replace
+from .core import (
+    MemoryInput,
+    MemoryRecord,
+    OriginRef,
+    Snapshot,
+    TimeRange,
+    ContentPart,
+    FrozenMap,
+    fingerprint,
+)
 from .core.values import require
-from .planning.common import spec,resolve
-from .operators.types import ChatRequest
+from .component_runtime import spec, resolve
+from .operators.contracts import ChatRequest
 
 
 @dataclass(frozen=True)
@@ -79,7 +87,7 @@ class BankInitializer:
         loaded=library.inputs[0]
         require((loaded.sample.dataset_id,loaded.sample.sample_id)==(memory.sample.dataset_id,sid),'Bank loader must declare the matching dataset_id and sample_id')
         if self.prefix_end_field is not None:
-            from .loading.common import field_value
+            from .loading.validation import field_value
             require(type(self.prefix_end_field) is str and self.prefix_end_field
                     and all(self.prefix_end_field.split('.')), 'Invalid bank prefix field')
             require(memory.history_artifact is None, 'External history needs an explicit prefix adapter')

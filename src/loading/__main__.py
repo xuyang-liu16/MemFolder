@@ -5,12 +5,12 @@ import argparse
 from pathlib import Path
 import sys
 
-from memfolder.catalog import default_registry
-from memfolder.core import ContractError, dumps
-from memfolder.plugins import BuildContext, PluginRequest, read_plugin_request
-from .common import strict_json
-from .loaders import save_library
-from .types import LoadedLibrary
+from ..catalog import default_registry
+from ..core import ContractError, dumps
+from ..plugins import BuildContext, PluginRequest, read_plugin_request
+from .validation import strict_json
+from .memory_libraries import save_library
+from .contracts import LoadedLibrary
 
 
 def main(argv=None):

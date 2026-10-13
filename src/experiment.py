@@ -1,22 +1,38 @@
 """One application runner assembles every stage without benchmark/framework dispatch."""
-from dataclasses import dataclass,replace,fields,is_dataclass
+from dataclasses import dataclass, replace, fields, is_dataclass
 from hashlib import sha256
 from pathlib import Path
 from time import perf_counter
 import inspect
-from .core import (AlgorithmContext,BudgetRequest,CapturePolicy,DatasetSample,ExperimentResult,
-    CompressionStatistics,SampleRunResult,RunManifest,PluginBinding,PlanningRequest,
-    FrozenMap,DiagnosticLinks,ArtifactRef,from_data,to_data,fingerprint,loads)
+from .core import (
+    AlgorithmContext,
+    BudgetRequest,
+    CapturePolicy,
+    DatasetSample,
+    ExperimentResult,
+    CompressionStatistics,
+    SampleRunResult,
+    RunManifest,
+    PluginBinding,
+    PlanningRequest,
+    FrozenMap,
+    DiagnosticLinks,
+    ArtifactRef,
+    from_data,
+    to_data,
+    fingerprint,
+    loads,
+)
 from .core.values import require
-from .assembly import assemble,binding_parameters
+from .assembly import assemble, binding_parameters
 from .catalog import default_registry
-from .plugins import BuildContext,PluginRequest
-from .compression import CompressionEngine,ServiceMap
-from .planning.common import resolve
-from .artifacts import ArtifactStore,parse_json
-from .observation import TraceRecorder,ObservedComponent,Subscription
-from .evaluation.evaluator import aggregate
-from .wrappers import run_wrapped,verify_materialization
+from .plugins import BuildContext, PluginRequest
+from .compression import CompressionEngine, ServiceMap
+from .component_runtime import resolve
+from .artifacts import ArtifactStore, parse_json
+from .observation import TraceRecorder, ObservedComponent, Subscription
+from .evaluation.metrics import aggregate
+from .wrappers import run_wrapped, verify_materialization
 from .services import MeteredService
 from .prompt_protocol import protocol_manifest
 

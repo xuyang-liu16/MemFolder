@@ -11,8 +11,7 @@ Repository: https://github.com/Celina-love-sweet/StreamMeCo
 Revision: 67c8e8c74c97e69f625890936754a9f934f3d35a
 Copyright (c) 2026 Celina
 License: MIT, included in src/licenses/StreamMeCo-MIT.txt
-Implementation: src/planning/_streammeco.py and
-src/planning/streammeco.py
+Implementation: src/planning/streammeco.py
 
 The selection routines preserve the source formulas and class quotas. MemFolder adds graph conversion, protected-record handling, and vector-space checks. This port covers graph compression; the upstream temporal retrieval stage requires a separate reader.
 
@@ -31,7 +30,7 @@ contributions remains under review, and their existing terms continue to apply.
 
 The shared merge, final QA and judge literals are archived MemForest templates.
 Their source-file and prompt SHA-256 hashes are recorded in
-src/prompt_templates.py.
+src/prompt_protocol.py.
 
 The KMeans stages are implemented in this project and call scikit-learn through an optional dependency.
 

@@ -4,9 +4,9 @@ from hashlib import sha256
 import math
 from ..core import FrozenMap
 from ..core.values import require
-from ..planning.common import emit, resolve, spec
-from .text import ConservativeRecordBuilder
-from .types import TextWriteResult
+from ..component_runtime import emit, resolve, spec
+from .record_operations import ConservativeRecordBuilder
+from .contracts import TextWriteResult
 
 
 def validate_rate(rate):

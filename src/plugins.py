@@ -1,17 +1,29 @@
-"""Explicit, lazy plugin construction. No framework/benchmark name dispatch here."""
-from __future__ import annotations
+"""Builtin factories. New contributions use entry points/module:factory, not this list."""
 
+from __future__ import annotations
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from hashlib import sha256
-import importlib
 from importlib import metadata
+import importlib
 import inspect
 import json
 from pathlib import Path
-
-from .core import API_VERSION, ContractError, FrozenMap, PluginBinding, PluginSpec, fingerprint, validate_capabilities
+from typing import get_type_hints
+from .core import (
+    API_VERSION,
+    ContractError,
+    EmbeddingSpace,
+    FrozenMap,
+    PluginBinding,
+    PluginSpec,
+    fingerprint,
+    from_data,
+    to_data,
+    validate_capabilities,
+)
 from .core.values import identifier, require
+
 
 ENTRY_POINT_GROUP = 'memfolder.plugins'
 
@@ -195,3 +207,32 @@ class PluginRegistry:
         if context.binding_sink is not None:
             context.binding_sink(binding)
         return BuiltPlugin(instance=instance, binding=binding, reference=request.plugin)
+
+
+class Factory:
+    """Explicit role map keeps each stage independently configurable."""
+    def __init__(self,cls,*,roles=None,defaults=None):
+        self.cls=cls;self.spec=cls.spec;self.roles=roles or {};self.defaults=defaults or {}
+    def __call__(self,parameters,*,context):
+        values={**self.defaults,**parameters};allowed={f.name for f in fields(self.cls)}
+        require(set(values)<=allowed,'Unknown component parameter')
+        hints=get_type_hints(self.cls)
+        for key,value in list(values.items()):
+            if key in self.roles:
+                request=PluginRequest.from_mapping(value)
+                values[key]=context.registry.create(request,role=self.roles[key],context=context,
+                                                     available=context.available).instance
+            elif key=='space':
+                values[key]=from_data(EmbeddingSpace,to_data(value))
+            elif key=='grounding' and type(value) is str:
+                path=context.path(value);require(path.is_file() and path.stat().st_size<=256*1024*1024,'Missing/oversized grounding file')
+                values[key]=FrozenMap(json.loads(path.read_text(encoding='utf-8-sig')))
+            elif hints.get(key) is bool:require(type(value) is bool,'Expected boolean parameter: '+key)
+            elif hints.get(key) is int:require(type(value) is int,'Expected integer parameter: '+key)
+            elif hints.get(key) is float:require(type(value) in (int,float),'Expected numeric parameter: '+key)
+            elif hints.get(key) is str:require(type(value) is str,'Expected text parameter: '+key)
+            elif hints.get(key) is FrozenMap:values[key]=FrozenMap(value)
+            elif key in ('participants','text_kinds','media_kinds'):
+                require(isinstance(value,(list,tuple)) and all(type(v) is str for v in value),'Expected list of strings')
+                values[key]=tuple(value)
+        return self.cls(**values)

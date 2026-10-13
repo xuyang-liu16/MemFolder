@@ -10,7 +10,7 @@ import json
 from memfolder.assembly import assemble
 from memfolder.core import to_data
 from memfolder.core.values import require
-from memfolder.lingua_historical import HistoricalLLMLingua2Service
+from memfolder.services import HistoricalLLMLingua2Service
 
 RECIPES = Path(__file__).parent / 'recipes'
 

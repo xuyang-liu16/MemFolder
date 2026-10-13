@@ -22,7 +22,7 @@ def bootstrap():
 
 
 def read_json(path):
-    from memfolder.loading.common import strict_json
+    from memfolder.loading.validation import strict_json
     path = Path(path)
     if not path.is_file() or path.stat().st_size > 1024 * 1024:
         raise ValueError('Configuration must be a file of at most 1 MiB')

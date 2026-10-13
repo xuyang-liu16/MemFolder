@@ -1,18 +1,24 @@
-"""Provider-neutral services, explicit environments and content-addressed caches."""
-from dataclasses import dataclass
-from pathlib import Path
+"""Model calls, caches, token counting, LLMLingua-2 services and call metering."""
+
 import asyncio
+import inspect
 import json
 import os
 import sqlite3
+import threading
 from contextlib import closing
-from urllib.request import Request,urlopen
-from urllib.error import HTTPError,URLError
+from dataclasses import dataclass
+from functools import cached_property
+from hashlib import sha256
+from importlib.metadata import version
+from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
-from .core import FrozenMap,fingerprint,to_data,ContractError
-from .core.values import require
-from .planning.common import spec,resolve
+from urllib.request import Request, urlopen
 from .artifacts import parse_json
+from .component_runtime import emit, resolve, spec
+from .core import ContractError, FrozenMap, fingerprint, to_data
+from .core.values import require
 
 
 @dataclass(frozen=True)
@@ -131,3 +137,198 @@ class MeteredService:
             finally:self.seconds[name]=self.seconds.get(name,0.)+perf_counter()-start
         return call
     def report(self):return {'calls':dict(self.calls),'failed':dict(self.failed),'seconds':dict(self.seconds),'provider_token_usage':None}
+
+
+@dataclass(frozen=True)
+class LLMLingua2Service:
+    model_name: str = 'microsoft/llmlingua-2-xlm-roberta-large-meetingbank'
+    revision: str = 'ebaba9b0e874dadd3003ffcff828e4397e568089'
+    device_map: str = 'cuda'
+    dtype: str = 'float16'
+    max_batch_size: int = 16
+    spec = spec('service.official_llmlingua2.v1', 'service')
+
+    def __post_init__(self):
+        require(bool(self.model_name) and bool(self.revision) and bool(self.device_map),
+                'Declare LLMLingua-2 model, revision and device')
+        require(self.dtype in ('float16', 'float32', 'bfloat16'), 'Invalid LLMLingua-2 dtype')
+        require(type(self.max_batch_size) is int and self.max_batch_size > 0,
+                'LLMLingua-2 batch size must be positive')
+        object.__setattr__(self, '_lock', threading.Lock())
+
+    @property
+    def cache_identity(self):
+        return fingerprint(('llmlingua==0.2.2', self.model_name, self.revision,
+                            self.device_map, self.dtype, self.max_batch_size))
+
+    @cached_property
+    def _compressor(self):
+        require(version('llmlingua') == '0.2.2', 'Install memfolder[llmlingua2] (llmlingua==0.2.2)')
+        import torch
+        from llmlingua import PromptCompressor
+        return PromptCompressor(model_name=self.model_name, device_map=self.device_map,
+            use_llmlingua2=True,
+            model_config={'revision': self.revision, 'torch_dtype': getattr(torch, self.dtype),
+                          'trust_remote_code': False},
+            llmlingua2_config={'max_batch_size': self.max_batch_size})
+
+    def _compress(self, text, rate):
+        # One model instance has mutable token-classifier state; serialize access.
+        with self._lock:
+            result = self._compressor.compress_prompt(text, rate=rate, use_context_level_filter=False)
+        require(isinstance(result, dict) and type(result.get('compressed_prompt')) is str,
+                'Invalid official LLMLingua-2 response')
+        return {'text': result['compressed_prompt'], 'rate': rate,
+            'input_view': 'current_record', 'input_text_sha256': sha256(text.encode('utf-8')).hexdigest(),
+            'use_llmlingua2': True, 'use_context_level_filter': False,
+            'implementation': 'llmlingua==0.2.2', 'model_name': self.model_name,
+            'model_revision': self.revision, 'device_map': self.device_map, 'dtype': self.dtype,
+            'original_tokens': result.get('origin_tokens'), 'compressed_tokens': result.get('compressed_tokens'),
+            'request_fingerprint': fingerprint((self.cache_identity, text, rate, False, 'current_record'))}
+
+    async def compress(self, text, *, rate):
+        from .operators.llmlingua2 import validate_rate
+        validate_rate(rate)
+        require(type(text) is str and bool(text.strip()), 'LLMLingua-2 needs non-empty current text')
+        return await asyncio.to_thread(self._compress, text, rate)
+
+    async def close(self):
+        def release():
+            with self._lock:
+                self.__dict__.pop('_compressor', None)
+        await asyncio.to_thread(release)
+
+
+PROFILE = 'llmlingua2.longmemeval.historical55.normalized_fallback.v3'
+
+
+class _HistoricalCounter:
+    def count(self, text):
+        import tiktoken
+        # Preserve the recovered encoder's token counting, including its
+        # handling of special-token strings, rather than broadening that API.
+        return len(tiktoken.get_encoding('cl100k_base').encode(text))
+
+
+@dataclass(frozen=True)
+class HistoricalLLMLingua2Service:
+    model_name: str = 'microsoft/llmlingua-2-xlm-roberta-large-meetingbank'
+    revision: str = 'ebaba9b0e874dadd3003ffcff828e4397e568089'
+    device_map: str = 'cuda'
+    spec = spec('service.llmlingua2_historical55.v1', 'service')
+
+    def __post_init__(self):
+        require(all(type(value) is str and value for value in
+                    (self.model_name, self.revision, self.device_map)),
+                'Declare the historical LLMLingua model, revision and device')
+        object.__setattr__(self, '_lock', threading.Lock())
+
+    @property
+    def cache_identity(self):
+        return fingerprint((PROFILE, 'llmlingua==0.2.2', self.model_name,
+                            self.revision, self.device_map, 'cl100k_base',
+                            'python_round', 6, True, 'conditional_newline'))
+
+    @cached_property
+    def _counter(self):
+        return _HistoricalCounter()
+
+    @cached_property
+    def _compressor(self):
+        require(version('llmlingua') == '0.2.2',
+                'Install memfolder[llmlingua2] (llmlingua==0.2.2)')
+        from huggingface_hub import snapshot_download
+        from llmlingua import PromptCompressor
+        checkpoint = snapshot_download(repo_id=self.model_name, revision=self.revision)
+        # The recovered factory supplies only these three arguments. In
+        # particular, it does not override dtype or the internal batch size.
+        return PromptCompressor(model_name=str(checkpoint),
+                                use_llmlingua2=True, device_map=self.device_map)
+
+    def _compress(self, text, rate):
+        source = text.strip()
+        source_tokens = self._counter.count(source)
+        kwargs = {'target_token': max(6, round(rate * source_tokens)),
+                  'force_reserve_digit': True}
+        if '\n' in source:
+            kwargs['force_tokens'] = ['\n']
+        with self._lock:
+            result = self._compressor.compress_prompt(source, **kwargs)
+        require(isinstance(result, dict) and
+                isinstance(result.get('compressed_prompt'), (str, type(None))),
+                'Invalid historical LLMLingua-2 response')
+        output = (result.get('compressed_prompt') or '').strip()
+        # The existing writer explicitly retains its source on empty output.
+        # Other model failures propagate; no failed inference becomes a score.
+        response = {'text': output, 'rate': rate, 'profile': PROFILE,
+                'input_view': 'current_record',
+                'input_text_sha256': sha256(text.encode('utf-8')).hexdigest(),
+                'normalized_input_sha256': sha256(source.encode('utf-8')).hexdigest(),
+                'output_text_sha256': sha256((output or source).encode('utf-8')).hexdigest(),
+                'use_llmlingua2': True,
+                # A single string has no context-level filtering in the
+                # upstream algorithm; this flag describes effective behavior.
+                'use_context_level_filter': False,
+                'effective_kwargs': kwargs, 'budget_tokenizer': 'cl100k_base',
+                'original_tokens': source_tokens,
+                'compressed_tokens': self._counter.count(output or source),
+                'implementation': 'llmlingua==0.2.2',
+                'model_name': self.model_name, 'model_revision': self.revision,
+                'device_map': self.device_map, 'constructor_policy': 'defaults',
+                'fallback_reason': None if output else 'empty_classifier_output',
+                'source_preserved': not bool(output),
+                'request_fingerprint': fingerprint((self.cache_identity, text, rate, kwargs))}
+        if not output:
+            response['fallback_text'] = source
+        return response
+
+    async def compress(self, text, *, rate):
+        from .operators.llmlingua2 import validate_rate
+        validate_rate(rate)
+        require(type(text) is str and bool(text.strip()),
+                'Historical LLMLingua requires nonempty final Record text')
+        return await asyncio.to_thread(self._compress, text, rate)
+
+    async def close(self):
+        def release():
+            with self._lock:
+                self.__dict__.pop('_compressor', None)
+        await asyncio.to_thread(release)
+
+
+class MeteredServices:
+    def __init__(self,services,context,*,capture_prompts=False):
+        self.services=services;self.context=context;self.capture_prompts=capture_prompts;self.calls=0;self._proxies={}
+    def require(self,name):
+        provider=self.services.require(name)
+        if not callable(getattr(provider,'complete',None)):return provider
+        if name not in self._proxies:self._proxies[name]=_ChatProxy(provider,self)
+        return self._proxies[name]
+
+
+class _ChatProxy:
+    def __init__(self,provider,meter):self._provider=provider;self._meter=meter
+    def __getattr__(self,name):return getattr(self._provider,name)
+    def complete(self,request):
+        m=self._meter;m.calls+=1
+        data={'role':request.role,'call_index':m.calls,'prompt_hash':fingerprint(request.prompt),
+              'max_tokens':request.max_tokens,'temperature':request.temperature}
+        if m.capture_prompts:data['prompt']=request.prompt
+        try:
+            response=self._provider.complete(request)
+        except Exception:
+            emit(m.context,'memfolder.services.chat','memfolder.service.chat_call',**data,status='failed')
+            raise
+        def finished(value):
+            data['response_hash']=fingerprint(value)
+            if m.capture_prompts:data['response']=value
+            emit(m.context,'memfolder.services.chat','memfolder.service.chat_call',**data,status='completed')
+            return value
+        if inspect.isawaitable(response):
+            async def finish_async():
+                try:return finished(await response)
+                except Exception:
+                    emit(m.context,'memfolder.services.chat','memfolder.service.chat_call',**data,status='failed')
+                    raise
+            return finish_async()
+        return finished(response)

@@ -163,7 +163,7 @@ def prepare(args):
     role = 'service' if args.kind == 'model' else 'memory_loader' if args.kind == 'memory' else 'data_loader'
     asset_dir = directory / 'assets'
     if args.kind == 'model':
-        from memfolder.lingua_service import LLMLingua2Service
+        from memfolder.services import LLMLingua2Service
         if not args.plugin and args.repo_id != LLMLingua2Service.model_name:
             raise ValueError('A different model requires its compatible --plugin service')
         os.environ.setdefault('HF_HOME', str(directory / '.cache/huggingface'))
@@ -275,7 +275,7 @@ def main(argv=None):
         command.add_argument('--token-env', help='Environment variable containing the private source token')
     model = subparsers.add_parser('model', parents=[common], help='Download a pinned Hugging Face model snapshot')
     bootstrap()
-    from memfolder.lingua_service import LLMLingua2Service
+    from memfolder.services import LLMLingua2Service
     model.add_argument('repo_id', nargs='?', default=LLMLingua2Service.model_name)
     model.add_argument('--revision', help='Commit/tag; LLMLingua-2 defaults to the framework-pinned commit')
     model.add_argument('--plugin', help='Compatible local-weight service plugin (default for LLMLingua-2: llmlingua2-service)')

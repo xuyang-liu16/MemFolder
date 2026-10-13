@@ -6,10 +6,10 @@ import shutil
 import sys
 import tempfile
 
-from memfolder.catalog import default_registry
-from memfolder.core import ContractError, dumps
-from memfolder.plugins import read_plugin_request
-from .loader import BenchmarkStream
+from ..catalog import default_registry
+from ..core import ContractError, dumps
+from ..plugins import read_plugin_request
+from .benchmark_stream import BenchmarkStream
 
 
 def main(argv=None):
