@@ -129,6 +129,7 @@ def normalize(sources: Iterable[tuple[SourceDocument, NativeLibrary]], *, option
                 embeddings.append(Embedding(space=space, source_fingerprint=fingerprint(row.parts), values=values[0]))
             native = FrozenMap({'framework': lib.framework, 'namespace': row.namespace, 'id': row.native_id,
                 'record': to_data(row.native), 'vectors': to_data(vectors), 'embedding_spaces': declarations,
+                **({'user_id':str(row.selectors['user_id'])} if row.selectors.get('user_id') is not None else {}),
                 'embedding_binding': 'source_declared_unverified' if embeddings else 'unbound'})
             record = MemoryRecord(node_id=nid, scope=scope, order=len(groups[sample_id]), origins=(origin,),
                 parts=row.parts, kind=row.kind, eligible=row.eligible, retention=row.retention,

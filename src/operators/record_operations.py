@@ -22,6 +22,15 @@ from ..core.values import require
 from ..prompt_protocol import PROTOCOL_ID, prompt_hash, render_merge
 
 
+def record_owner(record):
+    """Read the retained native user ID, including preexisting imported snapshots."""
+    raw=record.native.get('record') or {}
+    payload=raw.get('payload') or raw
+    value=(record.native.get('user_id') or payload.get('user_id') or
+           (payload.get('metadata') or {}).get('user_id') or (raw.get('source') or {}).get('user_id'))
+    return str(value) if value is not None else None
+
+
 def timestamp(record,policy='earliest'):
     if record.time_ranges:
         choose=max if policy=='latest' else min
@@ -103,6 +112,10 @@ class ConservativeRecordBuilder:
             require(len({t.clock for t in values})<=1,'Cannot combine visibility bounds from different clocks')
             return choose(values,key=lambda t:t.value) if values else None
         parts=(ContentPart(modality='text',text=written.text),)+tuple(dict.fromkeys(p for n in inputs for p in n.parts if p.modality!='text'))
+        # Match native materialization: the retained anchor ID owns the summary.
+        # Carry identity only; the original payload remains in the source archive.
+        anchor=next((n for n in inputs if n.node_id==action.output_ids[0]),inputs[0])
+        owner=record_owner(anchor)
         output=MemoryRecord(node_id=action.output_ids[0],scope=action.output_scope or inputs[0].scope,
             order=action.parameters.get('output_order',max(n.order for n in inputs)),origins=origins,parts=parts,
             kind=inputs[0].kind if all(n.kind==inputs[0].kind for n in inputs) else 'memory',
@@ -110,6 +123,7 @@ class ConservativeRecordBuilder:
                 may_merge=all(n.retention.may_merge for n in inputs),may_rewrite=all(n.retention.may_rewrite for n in inputs)),
             time_ranges=tuple(dict.fromkeys(r for n in inputs for r in n.time_ranges)),
             available_at=bound('available_at',max),expires_at=bound('expires_at',min),
+            native=FrozenMap({'user_id':owner}) if owner is not None else FrozenMap(),
             extensions=FrozenMap({'memfolder.writer':written.metadata,'memfolder.action_id':action.action_id,
                 'memfolder.member_ids':action.member_ids,'memfolder.content_embedding':'refresh_required'}))
         sources=[n.extensions.get('memfolder.temporal_source') for n in inputs]
