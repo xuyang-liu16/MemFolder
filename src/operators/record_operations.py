@@ -40,6 +40,23 @@ def timestamp(record,policy='earliest'):
     return str(record.extensions.get('memfolder.event_timestamp','unknown'))
 
 
+def display_timestamp(record, policy=None):
+    """Display the materialized event time without discarding time lineage."""
+    policy = policy or record.extensions.get('memfolder.timestamp_policy') or 'anchor'
+    require(policy in ('anchor', 'earliest', 'latest'), 'Unknown display timestamp policy')
+    if policy != 'anchor':
+        return timestamp(record, policy)
+    if 'memfolder.anchor_timestamp' in record.extensions:
+        return str(record.extensions['memfolder.anchor_timestamp'])
+    raw = record.native.get('record') or {}
+    payload = raw.get('payload') or raw
+    meta = payload.get('metadata') or {}
+    value = payload.get('timestamp', meta.get('timestamp'))
+    if value is not None and value != '':
+        return str(value)
+    return str(record.extensions.get('memfolder.event_timestamp') or timestamp(record))
+
+
 def members_for(action, snapshot, originals, *, order_by='event_time'):
     current={n.node_id:n for n in snapshot.records}
     inputs=tuple(current[i] for i in action.member_ids)
@@ -125,7 +142,8 @@ class ConservativeRecordBuilder:
             available_at=bound('available_at',max),expires_at=bound('expires_at',min),
             native=FrozenMap({'user_id':owner}) if owner is not None else FrozenMap(),
             extensions=FrozenMap({'memfolder.writer':written.metadata,'memfolder.action_id':action.action_id,
-                'memfolder.member_ids':action.member_ids,'memfolder.content_embedding':'refresh_required'}))
+                'memfolder.member_ids':action.member_ids,'memfolder.content_embedding':'refresh_required',
+                'memfolder.anchor_timestamp':display_timestamp(anchor,'anchor')}))
         sources=[n.extensions.get('memfolder.temporal_source') for n in inputs]
         if all(sources) and all(source==sources[0] for source in sources):
             output=replace(output,extensions=FrozenMap({**output.extensions,
@@ -139,6 +157,8 @@ class ConservativeRecordBuilder:
                     'memfolder.temporal_source':sources[0]}))
         # Execute generic action policies while retaining the full time lineage.
         policy=action.parameters.get('timestamp_policy',self.timestamp_policy)
+        if policy is None and len(inputs)==1:
+            policy=anchor.extensions.get('memfolder.timestamp_policy')
         if policy is not None:
             require(policy in ('earliest','latest'),'Unknown output timestamp policy')
             output=replace(output,extensions=FrozenMap({**output.extensions,

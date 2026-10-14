@@ -105,6 +105,7 @@ def factories():
         'stored-embeddings':Factory(ft.StoredEmbeddings),'semantic-encoder':Factory(ft.SemanticEmbeddingFeatures),
         'current-embeddings':Factory(ft.CurrentEmbeddings),
         'grounding-features':Factory(ft.GroundingFeatures),'event-time-features':Factory(ft.EventTimeFeatures),
+        'session-grounder':Factory(ft.SessionGrounder),'synonym-labels':Factory(ft.SynonymLabels),
     }
 
 
@@ -159,7 +160,9 @@ def register_experiment_plugins(registry):
         'personamem-accuracy':StageFactory(PersonaMemAccuracy),
         'event-report-observer':StageFactory(EventReportObserver),'regex-redactor':StageFactory(RegexRedactor),
         'compatible-http':StageFactory(CompatibleHTTP),'cached-service':StageFactory(CachedService,roles={'provider':'service'},paths=('path',)),
-        'tiktoken-counter':StageFactory(TiktokenCounter),'chat-grounding':StageFactory(ChatGroundingFeatures),
+        'tiktoken-counter':StageFactory(TiktokenCounter),
+        'chat-grounding':StageFactory(ChatGroundingFeatures,
+            roles={'grounder':'session_grounder','label_merger':'label_merger'}),
         'llmlingua2-service':StageFactory(LLMLingua2Service),
         'llmlingua2-token-budget-service':StageFactory(TokenBudgetLLMLingua2Service),
     }

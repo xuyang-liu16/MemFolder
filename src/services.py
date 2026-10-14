@@ -52,6 +52,9 @@ class CompatibleHTTP:
         if request.response_format is not None:payload['response_format']={'type':request.response_format}
         response=await asyncio.to_thread(self._post,'chat/completions',payload)
         require(type(response) is dict and len(response.get('choices',[]))==1,'Invalid chat response')
+        if request.require_complete and response['choices'][0].get('finish_reason') == 'length':
+            from .operators.contracts import ChatTruncated
+            raise ChatTruncated('Structured response reached max_tokens')
         text=response['choices'][0]['message']['content'];require(type(text) is str and text.strip(),'Empty/nontext provider response');return text
     async def encode(self,texts):
         require(all(type(t) is str for t in texts),'Encoder requires text inputs')
@@ -89,8 +92,9 @@ class CachedService:
     @property
     def cache_identity(self):return fingerprint((self.namespace,getattr(self.provider,'cache_identity',self.namespace)))
     async def complete(self,request):
-        key=fingerprint((self.cache_identity,'chat',request.role,request.prompt,request.max_tokens,
-                         request.temperature,request.message_role,request.response_format,request.prompt_id))
+        identity=(self.cache_identity,'chat',request.role,request.prompt,request.max_tokens,
+                  request.temperature,request.message_role,request.response_format,request.prompt_id)
+        key=fingerprint(identity+(('require_complete',True),) if request.require_complete else identity)
         value=await asyncio.to_thread(cache_get,self.path,key)
         if value is None:
             value=await resolve(self.provider.complete(request));require(type(value) is str and value.strip(),'Invalid cached chat result')

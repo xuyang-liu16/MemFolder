@@ -84,6 +84,7 @@ class FrameworkWrapper:
             write_json(directory, 'manifest.json', {'schema':'memfolder.materialization.v1', 'status':'complete',
                 'framework':native.framework_id, 'format':native.format_id, 'snapshot_fingerprint':final.fingerprint,
                 'source_fingerprint':self.archive.snapshot.fingerprint, 'node_id_map':native.node_id_map,
+                'timestamp_policy':getattr(self.codec,'timestamp_policy',None),
                 'reader_capabilities':getattr(self.writer,'reader_capabilities',()), 'native_files':names, 'files':files})
         except Exception:
             if not (directory / 'manifest.json').exists() and not (directory / 'failure.json').exists():
@@ -93,7 +94,8 @@ class FrameworkWrapper:
             sha256=file_digest(directory / 'manifest.json'), media_type='application/json',
             schema_id='memfolder.materialization.v1', record_count=len(final.records))
         view = MaterializedView(framework_id=native.framework_id, snapshot=final, artifact=artifact,
-            node_id_map=native.node_id_map, reader_capabilities=tuple(getattr(self.writer,'reader_capabilities',())))
+            node_id_map=native.node_id_map, reader_capabilities=tuple(getattr(self.writer,'reader_capabilities',())),
+            timestamp_policy=getattr(self.codec,'timestamp_policy',None))
         emit(context, self.spec.plugin_id, 'memfolder.wrapper.materialized', nodes=tuple(native.node_id_map),
             framework=native.framework_id, format=native.format_id, snapshot_fingerprint=final.fingerprint,
             node_id_map=native.node_id_map, artifact=to_data(artifact), files=len(files))

@@ -114,10 +114,12 @@ class MaterializedView(Contract):
     artifact: ArtifactRef
     node_id_map: FrozenMap
     reader_capabilities: tuple[str, ...] = ()
+    timestamp_policy: str | None = None
 
     def __post_init__(self):
         super().__post_init__()
         identifier(self.framework_id)
+        require(self.timestamp_policy in (None, 'anchor', 'earliest', 'latest'), 'Unknown materialized timestamp policy')
         require(set(self.node_id_map) == {n.node_id for n in self.snapshot.records}, 'Backend node map must cover all records')
 
 

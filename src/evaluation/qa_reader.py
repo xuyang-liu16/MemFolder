@@ -5,7 +5,7 @@ from ..component_runtime import emit, resolve, spec
 from ..core import ContentPart, FrozenMap, Prediction, fingerprint, to_data
 from ..core.values import require
 from ..operators.contracts import ChatRequest
-from ..operators.record_operations import record_owner, timestamp
+from ..operators.record_operations import record_owner, display_timestamp
 from ..prompt_protocol import PROTOCOL_ID, prompt_hash, public_question_text, render_qa
 from .retrieval import LexicalRetriever, visible
 
@@ -52,7 +52,7 @@ class ContextBuilder:
             if used+len(line)>self.max_characters:continue
             lines.append(line);parts.extend(node.parts);included.append(node.node_id);used+=len(line)
             owner=record_owner(node) or str(node.scope.partition_id)
-            groups.setdefault(owner,[]).append(f'{timestamp(node,"latest")}: {node.text or "<"+node.kind+" memory>"}')
+            groups.setdefault(owner,[]).append(f'{display_timestamp(node,getattr(view,"timestamp_policy",None))}: {node.text or "<"+node.kind+" memory>"}')
         return ReaderContext('\n'.join(lines),tuple(parts),tuple(included),
                              tuple((owner,tuple(memories)) for owner,memories in groups.items()))
 

@@ -99,11 +99,14 @@ def normalize(sources: Iterable[tuple[SourceDocument, NativeLibrary]], *, option
                 records_filtered += 1
                 continue
             sample_id = _sample_key(row, options)
-            scope = ScopeRef(dataset_id=options.dataset_id, sample_id=sample_id, partition_id=row.partition_key)
-            origin = OriginRef(scope=scope, source_id=row.native_id, revision=row.revision)
+            native_scope = ScopeRef(dataset_id=options.dataset_id, sample_id=sample_id, partition_id=row.partition_key)
+            selected_sample = options.sample_id is not None or row.sample_key in options.sample_map
+            shared = lib.framework == 'mem0' and options.planning_scope == 'auto' and selected_sample
+            scope = replace(native_scope, partition_id='sample:'+fingerprint((lib.framework, sample_id))) if shared else native_scope
+            origin = OriginRef(scope=native_scope, source_id=row.native_id, revision=row.revision)
             require(origin not in origins, 'Native origins collide after scope mapping')
             origins.add(origin)
-            nid = lib.framework + ':' + fingerprint((scope, row.namespace, row.native_id))
+            nid = lib.framework + ':' + fingerprint((native_scope, row.namespace, row.native_id))
             vectors = row.vectors
             embeddings, bound_spaces = [], set()
             declarations = {}
@@ -161,7 +164,6 @@ def normalize(sources: Iterable[tuple[SourceDocument, NativeLibrary]], *, option
     # The full source manifest establishes the identity of this imported dataset version.
     dataset_digest = fingerprint(tuple(sorted((s.framework, s.format_id, s.sha256, s.coverage) for s in source_info)))
     inputs = []
-    from dataclasses import replace
     for sample_id in sorted(groups):
         nodes = groups[sample_id]
         if options.order_by == 'native_id':
@@ -170,9 +172,9 @@ def normalize(sources: Iterable[tuple[SourceDocument, NativeLibrary]], *, option
             import re
             require(all(re.fullmatch(r'[0-9]+', n.native['id']) for n in nodes),
                     'numeric_native_id ordering requires nonnegative integer IDs')
-            keys = {(n.scope.partition_id, int(n.native['id'])) for n in nodes}
+            keys = {(n.native['namespace'], int(n.native['id'])) for n in nodes}
             require(len(keys) == len(nodes), 'Numeric native IDs collide within a partition')
-            nodes.sort(key=lambda n: (n.scope.partition_id, int(n.native['id'])))
+            nodes.sort(key=lambda n: (n.scope.partition_id, int(n.native['id']), n.native['namespace']))
         elif options.order_by == 'time_id':
             require(options.missing_time_order == 'first' or all(n.time_ranges for n in nodes),
                     'time_id ordering requires parsed timestamps; declare missing_time_order=first for unknowns')

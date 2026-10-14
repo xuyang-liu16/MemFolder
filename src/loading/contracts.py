@@ -28,6 +28,10 @@ class LoadOptions:
     # Explicitly group an already selected library as one benchmark sample.
     # Without this override, native user/cube/video identities stay separate.
     sample_id: str | None = None
+    # Explicit Mem0 sample selection shares one planning universe across owners.
+    # Native identities and origins remain separate; other frameworks retain
+    # their cube/clip partitions. Choose native to retain Mem0 owner partitions.
+    planning_scope: Literal['auto', 'native'] = 'auto'
     namespace: str | None = None  # required for unscoped text dumps
     selectors: FrozenMap = field(default_factory=FrozenMap)
     sample_map: FrozenMap = field(default_factory=FrozenMap)
@@ -52,6 +56,7 @@ class LoadOptions:
         for v in (self.sample_id, self.namespace, self.naive_timezone, self.visibility_field, self.numeric_timestamp_clock):
             require(v is None or type(v) is str and bool(v.strip()), 'Invalid optional import identifier')
         require(self.order_by in ('source', 'native_id', 'numeric_native_id', 'time_id'), 'Unknown import ordering')
+        require(self.planning_scope in ('auto', 'native'), 'Unknown planning scope policy')
         require(isinstance(self.timestamp_fields, (tuple, list)) and bool(self.timestamp_fields)
                 and all(type(v) is str and v and all(v.split('.')) for v in self.timestamp_fields),
                 'timestamp_fields must be a nonempty list of field paths')

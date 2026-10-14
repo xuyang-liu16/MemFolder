@@ -8,6 +8,10 @@ from ..core import Action, FrozenMap, MemoryRecord, OperatorContext, PluginSpec,
 from ..core.values import require
 
 
+class ChatTruncated(RuntimeError):
+    """A structured response reached its output limit and must be split."""
+
+
 @dataclass(frozen=True)
 class ChatRequest:
     role: str
@@ -17,10 +21,13 @@ class ChatRequest:
     message_role: str = 'user'
     response_format: str | None = None
     prompt_id: str | None = None
+    require_complete: bool = False
 
     def __post_init__(self):
         require(self.message_role in ('system', 'user', 'assistant'), 'Invalid chat message role')
         require(self.response_format in (None, 'json_object'), 'Unsupported chat response format')
+        require(type(self.require_complete) is bool,
+                'Invalid chat response policy')
 
 
 class Chat(Protocol):
