@@ -199,6 +199,13 @@ registration in `src/catalog.py`:
   `llmlingua2-service` passes a rate; `llmlingua2-token-budget-service` computes
   an explicit token budget. Declare which service is used; they are distinct
   compression configurations. Refresh output embeddings before dense retrieval.
+  For measured budgets from the same groups, use `llmlingua2-group-budget-writer`
+  with `llmlingua2-token-budget-service`. Supply the source, Record and budget
+  snapshots; matching uses record IDs, scope, owner and origin lineage. It encodes
+  original members with timestamps, calibrates tokenizer lengths on each sample's
+  first 20 groups, and passes `max(2, round(budget_tokens * calibration_factor))`.
+  This mode uses `rate=1.0`, `force_reserve_digit=False` and `drop_consecutive=True`;
+  do not apply another uniform retention ratio. See the configuration reference.
 - M3 MemForest proxy and DART memory adaptations are explicitly named variants.
   StreamMeCo's compression plugin does not supply its upstream temporal reader.
 

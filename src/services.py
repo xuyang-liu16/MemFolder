@@ -204,6 +204,7 @@ class LLMLingua2Service:
 
 
 PROFILE = 'llmlingua2.token_budget.normalized_fallback.v3'
+GROUP_BUDGET_PROFILE = 'llmlingua2.group_token_budget.v2'
 
 
 class _Cl100kTokenCounter:
@@ -292,6 +293,64 @@ class TokenBudgetLLMLingua2Service:
         require(type(text) is str and bool(text.strip()),
                 'Token-budget LLMLingua requires nonempty final Record text')
         return await asyncio.to_thread(self._compress, text, rate)
+
+    def _compress_group(self, members, budget_text, calibration_inputs):
+        from .operators.llmlingua2 import format_group
+        counter = TiktokenCounter()
+        source = format_group(members)
+        raw_tokens = sum(counter.count(m.text) for m in members)
+        budget = counter.count(budget_text)
+        calibration_key = fingerprint(calibration_inputs)
+        with self._lock:
+            compressor = self._compressor
+            calibrations = self.__dict__.setdefault('_group_calibrations', {})
+            if calibration_key not in calibrations:
+                ratios = [len(compressor.tokenizer(text)['input_ids']) / max(1, counter.count(text))
+                          for text in calibration_inputs]
+                calibrations[calibration_key] = sum(ratios) / len(ratios)
+            factor = calibrations[calibration_key]
+            kwargs = {'rate': 1.0, 'target_token': max(2, round(budget * factor)),
+                      'force_reserve_digit': False, 'drop_consecutive': True}
+            called = budget < raw_tokens
+            fallback = '; '.join(m.text.strip() for m in members if m.text.strip())
+            status = 'compressed' if called else 'budget_bypass'
+            exception_type = None
+            if called:
+                try:
+                    output = compressor.compress_prompt_llmlingua2([source], **kwargs)['compressed_prompt']
+                except Exception as error:
+                    output = fallback;status = 'exception_fallback'
+                    exception_type = type(error).__name__
+                require(type(output) is str, 'Invalid group token-budget LLMLingua-2 response')
+            else:
+                output = fallback
+            dtype = str(next(compressor.model.parameters()).dtype)
+        return {'text': output, 'profile': GROUP_BUDGET_PROFILE, 'input_view': 'original_group',
+            'formatted_input_sha256': sha256(source.encode('utf-8')).hexdigest(),
+            'budget_text_sha256': sha256(budget_text.encode('utf-8')).hexdigest(),
+            'classifier_output_text_sha256': sha256(output.encode('utf-8')).hexdigest() if status == 'compressed' else None,
+            'classifier_output_tokens': counter.count(output) if status == 'compressed' else None,
+            'original_tokens': raw_tokens, 'formatted_input_tokens': counter.count(source),
+            'budget_tokens': budget, 'compressed_tokens': counter.count(output),
+            'calibration_factor': factor, 'calibration_fingerprint': calibration_key,
+            'budget_tokenizer': counter.measurement_id, 'effective_kwargs': kwargs,
+            'classifier_called': called, 'status': status, 'exception_type': exception_type,
+            'implementation': 'llmlingua==0.2.2', 'model_name': self.model_name,
+            'model_revision': self.revision, 'device_map': self.device_map,
+            'actual_dtype': dtype, 'constructor_policy': 'defaults',
+            'request_fingerprint': fingerprint((GROUP_BUDGET_PROFILE, self.cache_identity,
+                source, budget_text, calibration_inputs, kwargs))}
+
+    async def compress_group(self, members, *, budget_text, calibration_inputs):
+        members = tuple(members);calibration_inputs = tuple(calibration_inputs)
+        require(bool(members) and all(type(m.text) is str and bool(m.text.strip()) and
+                type(m.time) is str and bool(m.time) for m in members),
+                'Group token budget requires source text and timestamps')
+        require(type(budget_text) is str and bool(budget_text.strip()),
+                'Group token budget requires nonempty reference text')
+        require(bool(calibration_inputs) and all(type(text) is str and bool(text.strip())
+                for text in calibration_inputs), 'Group token budget requires calibration inputs')
+        return await asyncio.to_thread(self._compress_group, members, budget_text, calibration_inputs)
 
     async def close(self):
         def release():

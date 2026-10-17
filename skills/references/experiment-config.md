@@ -218,6 +218,57 @@ implementation. Shared prompts are defined in `src/prompt_protocol.py`.
 LoCoMo F1 and PersonaMem option accuracy remain separate optional metrics.
 Keep the same QA, judge and retrieval settings across comparison arms.
 
+## LLMLingua-2 group token budgets
+
+Use this mode to compare encodings of the same fixed groups against measured
+reference lengths. Start with `examples/recipes/llmlingua2-post-record.json`,
+keep `current-record-rewrite` and `current-record-builder`, and replace its writer:
+
+```json
+{
+  "plugin": "llmlingua2-group-budget-writer",
+  "parameters": {
+    "source_snapshot": "/absolute/path/source.json",
+    "record_snapshot": "/absolute/path/records/final.json",
+    "budget_snapshot": "/absolute/path/reference/final.json",
+    "calibration_groups": 20,
+    "service": "llmlingua2"
+  }
+}
+```
+
+All three files are canonical `Snapshot` artifacts. The source snapshot contains
+the original members; the Record snapshot is the current bank to rewrite; the
+budget snapshot contains another encoding of those same records. Record IDs,
+scope, owner and origin lineage must match. A missing or mismatched budget fails
+explicitly. Array position is not a group identity. Paths resolve from the config
+directory and participate in the experiment input manifest.
+
+Configure `services.llmlingua2` from
+`examples/recipes/llmlingua2-token-budget-services.json`. The writer resolves
+original members in each Record's origin order, formats `text (timestamp)` lines,
+and measures the reference text with `cl100k_base`. For each dataset sample, the
+first `calibration_groups` records in the Record snapshot supply the mean ratio
+of classifier-tokenizer length to cl100k length. The target is
+`max(2, round(reference_tokens * calibration_factor))`, using Python rounding.
+The direct classifier call passes `rate=1.0`, `force_reserve_digit=False` and
+`drop_consecutive=True`. The pinned service leaves model dtype and batch size at
+their constructor defaults and records actual dtype in each result.
+
+When the reference budget covers all original member-text tokens, the writer
+keeps their semicolon-joined text without a classifier call. Empty classifier
+output uses the first original member's text with `empty_classifier_output`.
+Classifier inference errors keep the semicolon-joined original texts with
+`classifier_exception`. Setup, calibration and asset validation errors propagate.
+Metadata retains input/output hashes, calibration, budget,
+effective arguments and whether the classifier ran. Report realized token counts
+and fallback counts rather than treating target lengths as exact caps.
+
+The `group_budget_configuration` helper in
+`examples/record_and_context_compression.py` builds this recipe without model
+calls. Use it with the declared Record snapshot as the compression input and the
+same QA, judge and retrieval configuration as other comparison arms.
+
 ## Inspect the implementation
 
 | Decision | Source |

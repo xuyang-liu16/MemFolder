@@ -47,3 +47,13 @@ async def record_then_context(request, *, services, context_method='llmlingua2',
 def local_lingua_service():
     """Optional service for caller-provided ServiceMap; loading is lazy."""
     return TokenBudgetLLMLingua2Service()
+
+
+def group_budget_configuration(source_snapshot, record_snapshot, budget_snapshot, *, calibration_groups=20):
+    """Rewrite fixed groups against another encoding's measured token budgets."""
+    configuration = json.loads((RECIPES / 'llmlingua2-post-record.json').read_text(encoding='utf-8'))
+    configuration['operator']['parameters']['writer'] = {
+        'plugin': 'llmlingua2-group-budget-writer', 'parameters': {
+            'source_snapshot': str(source_snapshot), 'record_snapshot': str(record_snapshot),
+            'budget_snapshot': str(budget_snapshot), 'calibration_groups': calibration_groups}}
+    return configuration

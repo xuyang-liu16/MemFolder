@@ -16,7 +16,7 @@ from .evaluation.retrieval import M3NativeRetriever, QdrantRetriever, SDKRetriev
 from .initialization import BankInitializer, HistoryInitializer, SummaryInitializer
 from .observation import EventReportObserver, RegexRedactor
 from .operators import contextfolder as cf, record_operations as tx
-from .operators.llmlingua2 import CurrentRecordRewriteBuilder, LLMLingua2Writer
+from .operators.llmlingua2 import CurrentRecordRewriteBuilder, GroupBudgetLLMLingua2Writer, LLMLingua2Writer
 from .operators.record_operations import MemForestPairWriter, TomeEmbeddingBuilder, TomePairWriter
 from .planning import (
     feature_extraction as ft,
@@ -86,6 +86,8 @@ def factories():
             roles={'writer':'text_writer','record_builder':'record_builder','member_resolver':'member_resolver'}),
         'record-builder':Factory(tx.ConservativeRecordBuilder),
         'llmlingua2-writer':Factory(LLMLingua2Writer),
+        'llmlingua2-group-budget-writer':StageFactory(GroupBudgetLLMLingua2Writer,
+            paths=('source_snapshot','record_snapshot','budget_snapshot')),
         'current-record-builder':Factory(CurrentRecordRewriteBuilder,roles={'builder':'record_builder'}),
         'llmlingua2-operator':Factory(tx.TextOperator,
             defaults={'writer':{'plugin':'llmlingua2-writer'},
