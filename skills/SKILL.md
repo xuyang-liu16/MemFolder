@@ -125,6 +125,20 @@ Inspect the supplied templates before treating their defaults as an experiment:
 - The LoCoMo starter templates write MemOS-format output. Select the intended
   framework and native retriever explicitly when that matters.
 
+For LoCoMo paper comparisons, use the following retrieval limits consistently
+for FullContext and all compressed arms:
+
+- Mem0: top-30 per owner (up to 60 recalled records for two owners).
+- MemOS: top-20 per owner, retaining the native reranking flow.
+
+FullContext leaves the memory bank uncompressed but still uses these limits.
+Configure each owner's limit in the native search. The generic
+`reader.parameters.retriever.parameters.top_k` caps the returned hit list:
+for `sdk-retriever`, set it to `60` (Mem0) or `40` (MemOS) when the search
+service combines two owners before returning results. The built-in
+`qdrant-retriever` uses a global limit; setting it to `30` alone does not
+implement top-30 per owner. See `src/evaluation/retrieval.py`.
+
 Use the import instructions in [experiment-config.md](references/experiment-config.md)
 and `python -m memfolder.loading --help`. Verify source completeness, owner-to-sample
 mapping, clocks, and vector model identity before compression. For Mem0 SQLite,
